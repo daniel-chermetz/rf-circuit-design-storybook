@@ -40,11 +40,11 @@ globalThis.getTLWaveParams = (R, L, G, C, frequency) => {
 	const z0_numerator_length = Math.sqrt(R * R + omega * L * omega * L);
 	const z0_numerator_theta = Math.atan2(omega * L, R);
 
-	const z0_length = z0_numerator_length / gamma_length;
+	const z0_magnitude = z0_numerator_length / gamma_length;
 	const z0_theta = z0_numerator_theta - gamma_theta;
 
-	const z0_real = z0_length * Math.cos(z0_theta);
-	const z0_imag = z0_length * Math.sin(z0_theta);
+	const z0_real = z0_magnitude * Math.cos(z0_theta);
+	const z0_imag = z0_magnitude * Math.sin(z0_theta);
 
 	console.log('z0_real', z0_real);
 	console.log('z0_imag', z0_imag);
@@ -60,7 +60,7 @@ globalThis.getTLWaveParams = (R, L, G, C, frequency) => {
 		beta,
 		phase_velocity_up,
 		phase_velocity_frac_of_c,
-		z0_magnitude: z0_length,
+		z0_magnitude,
 		z0_theta,
 		z0_real,
 		z0_imag
@@ -182,7 +182,7 @@ globalThis.get_generator_related_values_lossless_TL = (
 	or, for a given choice of zl at d=0, rotate around the constant SWR circle
 	to find zl at distances from the load
 */
-globalThis.get_swr_circle_lossless_TL = (reflection, v0_plus, standing_wave_ratio, beta) => {
+globalThis.get_swr_circle_lossless_TL = (reflection, v0_plus, standing_wave_ratio, z0_magnitude, beta) => {
 	const constant_swr_circle = [];
 	const wave_length = 2 * Math.PI / beta;
 
@@ -239,7 +239,8 @@ globalThis.get_swr_circle_lossless_TL = (reflection, v0_plus, standing_wave_rati
 			shifted_reflection_theta: current_theta * 180 / Math.PI,
 			shifted_reflection_length: reflection.magnitude,
 			zl,
-			voltage_magnitude
+			voltage_magnitude,
+			z_magnitude: zl.magnitude * z0_magnitude // same as z0_real for a lossless line
 		});
 
 		if (Math.abs(current_theta * 180 / Math.PI) < 1e-4) {
@@ -295,4 +296,4 @@ const v0plus = get_generator_related_values_lossless_TL(
 	tlWaveParams.z0_magnitude, 
 	tlWaveParams.beta
 );
-const constant_swr_circle = get_swr_circle_lossless_TL(reflectionParams.reflection, v0_plus, standing_wave_ratio, tlWaveParams.beta);
+const constant_swr_circle = get_swr_circle_lossless_TL(reflectionParams.reflection, v0plus, standingWaveRatio, tlWaveParams.z0_magnitude, tlWaveParams.beta);

@@ -1,0 +1,1457 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Transmission-line calculator using your JavaScript utilities.">
+<title>Transmission Line Lab</title>
+
+<style>
+:root {
+  color-scheme: light;
+  --ink: #152a40;
+  --muted: #516479;
+  --line: #d9e2eb;
+  --blue: #0067be;
+  --orange: #c35016;
+  --paper: #fff;
+  --bg: #edf2f7;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.5 system-ui, sans-serif;
+}
+
+header {
+  background: #102a43;
+  color: white;
+  padding: 24px 4vw;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+h1 {
+  font-size: 1.65rem;
+  margin: 0;
+  letter-spacing: -.035em;
+}
+
+header p {
+  margin: 4px 0 0;
+  color: #ccdae8;
+  font-size: .9rem;
+}
+
+.badge {
+  font: 14px ui-monospace, monospace;
+  border: 1px solid #5c7791;
+  padding: 7px 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+main {
+  max-width: 1600px;
+  margin: auto;
+  padding: 24px 4vw;
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 24px;
+}
+
+form, .card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+form {
+  align-self: start;
+  padding: 20px;
+}
+
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0 0 24px;
+}
+
+legend, h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 14px;
+  padding: 0;
+}
+
+legend {
+  width: 100%;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+}
+
+label {
+  display: block;
+  font-size: .875rem;
+  color: var(--muted);
+}
+
+input, select, button { font: inherit; }
+
+input, select {
+  width: 100%;
+  padding: 9px 10px;
+  margin-top: 5px;
+  border: 1px solid #aab9c8;
+  border-radius: 4px;
+  color: var(--ink);
+  background: white;
+  min-width: 0;
+}
+
+input:focus,
+select:focus,
+button:focus-visible,
+summary:focus-visible {
+  outline: 3px solid #65b8ff;
+  outline-offset: 2px;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+button {
+  border: 0;
+  border-radius: 4px;
+  background: var(--blue);
+  color: white;
+  padding: 11px 18px;
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.actions { display: flex; gap: 8px; }
+.actions button:first-child { flex: 1; }
+.secondary { background: #e7eef5; color: var(--ink); }
+
+.help {
+  color: var(--muted);
+  font-size: .875rem;
+  margin: 10px 0 0;
+}
+
+.content { min-width: 0; }
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.metric { padding: 16px; min-width: 0; }
+
+.metric span {
+  font-size: .875rem;
+  color: var(--muted);
+}
+
+.metric strong {
+  display: block;
+  margin-top: 5px;
+  font: 600 1.12rem/1.6 ui-monospace, monospace;
+  overflow-wrap: anywhere;
+}
+
+.metric small {
+  color: var(--muted);
+  font-size: .8rem;
+}
+
+.card { padding: 20px; margin-bottom: 18px; }
+.metrics .card { margin: 0; }
+
+.plot {
+  position: relative;
+  height: 300px;
+  width: 100%;
+  min-width: 0;
+}
+
+.plot canvas { width: 100%; height: 100%; }
+
+.plot svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.chart-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
+  flex-wrap: wrap;
+}
+
+.chart-head select {
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+  font-size: .875rem;
+}
+
+.plots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.plots .card { min-width: 0; }
+
+.notice {
+  padding: 12px 16px;
+  border-left: 4px solid var(--blue);
+  background: #e5f2fc;
+  margin-bottom: 18px;
+  font-size: .9rem;
+}
+
+.notice.warning {
+  border-color: #b86800;
+  background: #fff2db;
+}
+
+.notice.error {
+  border-color: #b92a38;
+  background: #ffebee;
+}
+
+[hidden] { display: none !important; }
+
+dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 0;
+}
+
+dt { color: var(--muted); font-size: .875rem; }
+
+dd {
+  margin: 2px 0 0;
+  font: 1rem/1.5 ui-monospace, monospace;
+  overflow-wrap: anywhere;
+}
+
+summary { cursor: pointer; font-weight: 650; }
+details p, details li { font-size: .925rem; }
+code { font-size: .9em; overflow-wrap: anywhere; }
+
+.table-wrap {
+  overflow: auto;
+  max-height: 320px;
+  margin-top: 16px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: .875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+th, td {
+  text-align: right;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background: #eaf0f6;
+}
+
+th:first-child, td:first-child { text-align: left; }
+a { color: #0067be; }
+
+footer {
+  max-width: 1600px;
+  margin: auto;
+  padding: 0 4vw 24px;
+  color: var(--muted);
+  font-size: .875rem;
+}
+
+.legend {
+  font-size: .875rem;
+  color: var(--muted);
+  margin-top: 10px;
+}
+
+@media (max-width: 1100px) {
+  main { grid-template-columns: 285px minmax(0, 1fr); }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .plots { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 750px) {
+  header { align-items: start; }
+  .badge { display: none; }
+
+  main {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  form { padding: 18px; }
+  .plot { height: 270px; }
+  .metrics { gap: 8px; }
+  .card { padding: 16px; }
+  dl { grid-template-columns: 1fr; }
+  h1 { font-size: 1.4rem; }
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div>
+    <h1>Transmission Line Lab</h1>
+    <p>RLGC parameters · impedance transformation · standing waves</p>
+  </div>
+  <span class="badge" id="mode">LOSSLESS LINE</span>
+</header>
+
+<main>
+  <form id="controls">
+    <fieldset>
+      <legend>01 / Frequency &amp; line</legend>
+
+      <label>
+        Frequency (Hz)
+        <input name="frequency" type="number"
+               value="1e9" step="any" min="0" required>
+      </label>
+
+      <div class="pair">
+        <label>
+          R (Ω/m)
+          <input name="R" type="number"
+                 value="0" min="0" step="any" required>
+        </label>
+        <label>
+          L (nH/m)
+          <input name="L" type="number"
+                 value="800" min="0" step="any" required>
+        </label>
+      </div>
+
+      <div class="pair">
+        <label>
+          G (mS/m)
+          <input name="G" type="number"
+                 value="0" min="0" step="any" required>
+        </label>
+        <label>
+          C (pF/m)
+          <input name="C" type="number"
+                 value="100" min="0" step="any" required>
+        </label>
+      </div>
+
+      <p class="help">
+        Distributed parameters per meter.
+        R = G = 0 enables the lossless-line functions.
+      </p>
+    </fieldset>
+
+    <fieldset>
+      <legend>02 / Load impedance</legend>
+
+      <div class="pair">
+        <label>
+          Real (Ω)
+          <input name="loadReal" type="number"
+                 value="100" min="0" step="any" required>
+        </label>
+        <label>
+          Imaginary (Ω)
+          <input name="loadImag" type="number"
+                 value="-40" step="any" required>
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>03 / Generator</legend>
+
+      <label>
+        Distance from load (m)
+        <input name="distance" type="number"
+               value="1" min="0" step="any" required>
+      </label>
+
+      <div class="pair">
+        <label>
+          Voltage, real (V)
+          <input name="voltageReal" type="number"
+                 value="1" step="any" required>
+        </label>
+        <label>
+          Voltage, imag. (V)
+          <input name="voltageImag" type="number"
+                 value="0.5" step="any" required>
+        </label>
+      </div>
+
+      <div class="pair">
+        <label>
+          Impedance, real (Ω)
+          <input name="sourceReal" type="number"
+                 value="50" min="0" step="any" required>
+        </label>
+        <label>
+          Impedance, imag. (Ω)
+          <input name="sourceImag" type="number"
+                 value="0" step="any" required>
+        </label>
+      </div>
+
+      <p class="help">
+        Thévenin source voltage. Use one consistent phasor convention
+        (peak or RMS) for every voltage.
+      </p>
+    </fieldset>
+
+    <div class="actions">
+      <button type="submit">Calculate</button>
+      <button class="secondary" type="button" id="reset">Reset</button>
+    </div>
+  </form>
+
+  <section class="content" aria-label="Calculation results">
+    <div id="status" class="notice"
+         role="status" aria-live="polite">
+      Loading calculations…
+    </div>
+
+    <div id="cdnNotice" class="notice" hidden>
+      Chart.js could not load. The plots use a built-in SVG renderer;
+      calculations and the sample table still work offline.
+    </div>
+
+    <div class="metrics" id="metrics"></div>
+
+    <div id="lossless" hidden>
+      <section class="card">
+        <div class="chart-head">
+          <div>
+            <h2 id="impedanceTitle">
+              Impedance magnitude along the line
+            </h2>
+            <p class="help" id="impedanceHelp">
+              |Z(d)| in ohms · d increases from load toward generator
+            </p>
+          </div>
+
+          <select id="quantity" aria-label="Impedance plot quantity">
+            <option value="magnitude">Magnitude |Z| (Ω)</option>
+            <option value="normalized">Normalized Re z / Im z</option>
+          </select>
+
+          <select id="span" aria-label="Plot distance range">
+            <option value="line">Load → generator</option>
+            <option value="period">One half wavelength</option>
+          </select>
+        </div>
+
+        <div class="plot" id="impedancePlot"></div>
+
+        <p class="legend" id="impedanceLegend">
+          Blue: |Z| (Ω) · Straight segments connect utility samples.
+        </p>
+
+        <p class="help" id="sampling"></p>
+      </section>
+
+      <div class="plots">
+        <section class="card">
+          <h2>Impedance locus</h2>
+          <div class="plot" id="locusPlot"></div>
+          <p class="help">
+            One half wavelength in the normalized impedance plane.
+            This is not a Smith chart; a Smith chart plots Γ.
+          </p>
+        </section>
+
+        <section class="card">
+          <h2>Voltage magnitude</h2>
+          <div class="plot" id="voltagePlot"></div>
+          <p class="help">
+            Same distance range as the impedance plot.
+            V₀⁺ is the incident-wave phasor referenced to the load.
+          </p>
+        </section>
+      </div>
+
+      <section class="card">
+        <h2>Generator &amp; standing wave</h2>
+        <dl id="generatorResults"></dl>
+      </section>
+
+      <details class="card">
+        <summary>Utility samples · one half wavelength</summary>
+
+        <p class="help">
+          The actual returned <code>constant_swr_circle</code> values,
+          without a synthetic endpoint. z is dimensionless;
+          |Z| is in ohms and d is in meters.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>d / λ</th>
+                <th>d (m)</th>
+                <th>|Z| (Ω)</th>
+                <th>Re z</th>
+                <th>Im z</th>
+                <th>|Γ|</th>
+                <th>∠Γ (°)</th>
+                <th>|V| (V)</th>
+              </tr>
+            </thead>
+            <tbody id="samples"></tbody>
+          </table>
+        </div>
+      </details>
+    </div>
+
+    <details class="card">
+      <summary>Calculation review &amp; model limits</summary>
+
+      <p>
+        The supplied JS file is imported unchanged. The UI converts
+        input units, sets <code>globalThis.frequency</code>,
+        <code>load_impedance</code>, and <code>generator</code>,
+        then calls its functions again. Its original demonstration
+        also executes once on import.
+      </p>
+
+      <ul>
+        <li>
+          <code>getTLWaveParams</code> implements
+          γ = √[(R + jωL)(G + jωC)] and Z₀ = (R + jωL)/γ
+          for passive RLGC inputs at positive frequency.
+          γ = α + jβ; α is in Np/m and β in rad/m.
+        </li>
+
+        <li>
+          <code>getTLRefelectionCoefficient</code>
+          (spelling preserved) computes the voltage reflection
+          coefficient (ZL − Z₀)/(ZL + Z₀), including complex Z₀.
+          On a lossy line this is not a power-wave reflection coefficient.
+        </li>
+
+        <li>
+          The functions ending in <code>lossless_TL</code> require
+          R = G = 0. For a lossy line Γ(d) = ΓL exp(−2γd),
+          and Z(d) uses complex Z₀. Those effects are absent from
+          the lossless helpers, so the UI does not use them for
+          nonzero R or G.
+        </li>
+
+        <li>
+          With time dependence exp(jωt), the supplied signs are
+          consistent for positive distance toward the generator:
+          Γ(d) = ΓL exp(−j2βd) and
+          V(d) = V₀⁺[exp(jβd) + ΓL exp(−jβd)].
+          The generator uses a Thévenin voltage divider.
+        </li>
+
+        <li>
+          <code>z_magnitude = zl.magnitude * z0_magnitude</code>
+          converts normalized magnitude to ohms. The UI passes
+          the current <code>z0_magnitude</code> as the fourth
+          argument to <code>get_swr_circle_lossless_TL</code>,
+          followed by <code>beta</code>.
+        </li>
+
+        <li>
+          The circle routine samples about 36 positions per half
+          wavelength and may add a voltage maximum. Its grid can
+          miss the exact minimum and sharp peaks. Repeated periods
+          in the distance plots reuse these returned samples;
+          an exact endpoint comes from the impedance/voltage helpers.
+          The locus uses equal units on both axes.
+        </li>
+
+        <li>
+          The utilities do not guard against division by zero,
+          overflow, ideal open circuits, or pure-reactive resonances.
+          This UI requires finite passive inputs, positive
+          frequency/L/C, and a positive load resistance for the
+          downstream plots. Purely reactive loads still show
+          wave parameters, reflection, and infinite lossless SWR.
+        </li>
+
+        <li>
+          The normalized-impedance locus is a circle for finite SWR,
+          with center (S + 1/S)/2 and radius (S − 1/S)/2.
+          Constant |Γ| is a circle centered at zero in the
+          reflection plane.
+        </li>
+
+        <li>
+          The source uses 3 × 10⁸ m/s for c. Its velocity fraction
+          is approximate. A tiny nonzero α for R = G = 0 is
+          floating-point roundoff. The RLGC model alone does not
+          establish that arbitrary parameters describe a realizable cable.
+        </li>
+      </ul>
+
+      <p>
+        References:
+        <a href="https://web.mit.edu/6.013_book/www/chapter14/14.10.html"
+           target="_blank" rel="noopener">
+          MIT: transmission-line summary
+        </a>
+        ·
+        <a href="https://www.chartjs.org/docs/latest/getting-started/integration.html"
+           target="_blank" rel="noopener">
+          Chart.js: script-tag integration
+        </a>
+      </p>
+    </details>
+  </section>
+</main>
+
+<footer>
+  Uniform, linear transmission line · passive terminations ·
+  sinusoidal steady state.
+  All displayed results are recalculated when you select Calculate.
+</footer>
+
+<!--
+  Keep your updated transmission_line.js beside this HTML file.
+  Its circle function must accept:
+  (reflection, v0_plus, standing_wave_ratio, z0_magnitude, beta)
+-->
+<script src="transmission_line.js"></script>
+
+<!-- UMD build for a classic script tag. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
+
+<script>
+(() => {
+  'use strict';
+
+  // Keep UI bindings separate from the utility's top-level constants.
+  const $ = id => document.getElementById(id);
+  const form = $('controls');
+  const charts = [];
+  let last = null;
+
+  function fmt(n) {
+    if (!Number.isFinite(n)) {
+      return n === Infinity ? '∞' : 'Unavailable';
+    }
+
+    if (n === 0) return '0';
+
+    if (Math.abs(n) < 1e-3 || Math.abs(n) >= 1e6) {
+      return n.toExponential(4);
+    }
+
+    return Number(n.toPrecision(6)).toString();
+  }
+
+  function complex(real, imag) {
+    return `${fmt(real)} ${imag < 0 ? '−' : '+'} j${fmt(Math.abs(imag))}`;
+  }
+
+  function notice(message, kind = '') {
+    $('status').textContent = message;
+    $('status').className = `notice ${kind}`;
+  }
+
+  function clearPlots() {
+    while (charts.length) {
+      charts.pop().destroy();
+    }
+
+    ['impedancePlot', 'locusPlot', 'voltagePlot'].forEach(id => {
+      $(id).replaceChildren();
+    });
+  }
+
+  function metric(label, value, unit) {
+    const element = document.createElement('div');
+    element.className = 'card metric';
+
+    const labelElement = document.createElement('span');
+    const valueElement = document.createElement('strong');
+    const unitElement = document.createElement('small');
+
+    labelElement.textContent = label;
+    valueElement.textContent = value;
+    unitElement.textContent = unit;
+
+    element.append(labelElement, valueElement, unitElement);
+    $('metrics').append(element);
+  }
+
+  function result(label, value) {
+    const element = document.createElement('div');
+    const term = document.createElement('dt');
+    const description = document.createElement('dd');
+
+    term.textContent = label;
+    description.textContent = value;
+
+    element.append(term, description);
+    $('generatorResults').append(element);
+  }
+
+  function checkFinite(values) {
+    if (!values.every(Number.isFinite)) {
+      throw new Error(
+        'The calculation exceeded numerical limits or reached a singularity. ' +
+        'Adjust the inputs.'
+      );
+    }
+  }
+
+  // Offline plot renderer. Also used for the equal-scale impedance locus.
+  function svgPlot(id, sets, xLabel, yLabel, equal) {
+    const NS = 'http://www.w3.org/2000/svg';
+    const width = equal ? 450 : 720;
+    const height = 310;
+    const padding = { left: 72, right: 20, top: 18, bottom: 55 };
+
+    function element(tag, attributes, text) {
+      const node = document.createElementNS(NS, tag);
+
+      Object.entries(attributes).forEach(([key, value]) => {
+        node.setAttribute(key, value);
+      });
+
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    const all = sets
+      .flatMap(set => set.data)
+      .filter(point => Number.isFinite(point.x) && Number.isFinite(point.y));
+
+    let xmin = Math.min(...all.map(point => point.x));
+    let xmax = Math.max(...all.map(point => point.x));
+    let ymin = Math.min(...all.map(point => point.y));
+    let ymax = Math.max(...all.map(point => point.y));
+
+    const padX = (xmax - xmin || 1) * .06;
+    const padY = (ymax - ymin || 1) * .1;
+
+    xmin -= padX;
+    xmax += padX;
+    ymin -= padY;
+    ymax += padY;
+
+    const plotWidth = width - padding.left - padding.right;
+    const plotHeight = height - padding.top - padding.bottom;
+
+    if (equal) {
+      const unit = Math.max(
+        (xmax - xmin) / plotWidth,
+        (ymax - ymin) / plotHeight
+      );
+
+      const centerX = (xmax + xmin) / 2;
+      const centerY = (ymax + ymin) / 2;
+
+      xmin = centerX - unit * plotWidth / 2;
+      xmax = centerX + unit * plotWidth / 2;
+      ymin = centerY - unit * plotHeight / 2;
+      ymax = centerY + unit * plotHeight / 2;
+    }
+
+    const x = n =>
+      padding.left + (n - xmin) / (xmax - xmin) * plotWidth;
+
+    const y = n =>
+      height - padding.bottom -
+      (n - ymin) / (ymax - ymin) * plotHeight;
+
+    const svg = element('svg', {
+      viewBox: `0 0 ${width} ${height}`,
+      role: 'img',
+      'aria-label': `${yLabel} versus ${xLabel}`
+    });
+
+    for (let i = 0; i <= 4; i++) {
+      const xv = xmin + (xmax - xmin) * i / 4;
+      const yv = ymin + (ymax - ymin) * i / 4;
+
+      svg.append(
+        element('line', {
+          x1: x(xv),
+          x2: x(xv),
+          y1: padding.top,
+          y2: height - padding.bottom,
+          stroke: '#d9e2eb'
+        }),
+        element('line', {
+          x1: padding.left,
+          x2: width - padding.right,
+          y1: y(yv),
+          y2: y(yv),
+          stroke: '#d9e2eb'
+        }),
+        element('text', {
+          x: x(xv),
+          y: height - padding.bottom + 22,
+          'text-anchor': 'middle',
+          fill: '#516479',
+          'font-size': 12
+        }, Number(xv.toPrecision(3))),
+        element('text', {
+          x: padding.left - 8,
+          y: y(yv) + 4,
+          'text-anchor': 'end',
+          fill: '#516479',
+          'font-size': 12
+        }, Number(yv.toPrecision(3)))
+      );
+    }
+
+    sets.forEach(set => {
+      svg.append(element('polyline', {
+        points: set.data
+          .map(point => `${x(point.x)},${y(point.y)}`)
+          .join(' '),
+        fill: 'none',
+        stroke: set.color,
+        'stroke-width': 2
+      }));
+
+      if (set.data.length === 1) {
+        svg.append(element('circle', {
+          cx: x(set.data[0].x),
+          cy: y(set.data[0].y),
+          r: 3,
+          fill: set.color
+        }));
+      }
+    });
+
+    svg.append(
+      element('text', {
+        x: padding.left + plotWidth / 2,
+        y: height - 5,
+        'text-anchor': 'middle',
+        fill: '#516479',
+        'font-size': 14
+      }, xLabel),
+      element('text', {
+        transform:
+          `translate(17 ${padding.top + plotHeight / 2}) rotate(-90)`,
+        'text-anchor': 'middle',
+        fill: '#516479',
+        'font-size': 14
+      }, yLabel)
+    );
+
+    $(id).append(svg);
+  }
+
+  function plot(id, sets, xLabel, yLabel, equal = false) {
+    if (equal || !globalThis.Chart) {
+      svgPlot(id, sets, xLabel, yLabel, equal);
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+
+    canvas.setAttribute('role', 'img');
+    canvas.setAttribute(
+      'aria-label',
+      `${yLabel} versus ${xLabel}. ` +
+      'Numeric data are available in the sample table.'
+    );
+
+    $(id).append(canvas);
+
+    const scales = {
+      x: {
+        type: 'linear',
+        title: { display: true, text: xLabel },
+        grid: { color: '#e5ebf1' }
+      },
+      y: {
+        type: 'linear',
+        title: { display: true, text: yLabel },
+        grid: { color: '#e5ebf1' }
+      }
+    };
+
+    charts.push(new Chart(canvas, {
+      type: 'scatter',
+      data: {
+        datasets: sets.map(set => ({
+          label: set.label,
+          data: set.data,
+          borderColor: set.color,
+          backgroundColor: set.color,
+          showLine: true,
+          pointRadius: set.data.length === 1 ? 3 : 0,
+          pointHitRadius: 8,
+          borderWidth: 2,
+          tension: 0
+        }))
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        scales,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: context =>
+                `${context.dataset.label}: ` +
+                `(${fmt(context.parsed.x)}, ${fmt(context.parsed.y)})`
+            }
+          }
+        }
+      }
+    }));
+  }
+
+  function draw() {
+    if (!last) return;
+
+    clearPlots();
+
+    const { wave, reflection, forward, circle, distance } = last;
+    const lambda = 2 * Math.PI / wave.beta;
+    const half = lambda / 2;
+
+    let end = $('span').value === 'period' ? half : distance;
+    let limited = false;
+
+    if (end / half > 100) {
+      end = half;
+      limited = true;
+    }
+
+    const data = [];
+
+    // Reuse the returned half-wave samples over the selected distance.
+    // Impedance and voltage magnitude repeat every half wavelength
+    // on a lossless line.
+    for (let k = 0; k <= Math.floor(end / half); k++) {
+      for (const point of circle) {
+        const d = (k / 2 + point.d_frac_wavelength) * lambda;
+
+        if (d < end) {
+          data.push({
+            d,
+            z: point.zl,
+            v: point.voltage_magnitude,
+            m: point.z_magnitude
+          });
+        }
+      }
+    }
+
+    // Add an exact endpoint from the existing distance helpers.
+    const endpointImpedance =
+      getImpedanceAtDistanceFromLoad_lossless_TL(
+        end,
+        reflection,
+        wave.z0_magnitude,
+        wave.beta
+      );
+
+    const endpointVoltageRatio =
+      get_voltage_as_v0plus_ratio_at_distance_from_load_lossless_TL(
+        end,
+        reflection,
+        wave.beta
+      );
+
+    data.push({
+      d: end,
+      m: endpointImpedance.magnitude,
+      z: {
+        real: endpointImpedance.real / wave.z0_magnitude,
+        imag: endpointImpedance.imag / wave.z0_magnitude
+      },
+      v: forward.magnitude * Math.hypot(
+        endpointVoltageRatio.v_to_v0plus_ratio_real,
+        endpointVoltageRatio.v_to_v0plus_ratio_imag
+      )
+    });
+
+    data.sort((a, b) => a.d - b.d);
+
+    checkFinite(
+      data.flatMap(point => [
+        point.d,
+        point.z.real,
+        point.z.imag,
+        point.v,
+        point.m
+      ])
+    );
+
+    const series = (label, color, value) => ({
+      label,
+      color,
+      data: data.map(point => ({
+        x: point.d,
+        y: value(point)
+      }))
+    });
+
+    const magnitude = $('quantity').value !== 'normalized';
+
+    $('impedanceTitle').textContent = magnitude
+      ? 'Impedance magnitude along the line'
+      : 'Normalized impedance along the line';
+
+    $('impedanceHelp').textContent =
+      (magnitude ? '|Z(d)| in ohms' : 'z(d) = Z(d) / Z₀') +
+      ' · d increases from load toward generator';
+
+    $('impedanceLegend').textContent = magnitude
+      ? 'Blue: |Z| (Ω) · Straight segments connect utility samples.'
+      : 'Blue: Re z · Orange: Im z · Straight segments connect utility samples.';
+
+    if (magnitude) {
+      plot(
+        'impedancePlot',
+        [series('|Z| (Ω)', '#0067be', point => point.m)],
+        'Distance from load (m)',
+        'Impedance magnitude (Ω)'
+      );
+    } else {
+      plot(
+        'impedancePlot',
+        [
+          series('Re z', '#0067be', point => point.z.real),
+          series('Im z', '#c35016', point => point.z.imag)
+        ],
+        'Distance from load (m)',
+        'Normalized impedance'
+      );
+    }
+
+    plot(
+      'voltagePlot',
+      [series('|V|', '#0067be', point => point.v)],
+      'Distance from load (m)',
+      'Voltage magnitude (V)'
+    );
+
+    const locus = circle.map(point => ({
+      x: point.zl.real,
+      y: point.zl.imag
+    }));
+
+    // Close the visual locus without changing the utility's samples.
+    locus.push({ ...locus[0] });
+
+    plot(
+      'locusPlot',
+      [{ label: 'z', color: '#0067be', data: locus }],
+      'Re z',
+      'Im z',
+      true
+    );
+
+    $('sampling').textContent =
+      `${data.length} plotted samples over ${fmt(end)} m ` +
+      `(${fmt(end / lambda)} λ). ` +
+      (limited
+        ? 'The requested line exceeds 50 wavelengths; showing one half ' +
+          'wavelength to keep the sampled plot readable.'
+        : 'The half-wave sample sequence repeats along a lossless line.');
+  }
+
+  function calculate() {
+    last = null;
+    clearPlots();
+    $('metrics').replaceChildren();
+    $('generatorResults').replaceChildren();
+    $('samples').replaceChildren();
+    $('lossless').hidden = true;
+
+    try {
+      if (typeof globalThis.getTLWaveParams !== 'function') {
+        throw new Error(
+          'Cannot load transmission_line.js. ' +
+          'Keep the JS file in the same folder as index.html.'
+        );
+      }
+
+      const values = Object.fromEntries(new FormData(form).entries());
+
+      for (const key in values) {
+        if (values[key].trim() === '') {
+          throw new Error('Complete every input.');
+        }
+        values[key] = Number(values[key]);
+      }
+
+      checkFinite(Object.values(values));
+
+      if (
+        values.frequency <= 0 ||
+        values.L <= 0 ||
+        values.C <= 0
+      ) {
+        throw new Error(
+          'Frequency, L, and C must be greater than zero.'
+        );
+      }
+
+      if (
+        [
+          values.R,
+          values.G,
+          values.loadReal,
+          values.sourceReal,
+          values.distance
+        ].some(n => n < 0)
+      ) {
+        throw new Error(
+          'R, G, load/source resistance, and distance must be nonnegative.'
+        );
+      }
+
+      globalThis.frequency = values.frequency;
+
+      globalThis.load_impedance = {
+        real: values.loadReal,
+        imag: values.loadImag
+      };
+
+      globalThis.generator = {
+        generator_distance: values.distance,
+        generator_voltage_real: values.voltageReal,
+        generator_voltage_imag: values.voltageImag,
+        generator_impedance_real: values.sourceReal,
+        generator_impedance_imag: values.sourceImag
+      };
+
+      const wave = getTLWaveParams(
+        values.R,
+        values.L * 1e-9,
+        values.G * 1e-3,
+        values.C * 1e-12,
+        globalThis.frequency
+      );
+
+      checkFinite(Object.values(wave));
+
+      if (wave.beta <= 0 || wave.z0_magnitude <= 0) {
+        throw new Error(
+          'These inputs do not produce a finite propagating-line solution.'
+        );
+      }
+
+      const reflectionParams = getTLRefelectionCoefficient(
+        values.loadReal,
+        values.loadImag,
+        wave.z0_magnitude,
+        wave.z0_theta
+      );
+
+      const reflection = reflectionParams.reflection;
+
+      checkFinite([
+        reflection.real,
+        reflection.imag,
+        reflection.magnitude
+      ]);
+
+      const lossless = values.R === 0 && values.G === 0;
+
+      const swr = lossless
+        ? (
+          values.loadReal === 0
+            ? Infinity
+            : getStandingWaveRatio_lossless_TL(reflection)
+        )
+        : null;
+
+      metric(
+        'Characteristic impedance Z₀',
+        complex(wave.z0_real, wave.z0_imag),
+        'Ω'
+      );
+
+      metric('Phase constant β', fmt(wave.beta), 'rad/m');
+      metric('Attenuation α', fmt(wave.alpha), 'Np/m');
+      metric('Wavelength λ', fmt(2 * Math.PI / wave.beta), 'm');
+
+      metric(
+        'Load reflection ΓL',
+        complex(reflection.real, reflection.imag),
+        `|ΓL| = ${fmt(reflection.magnitude)}`
+      );
+
+      metric(
+        'Standing-wave ratio',
+        lossless ? fmt(swr) : 'Unavailable',
+        lossless ? 'lossless line' : 'requires R = G = 0'
+      );
+
+      metric('Phase velocity', fmt(wave.phase_velocity_up), 'm/s');
+
+      metric(
+        'Phase velocity / c',
+        fmt(wave.phase_velocity_frac_of_c),
+        'uses c ≈ 3 × 10⁸ m/s'
+      );
+
+      metric(
+        'Normalized load zL',
+        complex(
+          reflectionParams.normalized_load_impedance.real,
+          reflectionParams.normalized_load_impedance.imag
+        ),
+        'ZL / Z₀'
+      );
+
+      $('mode').textContent = lossless ? 'LOSSLESS LINE' : 'LOSSY LINE';
+
+      if (!lossless) {
+        notice(
+          'Lossy line: wave parameters and load reflection are available. ' +
+          'The supplied distance, generator, and SWR functions are ' +
+          'lossless-only, so their results are not shown.',
+          'warning'
+        );
+        return;
+      }
+
+      if (
+        values.loadReal === 0 ||
+        reflection.magnitude >= 1 - 1e-10
+      ) {
+        notice(
+          'This load has infinite or near-infinite SWR. ' +
+          'Wave parameters and load reflection are shown; distance plots ' +
+          'are unavailable because the utility does not handle impedance ' +
+          'poles reliably. Use a positive load resistance away from this limit.',
+          'warning'
+        );
+        return;
+      }
+
+      const forward = get_generator_related_values_lossless_TL(
+        values.distance,
+        values.voltageReal,
+        values.voltageImag,
+        values.sourceReal,
+        values.sourceImag,
+        reflection,
+        wave.z0_magnitude,
+        wave.beta
+      );
+
+      const inputImpedance =
+        getImpedanceAtDistanceFromLoad_lossless_TL(
+          values.distance,
+          reflection,
+          wave.z0_magnitude,
+          wave.beta
+        );
+
+      const voltageRatio =
+        get_voltage_as_v0plus_ratio_at_distance_from_load_lossless_TL(
+          values.distance,
+          reflection,
+          wave.beta
+        );
+
+      const terminalVoltage = {
+        real:
+          forward.real * voltageRatio.v_to_v0plus_ratio_real -
+          forward.imag * voltageRatio.v_to_v0plus_ratio_imag,
+        imag:
+          forward.real * voltageRatio.v_to_v0plus_ratio_imag +
+          forward.imag * voltageRatio.v_to_v0plus_ratio_real
+      };
+
+      checkFinite([
+        forward.real,
+        forward.imag,
+        forward.magnitude,
+        inputImpedance.real,
+        inputImpedance.imag,
+        terminalVoltage.real,
+        terminalVoltage.imag
+      ]);
+
+      // Updated five-argument signature:
+      // reflection, v0_plus, standing_wave_ratio, z0_magnitude, beta
+      const circle = get_swr_circle_lossless_TL(
+        reflection,
+        forward,
+        swr,
+        wave.z0_magnitude,
+        wave.beta
+      );
+
+      if (!circle.length) {
+        throw new Error('The utility returned no samples.');
+      }
+
+      checkFinite(
+        circle.flatMap(point => [
+          point.d_frac_wavelength,
+          point.zl.real,
+          point.zl.imag,
+          point.voltage_magnitude,
+          point.z_magnitude
+        ])
+      );
+
+      result(
+        'Input impedance at generator',
+        `${complex(inputImpedance.real, inputImpedance.imag)} Ω`
+      );
+
+      result(
+        'Voltage at generator end of line',
+        `${complex(terminalVoltage.real, terminalVoltage.imag)} V`
+      );
+
+      result(
+        'Incident voltage V₀⁺ at load',
+        `${complex(forward.real, forward.imag)} V`
+      );
+
+      result(
+        'Full-period voltage maximum / minimum',
+        `${fmt(forward.magnitude * (1 + reflection.magnitude))} / ` +
+        `${fmt(forward.magnitude * (1 - reflection.magnitude))} V`
+      );
+
+      result(
+        'Line electrical length',
+        `${fmt(values.distance * wave.beta * 180 / Math.PI)}°`
+      );
+
+      result(
+        'Generator distance / wavelength',
+        `${fmt(values.distance * wave.beta / (2 * Math.PI))} λ`
+      );
+
+      for (const point of circle) {
+        const row = document.createElement('tr');
+
+        const cells = [
+          point.d_frac_wavelength,
+          point.d_frac_wavelength * 2 * Math.PI / wave.beta,
+          point.z_magnitude,
+          point.zl.real,
+          point.zl.imag,
+          point.shifted_reflection_length,
+          point.shifted_reflection_theta,
+          point.voltage_magnitude
+        ];
+
+        cells.forEach(number => {
+          const cell = document.createElement('td');
+          cell.textContent = fmt(number);
+          row.append(cell);
+        });
+
+        $('samples').append(row);
+      }
+
+      last = {
+        wave,
+        reflection,
+        forward,
+        circle,
+        distance: values.distance
+      };
+
+      $('lossless').hidden = false;
+      draw();
+
+      notice(
+        'Lossless solution · plots use the supplied utility’s ' +
+        'impedance and voltage samples.'
+      );
+    } catch (error) {
+      last = null;
+      clearPlots();
+      $('metrics').replaceChildren();
+      $('lossless').hidden = true;
+      $('mode').textContent = 'CHECK INPUTS';
+      notice(error.message, 'error');
+    }
+  }
+
+  function redraw() {
+    try {
+      draw();
+    } catch (error) {
+      clearPlots();
+      notice(error.message, 'error');
+    }
+  }
+
+  $('cdnNotice').hidden = !!globalThis.Chart;
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    calculate();
+  });
+
+  form.addEventListener('input', () => {
+    last = null;
+    clearPlots();
+    $('metrics').replaceChildren();
+    $('lossless').hidden = true;
+    notice('Inputs changed. Select Calculate to update the results.');
+  });
+
+  $('reset').addEventListener('click', () => {
+    form.reset();
+    $('span').value = 'line';
+    $('quantity').value = 'magnitude';
+    calculate();
+  });
+
+  $('quantity').addEventListener('change', redraw);
+  $('span').addEventListener('change', redraw);
+
+  calculate();
+})();
+</script>
+</body>
+</html>
