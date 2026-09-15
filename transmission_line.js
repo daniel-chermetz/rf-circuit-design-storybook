@@ -1,3 +1,27 @@
+globalThis.multiplyComplexNums = (n1_real, n1_imag, n2_real, n2_imag) => {
+	return {
+		real: n1_real * n2_real - n1_imag * n2_imag,
+		imag: n1_real * n2_imag + n1_imag * n2_real
+	}
+}
+
+globalThis.convert_complex_num_from_cartesian_to_polar = (real, imag) => {
+	const magnitude = Math.sqrt(real * real + imag * imag);
+	const theta = Math.atan2(imag, real);
+
+	return {
+		magnitude,
+		theta
+	}
+}
+
+globalThis.convert_complex_num_from_polar_to_cartesian = (magnitude, theta) => {
+	return {
+		real: magnitude * Math.cos(theta),
+		imag: magnitude * Math.sin(theta)
+	}
+}
+
 globalThis.divideComplexNums = (n1_real, n1_imag, n2_real, n2_imag) => {
 	const n1_theta = Math.atan2(n1_imag, n1_real);
 	const n2_theta = Math.atan2(n2_imag, n2_real);
@@ -88,8 +112,8 @@ globalThis.getTLRefelectionCoefficient = (load_impedance_zl_real, load_impedance
 		reflection_denominator_real,
 		reflection_denominator_imag
 	);
-	console.log('reflection_length: ', reflection.magnitude);
-	console.log('reflection_theta: ', reflection.theta * 180 / Math.PI);
+	// console.log('reflection_length: ', reflection.magnitude);
+	// console.log('reflection_theta: ', reflection.theta * 180 / Math.PI);
 
 	return {
 		normalized_load_impedance,
@@ -124,8 +148,8 @@ globalThis.getImpedanceAtDistanceFromLoad_lossless_TL = (distance, reflection, z
 		imag: impedance_to_z0_ratio_at_distance.imag * z0_magnitude
 	}
 
-	console.log('distance: ', distance);
-	console.log('impedance_at_distance', impedance_at_distance);
+	// console.log('distance: ', distance);
+	// console.log('impedance_at_distance', impedance_at_distance);
 
 	return impedance_at_distance;
 }
@@ -172,7 +196,7 @@ globalThis.get_generator_related_values_lossless_TL = (
 		v0plus_ratio.v_to_v0plus_ratio_real,
 		v0plus_ratio.v_to_v0plus_ratio_imag
 	);
-	console.log('v0_plus: ', v0_plus);
+	// console.log('v0_plus: ', v0_plus);
 
 	return v0_plus;
 }
@@ -442,17 +466,345 @@ globalThis.match_impedance_by_shunt_reactive_element_lossless_TL = (reflection, 
 	return impedance_matching_shunt_options;
 }
 
+globalThis.find_thevenin_equivalent_circuit = (generator, reflection, z0_magnitude, beta) => {
+	const tl1_length = generator.generator_tl1_length;
+	const tl2_length = generator.generator_tl2_length;
+
+	// Thevenin equivalent TL2 and load
+
+	const z_looking_in_tl2 = getImpedanceAtDistanceFromLoad_lossless_TL(tl2_length, reflection, z0_magnitude, beta);
+	const tl2_and_load_equivalent = {
+		z_real: z_looking_in_tl2.real,
+		z_imag: z_looking_in_tl2.imag,
+		voltage_real: 0,
+		voltage_imag: 0
+	};
+	console.log('z_looking_in_tl2:', z_looking_in_tl2);
+
+	// Thevenin equivalent TL1 and generator
+
+	// z_th
+	const reflectionParamsLookingIntoGenerator = getTLRefelectionCoefficient(
+		generator.generator_impedance_real, 
+		generator.generator_impedance_imag, 
+		z0_magnitude, 
+		0
+	);
+	const z_looking_into_tl1_towards_generator = getImpedanceAtDistanceFromLoad_lossless_TL(
+		tl1_length, 
+		reflectionParamsLookingIntoGenerator.reflection, 
+		z0_magnitude, 
+		beta
+	);
+	console.log('z_looking_into_tl1_towards_generator:', z_looking_into_tl1_towards_generator);
+
+	// open circuited voltage
+
+	const openCircuitedReflection = {
+		magnitude: 1,
+		theta: 0,
+		real: 1,
+		imag: 0
+	}
+
+	const v0_plus = get_generator_related_values_lossless_TL(
+		tl1_length, 
+		generator.generator_voltage_real, 
+		generator.generator_voltage_imag, 
+		generator.generator_impedance_real, 
+		generator.generator_impedance_imag,
+		openCircuitedReflection,
+		z0_magnitude,
+		beta
+	);
+	console.log('v0_plus:', v0_plus);
+
+	// distance is zero as the distance is defined from load towards generator, and zero is the load
+	const ratio = get_voltage_as_v0plus_ratio_at_distance_from_load_lossless_TL(0, openCircuitedReflection, beta);
+	console.log('v_v0plus_ratio_at_load_end_of_tl1: ', ratio);
+	
+	const tl1_and_generator_equivalent = {
+		z_real: z_looking_into_tl1_towards_generator.real,
+		z_imag: z_looking_into_tl1_towards_generator.imag,
+		voltage_real: (v0_plus.real * ratio.v_to_v0plus_ratio_real - v0_plus.imag * ratio.v_to_v0plus_ratio_imag),
+		voltage_imag: (v0_plus.real * ratio.v_to_v0plus_ratio_imag + v0_plus.imag * ratio.v_to_v0plus_ratio_real)
+	};
+	console.log('tl1_and_generator_equivalent:', tl1_and_generator_equivalent);
+
+	return {
+		tl1_and_generator_equivalent,
+		tl2_and_load_equivalent
+	}
+}
+
+globalThis.get_parallel_series_parallel_equivalent_z = (
+	two_port_z_parallel_pre_series,
+	two_port_z_series,
+	two_port_z_parallel_post_series,
+	load_z_parallel
+) => {
+	const z_post_series_numerator = multiplyComplexNums(
+		two_port_z_parallel_post_series.real,
+		two_port_z_parallel_post_series.imag,
+		load_z_parallel.z_real,
+		load_z_parallel.z_imag,
+	);
+
+	const z_post_series = divideComplexNums(
+		z_post_series_numerator.real, 
+		z_post_series_numerator.imag,
+		two_port_z_parallel_post_series.real + load_z_parallel.z_real,
+		two_port_z_parallel_post_series.imag + load_z_parallel.z_imag
+	);
+
+	const series_z_plus_parallel_z = {
+		real: two_port_z_series.real + z_post_series.real,
+		imag: two_port_z_series.imag + z_post_series.imag
+	};
+
+	const z_pre_series_numerator = multiplyComplexNums(
+		two_port_z_parallel_pre_series.real,
+		two_port_z_parallel_pre_series.imag,
+		series_z_plus_parallel_z.real,
+		series_z_plus_parallel_z.imag
+	);
+
+	const z_pre_two_port = divideComplexNums(
+		z_pre_series_numerator.real, 
+		z_pre_series_numerator.imag,
+		two_port_z_parallel_pre_series.real + series_z_plus_parallel_z.real,
+		two_port_z_parallel_pre_series.imag + series_z_plus_parallel_z.imag
+	);
+
+	return z_pre_two_port;
+}
+
+globalThis.get_voltage_across_load_with_parallel_series_parallel_two_port_z = (
+	generator_current,
+	voltage_pre_two_port,
+	two_port_z_parallel_pre_series, 
+	two_port_z_series, 
+	two_port_z_parallel_post_series,
+	z0_magnitude
+) => {
+	const current_down_first_parallel = divideComplexNums(
+		voltage_pre_two_port.real,
+		voltage_pre_two_port.imag,
+		two_port_z_parallel_pre_series.real,
+		two_port_z_parallel_pre_series.imag
+	);
+
+	const current_remaining_for_series = {
+		real: generator_current.real - current_down_first_parallel.real,
+		imag: generator_current.imag - current_down_first_parallel.imag
+	};
+
+	const voltage_drop_across_series = multiplyComplexNums(
+		two_port_z_series.real,
+		two_port_z_series.imag,
+		current_remaining_for_series.real,
+		current_remaining_for_series.imag
+	);
+
+	const voltage_across_load = {
+		real: voltage_pre_two_port.real - voltage_drop_across_series.real,
+		imag: voltage_pre_two_port.imag - voltage_drop_across_series.imag
+	}
+	console.log('voltage_across_load', voltage_across_load);
+
+	return voltage_across_load;
+}
+
+globalThis.find_pre_two_port_impedance_current_voltage = (tl_and_generator_equivalent, z_pre_two_port) => {
+	const total_z = {
+		real: tl_and_generator_equivalent.z_real + z_pre_two_port.real,
+		imag: tl_and_generator_equivalent.z_imag + z_pre_two_port.imag
+	};
+
+	const generator_current = divideComplexNums(
+		tl_and_generator_equivalent.voltage_real,
+		tl_and_generator_equivalent.voltage_imag,
+		total_z.real,
+		total_z.imag			
+	);
+
+	const voltageDropFromGeneratorToTwoPort = multiplyComplexNums(
+		generator_current.real,
+		generator_current.imag,
+		tl_and_generator_equivalent.z_real,
+		tl_and_generator_equivalent.z_imag,
+	);
+
+	const voltage_pre_two_port = {
+		real: tl_and_generator_equivalent.voltage_real - voltageDropFromGeneratorToTwoPort.real,
+		imag: tl_and_generator_equivalent.voltage_imag - voltageDropFromGeneratorToTwoPort.imag		
+	};
+
+	const z_pre_two_port_alternative_calculation = divideComplexNums(
+		voltage_pre_two_port.real,
+		voltage_pre_two_port.imag,
+		generator_current.real,
+		generator_current.imag
+	);
+
+	return {
+		voltage_pre_two_port,
+		generator_current,
+		z_pre_two_port: z_pre_two_port_alternative_calculation
+	}
+}
+
+globalThis.find_S_params = (
+	generator,
+	two_port_z_parallel_pre_series, 
+	two_port_z_series, 
+	two_port_z_parallel_post_series,	
+	z0_magnitude, 
+	beta
+) => {
+	const zero_reflection_at_load = {
+		real: 0,
+		imag: 0,
+		magnitude: 0,
+		theta: 0
+	}
+	const thevenin_equivalent_terminated_load = find_thevenin_equivalent_circuit(generator, zero_reflection_at_load, z0_magnitude, beta);
+
+	const tl1_and_generator_equivalent = thevenin_equivalent_terminated_load.tl1_and_generator_equivalent;
+	const tl2_and_load_equivalent = thevenin_equivalent_terminated_load.tl2_and_load_equivalent;
+
+	const z_pre_two_port = get_parallel_series_parallel_equivalent_z(
+		two_port_z_parallel_pre_series,
+		two_port_z_series,
+		two_port_z_parallel_post_series,
+		tl2_and_load_equivalent
+	);	
+
+	const pre_two_port_impedance_current_voltage = find_pre_two_port_impedance_current_voltage(tl1_and_generator_equivalent, z_pre_two_port);
+	const generator_current = pre_two_port_impedance_current_voltage.generator_current;
+	const voltage_on_left_of_two_port = pre_two_port_impedance_current_voltage.voltage_pre_two_port;
+	const z_pre_two_port_alternative_calculation = pre_two_port_impedance_current_voltage.z_pre_two_port;
+
+	const S11 = getTLRefelectionCoefficient(z_pre_two_port.real, z_pre_two_port.imag, z0_magnitude, 0).reflection;
+	const S11_indirect = getTLRefelectionCoefficient(z_pre_two_port_alternative_calculation.real, z_pre_two_port_alternative_calculation.imag, z0_magnitude, 0).reflection;
+	console.log('S11', S11);
+
+	console.log('S11 values should match across the two computations');
+	if (Math.abs(S11.real - S11_indirect.real) < 1e-4 && Math.abs(S11.imag - S11_indirect.imag) < 1e-4) {
+		console.log('confirmed');
+	}
+
+	const voltage_across_load = get_voltage_across_load_with_parallel_series_parallel_two_port_z(
+		generator_current,
+		voltage_on_left_of_two_port,
+		two_port_z_parallel_pre_series, 
+		two_port_z_series, 
+		two_port_z_parallel_post_series,
+		z0_magnitude
+	);
+
+	const tl1_thevenin_z_polar = convert_complex_num_from_cartesian_to_polar(
+		tl1_and_generator_equivalent.z_real,
+		tl1_and_generator_equivalent.z_imag
+	);
+
+	const sqrt_tl1_thevenin_z = convert_complex_num_from_polar_to_cartesian(
+		Math.sqrt(tl1_thevenin_z_polar.magnitude),
+		tl1_thevenin_z_polar.theta / 2	
+	);
+
+	let S21 = multiplyComplexNums(
+		2 * sqrt_tl1_thevenin_z.real / Math.sqrt(z0_magnitude),
+		2 * sqrt_tl1_thevenin_z.imag / Math.sqrt(z0_magnitude),
+		voltage_across_load.real,
+		voltage_across_load.imag
+	);
+
+	S21 = divideComplexNums(
+		S21.real,
+		S21.imag,
+		tl1_and_generator_equivalent.voltage_real,
+		tl1_and_generator_equivalent.voltage_imag
+	);
+
+	console.log('S21', S21);
+
+	const z_pre_two_port_from_tl2_side = get_parallel_series_parallel_equivalent_z(
+		two_port_z_parallel_post_series,
+		two_port_z_series,
+		two_port_z_parallel_pre_series,
+		{
+			z_real: z0_magnitude,
+			z_imag: 0
+		}
+	);
+
+	const S22 = getTLRefelectionCoefficient(z_pre_two_port_from_tl2_side.real, z_pre_two_port_from_tl2_side.imag, z0_magnitude, 0).reflection;
+	console.log('S22', S22);
+
+	// load now conceptually on the tl1 side
+	const conceptual_generator_at_load = {
+		generator_distance: generator.generator_distance,
+		generator_tl1_length: generator.generator_tl2_length,
+		generator_tl2_length: generator.generator_tl1_length,
+		generator_voltage_real: 1, 
+		generator_voltage_imag: 0, 
+		generator_impedance_real: z0_magnitude, 
+		generator_impedance_imag: 0
+	}
+
+	// zero_reflection_at_load is now at the original generator's side
+	const thevenin_equivalent_with_generator_on_tl2_side = find_thevenin_equivalent_circuit(conceptual_generator_at_load, zero_reflection_at_load, z0_magnitude, beta);
+	const tl2_and_generator_equivalent = thevenin_equivalent_with_generator_on_tl2_side.tl1_and_generator_equivalent;	
+
+	const pre_two_port_impedance_current_voltage_tl2_side = find_pre_two_port_impedance_current_voltage(tl2_and_generator_equivalent, z_pre_two_port_from_tl2_side);
+	const generator_current_tl2_side = pre_two_port_impedance_current_voltage_tl2_side.generator_current;
+	const voltage_on_right_of_two_port = pre_two_port_impedance_current_voltage_tl2_side.voltage_pre_two_port;
+	const z_pre_two_port_alternative_calculation_from_tl2_side = pre_two_port_impedance_current_voltage_tl2_side.z_pre_two_port;
+
+	const voltage_across_load_on_tl1_side = get_voltage_across_load_with_parallel_series_parallel_two_port_z(
+		generator_current_tl2_side,
+		voltage_on_right_of_two_port,
+		two_port_z_parallel_post_series, 
+		two_port_z_series, 
+		two_port_z_parallel_pre_series,
+		z0_magnitude
+	);
+
+	const S12 = divideComplexNums(
+		2 * voltage_across_load_on_tl1_side.real,
+		2 * voltage_across_load_on_tl1_side.imag,
+		tl2_and_generator_equivalent.voltage_real,
+		tl2_and_generator_equivalent.voltage_imag
+	);
+	console.log('S12', S12);
+}
+
 globalThis.frequency = Math.pow(10, 8);
 globalThis.load_impedance = {
-	real: 25,
-	imag: -50
+	real: 75,
+	imag: -25
 }
 globalThis.generator = {
-	generator_distance: 1, 
+	generator_distance: 1,
+	generator_tl1_length: 0.6,
+	generator_tl2_length: 0.4,
 	generator_voltage_real: 1, 
-	generator_voltage_imag: 0.5, 
+	generator_voltage_imag: 0, 
 	generator_impedance_real: 50, 
 	generator_impedance_imag: 0
+}
+globalThis.two_port_z_parallel_pre_series = {
+	real: 100,
+	imag: -50
+}
+globalThis.two_port_z_series = {
+	real: 100,
+	imag: 0
+}
+globalThis.two_port_z_parallel_post_series = {
+	real: 50,
+	imag: 100
 }
 
 // getTLWaveParams(1, 167e-9, 0, 172e-12, Math.pow(10, 9));
@@ -488,3 +840,14 @@ match_impedance_by_quarter_wave_length_plus_reactance_cancelling_segment_lossles
 match_impedance_by_series_reactive_element_lossless_TL(reflectionParams.reflection, tlWaveParams.z0_magnitude, tlWaveParams.beta, frequency);
 
 match_impedance_by_shunt_reactive_element_lossless_TL(reflectionParams.reflection, tlWaveParams.z0_magnitude, tlWaveParams.beta, frequency);
+
+const thevenin_equivalent = find_thevenin_equivalent_circuit(generator, reflectionParams.reflection, tlWaveParams.z0_magnitude, tlWaveParams.beta);
+
+find_S_params(
+	generator,
+	two_port_z_parallel_pre_series, 
+	two_port_z_series, 
+	two_port_z_parallel_post_series,
+	tlWaveParams.z0_magnitude, 
+	tlWaveParams.beta
+);
