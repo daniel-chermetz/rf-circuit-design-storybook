@@ -4,24 +4,9 @@ globalThis.multiplyComplexNums = (n1_real, n1_imag, n2_real, n2_imag) => {
 		imag: n1_real * n2_imag + n1_imag * n2_real
 	}
 }
-
-globalThis.convert_complex_num_from_cartesian_to_polar = (real, imag) => {
-	const magnitude = Math.sqrt(real * real + imag * imag);
-	const theta = Math.atan2(imag, real);
-
-	return {
-		magnitude,
-		theta
-	}
+globalThis.multiplyComplexNums_v2 = (n1, n2) => {
+	return multiplyComplexNums(n1.real, n1.imag, n2.real, n2.imag);
 }
-
-globalThis.convert_complex_num_from_polar_to_cartesian = (magnitude, theta) => {
-	return {
-		real: magnitude * Math.cos(theta),
-		imag: magnitude * Math.sin(theta)
-	}
-}
-
 globalThis.divideComplexNums = (n1_real, n1_imag, n2_real, n2_imag) => {
 	const n1_theta = Math.atan2(n1_imag, n1_real);
 	const n2_theta = Math.atan2(n2_imag, n2_real);
@@ -40,6 +25,33 @@ globalThis.divideComplexNums = (n1_real, n1_imag, n2_real, n2_imag) => {
 		theta: result_theta,
 		real: result_real,
 		imag: result_imag
+	}
+}
+globalThis.addComplexNums = (n1, n2) => {
+	return {
+		real: n1.real + n2.real,
+		imag: n1.imag + n2.imag
+	}
+}
+globalThis.subtractComplexNums = (n1, n2) => {
+	return {
+		real: n1.real - n2.real,
+		imag: n1.imag - n2.imag
+	}
+}
+globalThis.convert_complex_num_from_cartesian_to_polar = (real, imag) => {
+	const magnitude = Math.sqrt(real * real + imag * imag);
+	const theta = Math.atan2(imag, real);
+
+	return {
+		magnitude,
+		theta
+	}
+}
+globalThis.convert_complex_num_from_polar_to_cartesian = (magnitude, theta) => {
+	return {
+		real: magnitude * Math.cos(theta),
+		imag: magnitude * Math.sin(theta)
 	}
 }
 
@@ -778,6 +790,8 @@ globalThis.find_S_params = (
 		tl2_and_generator_equivalent.voltage_imag
 	);
 	console.log('S12', S12);
+
+	return { S11, S12, S21, S22 }
 }
 
 globalThis.frequency = Math.pow(10, 8);
@@ -843,11 +857,140 @@ match_impedance_by_shunt_reactive_element_lossless_TL(reflectionParams.reflectio
 
 const thevenin_equivalent = find_thevenin_equivalent_circuit(generator, reflectionParams.reflection, tlWaveParams.z0_magnitude, tlWaveParams.beta);
 
-find_S_params(
+const S_params = find_S_params(
 	generator,
 	two_port_z_parallel_pre_series, 
 	two_port_z_series, 
 	two_port_z_parallel_post_series,
 	tlWaveParams.z0_magnitude, 
+	tlWaveParams.beta
+);
+
+/*
+ 	-- New section --
+ 	Now that it is known how to obtain S params from a two-port network between a source and a load,
+ 	any given set of S params can be used without it feeling like hand waving the details.
+*/ 	
+
+const S11 = {
+    real: 0.225000,
+    imag: -0.389711
+};
+const S21 = {
+    real: 0.855050,
+    imag: 2.349232
+};
+const S12 = {
+    real: 0.046985,
+    imag: 0.017101
+};
+const S22 = {
+    real: 0.303109,
+    imag: -0.175000
+};
+
+globalThis.findSignalFlowNodeValues = (source_voltage, source_impedance, load, S11, S21, S12, S22, tl1_length, tl2_length, z0_magnitude, beta) => {	
+	const relfection_load = getTLRefelectionCoefficient(load.real, load.imag, z0_magnitude, 0).reflection;
+	relfection_load.theta -= (2 * beta * tl2_length);
+	const reflection_load_phase_shifted = convert_complex_num_from_polar_to_cartesian(relfection_load.magnitude, relfection_load.theta);
+	
+	let numerator = multiplyComplexNums_v2(multiplyComplexNums_v2(S12, S21), reflection_load_phase_shifted);
+	let denominator = subtractComplexNums(
+		{
+			real: 1,
+			imag: 0
+		},
+		multiplyComplexNums_v2(S22, reflection_load_phase_shifted)
+	);
+
+	const gamma_in_b1_to_a1_ratio = addComplexNums(
+		S11,
+		divideComplexNums(
+			numerator.real,
+			numerator.imag,
+			denominator.real,
+			denominator.imag
+		)
+	);
+	console.log('gamma_in_b1_to_a1_ratio', gamma_in_b1_to_a1_ratio);
+
+	// gamma_out = b2 / a2 (source zeroed, but Zs in place)
+	
+	// b1 = S12 * a2 + S11 * a1
+	// b1 * gamma_s = a1
+	// b1 = a1 / gamma_s
+	
+	// a1 / gamma_s = S12 * a2 + S11 * a1
+	// (1/gamma_s - S11) * a1 = S12 * a2
+	// a1 = S12 * a2 / (1/gamma_s - S11)
+
+
+	// b2 = S21 * a1 + S22 * a2
+	// b2 = S21 * S12 * a2 / (1/gamma_s - S11) + S22 * a2
+
+	// b2 / a2 = S21 * S12 / (1/gamma_s - S11) + S22
+	// b2 / a2 = S21 * S12 * gamma_s / (1 - S11 * gammas_) + S22 // last line * gamma_s
+
+	const relfection_generator_impedance = getTLRefelectionCoefficient(source_impedance.real, source_impedance.imag, z0_magnitude, 0).reflection;
+	relfection_generator_impedance.theta -= (2 * beta * tl1_length);
+	const relfection_generator_impedance_phase_shifted = convert_complex_num_from_polar_to_cartesian(relfection_generator_impedance.magnitude, relfection_generator_impedance.theta);
+
+	numerator = multiplyComplexNums_v2(
+		multiplyComplexNums_v2(S21, S12), 
+		relfection_generator_impedance_phase_shifted
+	);
+	denominator = subtractComplexNums(
+		{real: 1, imag: 0}, 
+		multiplyComplexNums_v2(S11, relfection_generator_impedance_phase_shifted)
+	);
+	const gamma_out_b2_to_a2_ratio = addComplexNums(
+		divideComplexNums(
+			numerator.real,
+			numerator.imag,
+			denominator.real,
+			denominator.imag
+		),
+		S22
+	);
+	console.log('gamma_out_b2_to_a2_ratio', gamma_out_b2_to_a2_ratio);
+
+	// what the source sends in - without consideration as to what comes back (which is considered by the other terms)
+	const bs = divideComplexNums(
+		source_voltage.real * Math.sqrt(z0_magnitude),
+		source_voltage.imag * Math.sqrt(z0_magnitude),
+		source_impedance.real + z0_magnitude,
+		source_impedance.imag
+	);
+	const bs_at_tl1_length = convert_complex_num_from_polar_to_cartesian(
+		bs.magnitude,
+		bs.theta - tl1_length * beta
+	);
+
+	// a1 = bs + gamma_s * b1
+	// b1 / a1 = gamma_in
+	// a1 = bs + gamma_s * a1 * gamma_in
+	// (1 - gamma_s * gamma_in) * a1 = bs
+	
+	denominator = multiplyComplexNums_v2(relfection_generator_impedance_phase_shifted, gamma_in_b1_to_a1_ratio);
+	const a1 = divideComplexNums(
+		bs_at_tl1_length.real,
+		bs_at_tl1_length.imag,
+		1 - denominator.real,
+		-denominator.imag
+	);
+	console.log('a1', a1);
+}
+
+findSignalFlowNodeValues(
+	{real: 1, imag: 0.5},
+	{real: 50, imag: 0},
+	{real: 50, imag: 0}, 
+	S11,
+	S21,
+	S12,
+	S22,
+	0.6,
+	0.4,
+	tlWaveParams.z0_magnitude,
 	tlWaveParams.beta
 );
