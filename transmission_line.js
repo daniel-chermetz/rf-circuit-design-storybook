@@ -890,6 +890,21 @@ const S22 = {
 };
 
 globalThis.findSignalFlowNodeValues = (source_voltage, source_impedance, load, S11, S21, S12, S22, tl1_length, tl2_length, z0_magnitude, beta) => {	
+	// gamma_in = b1 / a1 (load matched with TL2)
+	
+	// b2 = S21 * a1 + S22 * a2
+	// b2 * gamma_l = a2
+	// b2 = a2 / gamma_l
+	
+	// a2 / gamma_l = S21 * a1 + S22 * a2
+	// a2 * (1/gamma_l - S22) = S21 * a1
+	// a2 = S21 * a1 / (1/gamma_l - S22)
+	// a2 = S21 * a1 * gamma_l / (1 - S22 * gamma_l)
+
+	// b1 = S11 * a1 + S12 * a2
+	// b1 = S11 * a1 + S12 * S21 * a1 * gamma_l / (1 - S22 * gamma_l)
+	// b1 / a1 = S11 + S12 * S21 * gamma_l / (1 - S22 * gamma_l)
+
 	const relfection_load = getTLRefelectionCoefficient(load.real, load.imag, z0_magnitude, 0).reflection;
 	relfection_load.theta -= (2 * beta * tl2_length);
 	const reflection_load_phase_shifted = convert_complex_num_from_polar_to_cartesian(relfection_load.magnitude, relfection_load.theta);
@@ -979,18 +994,65 @@ globalThis.findSignalFlowNodeValues = (source_voltage, source_impedance, load, S
 		-denominator.imag
 	);
 	console.log('a1', a1);
+
+	// b1 = gamma_in_b1_to_a1_ratio * a1
+	const b1 = multiplyComplexNums_v2(gamma_in_b1_to_a1_ratio, a1);
+	console.log('b1', b1);
+
+	/*
+		Correct but not ideal:
+		a2 = b2 * gamma_l
+		a2 * S12 = b1 - a1 * S11
+		b2 * gamma_l * S12 = b1 - a1 * S11
+		b2 = (b1 - a1 * S11) / (gamma_l * S12)
+	*/
+	/*
+		b2 = a1 * S21 + a2 * S22
+		a2 = gamma_l * b2
+
+		b2 = a1 * S21 + gamma_l * b2 * S22
+		(1 - gamma_l * S22) * b2 = a1 * S21
+		b2 = a1 * S21 / (1 - gamma_l * S22)
+	*/
+
+	numerator = multiplyComplexNums_v2(S21, a1);
+	denominator = subtractComplexNums(
+		{
+			real: 1,
+			imag: 0
+		},
+		multiplyComplexNums_v2(reflection_load_phase_shifted, S22)
+	)
+	const b2 = divideComplexNums(
+		numerator.real,
+		numerator.imag,
+		denominator.real,
+		denominator.imag
+	);
+	console.log('b2', b2);
+
+	// a2 = b2 * gamma_l
+	const a2 = multiplyComplexNums_v2(b2, reflection_load_phase_shifted);
+	console.log('a2', a2);
+
+	return {
+		a1, a2, b1, b2, 
+		bs_at_tl1_length, 
+		relfection_generator_impedance_phase_shifted, reflection_load_phase_shifted, 
+		gamma_in_b1_to_a1_ratio, gamma_out_b2_to_a2_ratio
+	};
 }
 
 findSignalFlowNodeValues(
-	{real: 1, imag: 0.5},
-	{real: 50, imag: 0},
-	{real: 50, imag: 0}, 
+	{real: 1, imag: 0},
+	{real: 50, imag: 25},
+	{real: 30, imag: 20}, 
 	S11,
 	S21,
 	S12,
 	S22,
-	0.6,
-	0.4,
+	0.5,
+	0.5,
 	tlWaveParams.z0_magnitude,
 	tlWaveParams.beta
 );
