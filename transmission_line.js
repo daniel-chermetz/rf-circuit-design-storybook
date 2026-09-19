@@ -1087,6 +1087,45 @@ globalThis.get_s_params_from_simulated_circuit = (generator_side_sim_vals, load_
 	}
 }
 
+globalThis.convert_signal_flow_node_vals_to_voltage_current_vals = (signalFlowVals, z0_magnitude) => {
+	const convert_voltage = (signal_node) => {
+		const voltage = {
+			real: signal_node.real * Math.sqrt(z0_magnitude),
+			imag: signal_node.imag * Math.sqrt(z0_magnitude),
+		}
+		const voltage_polar = convert_complex_num_from_cartesian_to_polar(voltage.real, voltage.imag);
+		voltage.magnitude = voltage_polar.magnitude;
+		voltage.theta = voltage_polar.theta;
+
+		return voltage;
+	}
+
+	const voltages =  {
+		a1_voltage: convert_voltage(signalFlowVals.a1),
+		b1_voltage: convert_voltage(signalFlowVals.b1),
+		a2_voltage: convert_voltage(signalFlowVals.a2),
+		b2_voltage: convert_voltage(signalFlowVals.b2)
+	}
+
+	voltages.generator_side_total = {
+		real: voltages.a1_voltage.real + voltages.b1_voltage.real,
+		imag: voltages.a1_voltage.imag + voltages.b1_voltage.imag,
+	}
+	const voltage_generator_side_total_polar = convert_complex_num_from_cartesian_to_polar(voltages.generator_side_total.real, voltages.generator_side_total.imag);
+	voltages.generator_side_total.magnitude = voltage_generator_side_total_polar.magnitude;
+	voltages.generator_side_total.theta = voltage_generator_side_total_polar.theta;
+
+	voltages.load_side_total = {
+		real: voltages.a2_voltage.real + voltages.b2_voltage.real,
+		imag: voltages.a2_voltage.imag + voltages.b2_voltage.imag,
+	}
+	const voltage_load_side_total = convert_complex_num_from_cartesian_to_polar(voltages.load_side_total.real, voltages.load_side_total.imag);
+	voltages.load_side_total.magnitude = voltage_load_side_total.magnitude;
+	voltages.load_side_total.theta = voltage_load_side_total.theta;	
+
+	return voltages;
+}
+
 globalThis.frequency = Math.pow(10, 8);
 globalThis.load_impedance = {
 	real: 75,
@@ -1257,3 +1296,6 @@ signalFlowVals = findSignalFlowNodeValues(
 	tlWaveParams.beta
 );
 console.log(signalFlowVals);
+
+const circuit_voltages = convert_signal_flow_node_vals_to_voltage_current_vals(signalFlowVals, tlWaveParams.z0_magnitude);
+console.log(circuit_voltages);
