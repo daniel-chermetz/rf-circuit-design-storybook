@@ -27,6 +27,9 @@ globalThis.divideComplexNums = (n1_real, n1_imag, n2_real, n2_imag) => {
 		imag: result_imag
 	}
 }
+globalThis.divideComplexNums_v2 = (n1, n2) => {
+	return divideComplexNums(n1.real, n1.imag, n2.real, n2.imag);
+}
 globalThis.addComplexNums = (n1, n2) => {
 	return {
 		real: n1.real + n2.real,
@@ -794,102 +797,19 @@ globalThis.find_S_params = (
 	return { S11, S12, S21, S22 }
 }
 
-globalThis.frequency = Math.pow(10, 8);
-globalThis.load_impedance = {
-	real: 75,
-	imag: -25
-}
-globalThis.generator = {
-	generator_distance: 1,
-	generator_tl1_length: 0.6,
-	generator_tl2_length: 0.4,
-	generator_voltage_real: 1, 
-	generator_voltage_imag: 0, 
-	generator_impedance_real: 50, 
-	generator_impedance_imag: 0
-}
-globalThis.two_port_z_parallel_pre_series = {
-	real: 100,
-	imag: -50
-}
-globalThis.two_port_z_series = {
-	real: 100,
-	imag: 0
-}
-globalThis.two_port_z_parallel_post_series = {
-	real: 50,
-	imag: 100
-}
+globalThis.findSignalFlowNodeValues = (generator, load, S11, S21, S12, S22, z0_magnitude, beta) => {	
+	const source_voltage = {
+		real: generator.generator_voltage_real,
+		imag: generator.generator_voltage_imag
+	}
+	const source_impedance = {
+		real: generator.generator_impedance_real,
+		imag: generator.generator_impedance_imag
+	}
 
-// getTLWaveParams(1, 167e-9, 0, 172e-12, Math.pow(10, 9));
-const tlWaveParams = getTLWaveParams(0 /* R */, 250e-9 /* L */, 0 /* G */, 100e-12 /* C */, frequency);
-const reflectionParams = getTLRefelectionCoefficient(load_impedance.real, load_impedance.imag, tlWaveParams.z0_magnitude, tlWaveParams.z0_theta);
-const standingWaveRatio = getStandingWaveRatio_lossless_TL(reflectionParams.reflection);
-const derived_impedance_at_load = getImpedanceAtDistanceFromLoad_lossless_TL(0, reflectionParams.reflection, tlWaveParams.z0_magnitude, tlWaveParams.beta);
-if (Math.abs(derived_impedance_at_load.real - load_impedance.real) < 1e-4 && Math.abs(derived_impedance_at_load.imag - load_impedance.imag) < 1e-4) {
-	console.log('derived impedance at load matched set load impedance value');
-}
-const v0plus = get_generator_related_values_lossless_TL(
-	generator.generator_distance,
-	generator.generator_voltage_real,
-	generator.generator_voltage_imag,
-	generator.generator_impedance_real,
-	generator.generator_impedance_imag,
-	reflectionParams.reflection, 
-	tlWaveParams.z0_magnitude, 
-	tlWaveParams.beta
-);
-const constant_swr_circle = get_swr_circle_lossless_TL(reflectionParams.reflection, v0plus, standingWaveRatio, tlWaveParams.z0_magnitude, tlWaveParams.beta);
+	const tl1_length = generator.generator_tl1_length;
+	const tl2_length = generator.generator_tl2_length;
 
-match_real_impedance_by_quarter_wave_length_lossless_TL(tlWaveParams.z0_magnitude /* same as z0_real */, 800e-9 /* L */, frequency);
-
-match_impedance_by_quarter_wave_length_plus_reactance_cancelling_segment_lossless_TL(
-	reflectionParams.reflection, 
-	tlWaveParams.z0_magnitude /* same as z0_real */, 
-	tlWaveParams.beta,
-	800e-9 /* L */,
-	frequency
-);
-
-match_impedance_by_series_reactive_element_lossless_TL(reflectionParams.reflection, tlWaveParams.z0_magnitude, tlWaveParams.beta, frequency);
-
-match_impedance_by_shunt_reactive_element_lossless_TL(reflectionParams.reflection, tlWaveParams.z0_magnitude, tlWaveParams.beta, frequency);
-
-const thevenin_equivalent = find_thevenin_equivalent_circuit(generator, reflectionParams.reflection, tlWaveParams.z0_magnitude, tlWaveParams.beta);
-
-const S_params = find_S_params(
-	generator,
-	two_port_z_parallel_pre_series, 
-	two_port_z_series, 
-	two_port_z_parallel_post_series,
-	tlWaveParams.z0_magnitude, 
-	tlWaveParams.beta
-);
-
-/*
- 	-- New section --
- 	Now that it is known how to obtain S params from a two-port network between a source and a load,
- 	any given set of S params can be used without it feeling like hand waving the details.
-*/ 	
-
-const S11 = {
-    real: 0.225000,
-    imag: -0.389711
-};
-const S21 = {
-    real: 0.855050,
-    imag: 2.349232
-};
-const S12 = {
-    real: 0.046985,
-    imag: 0.017101
-};
-const S22 = {
-    real: 0.303109,
-    imag: -0.175000
-};
-
-globalThis.findSignalFlowNodeValues = (source_voltage, source_impedance, load, S11, S21, S12, S22, tl1_length, tl2_length, z0_magnitude, beta) => {	
 	// gamma_in = b1 / a1 (load matched with TL2)
 	
 	// b2 = S21 * a1 + S22 * a2
@@ -906,8 +826,11 @@ globalThis.findSignalFlowNodeValues = (source_voltage, source_impedance, load, S
 	// b1 / a1 = S11 + S12 * S21 * gamma_l / (1 - S22 * gamma_l)
 
 	const relfection_load = getTLRefelectionCoefficient(load.real, load.imag, z0_magnitude, 0).reflection;
-	relfection_load.theta -= (2 * beta * tl2_length);
-	const reflection_load_phase_shifted = convert_complex_num_from_polar_to_cartesian(relfection_load.magnitude, relfection_load.theta);
+	let reflection_load_phase_shifted = {
+		magnitude: relfection_load.magnitude,
+		theta: relfection_load.theta - (2 * beta * tl2_length)
+	}
+	reflection_load_phase_shifted = convert_complex_num_from_polar_to_cartesian(reflection_load_phase_shifted.magnitude, reflection_load_phase_shifted.theta);
 	
 	let numerator = multiplyComplexNums_v2(multiplyComplexNums_v2(S12, S21), reflection_load_phase_shifted);
 	let denominator = subtractComplexNums(
@@ -1037,22 +960,300 @@ globalThis.findSignalFlowNodeValues = (source_voltage, source_impedance, load, S
 
 	return {
 		a1, a2, b1, b2, 
-		bs_at_tl1_length, 
+		bs, bs_at_tl1_length, 
 		relfection_generator_impedance_phase_shifted, reflection_load_phase_shifted, 
 		gamma_in_b1_to_a1_ratio, gamma_out_b2_to_a2_ratio
 	};
 }
 
-findSignalFlowNodeValues(
-	{real: 1, imag: 0},
-	{real: 50, imag: 25},
-	{real: 30, imag: 20}, 
+globalThis.getRLCValsForImpedance = (impedance, frequency) => {
+	const resistor = impedance.real;
+	let capacitor = 0;
+	let inductor = 0;
+	if (Math.abs(impedance.imag) > 1e-4) {
+		if (impedance.imag > 0) {
+			inductor = impedance.imag / (2 * Math.PI * frequency);
+		}
+		if (impedance.imag < 0) {
+			capacitor = 1 / (-2 * Math.PI * frequency * impedance.imag)
+		}
+	}
+	return {
+		resistor,
+		capacitor,
+		inductor
+	}
+}
+
+globalThis.get_generator_and_load_thevenin_circuit_components = (generator, load, frequency, z0_magnitude, beta) => {
+	const relfection_load = getTLRefelectionCoefficient(load.real, load.imag, z0_magnitude, 0).reflection;
+	const thevenin_equivalent = find_thevenin_equivalent_circuit(generator, relfection_load, z0_magnitude, beta);
+	
+	const tl1_and_generator_equivalent = thevenin_equivalent.tl1_and_generator_equivalent;
+	const tl2_and_load_equivalent = thevenin_equivalent.tl2_and_load_equivalent;
+	console.log('tl2_and_load_equivalent', tl2_and_load_equivalent);
+
+	const source_RLC = getRLCValsForImpedance({
+		real: tl1_and_generator_equivalent.z_real,
+		imag: tl1_and_generator_equivalent.z_imag,
+	}, frequency);
+	const load_RLC = getRLCValsForImpedance({
+		real: tl2_and_load_equivalent.z_real,
+		imag: tl2_and_load_equivalent.z_imag,		
+	}, frequency);
+
+	console.log('source_RLC', source_RLC);
+	console.log('load_RLC', load_RLC);
+
+	const source_voltage = {
+		real: tl1_and_generator_equivalent.voltage_real,
+		imag: tl1_and_generator_equivalent.voltage_imag,
+		...convert_complex_num_from_cartesian_to_polar(tl1_and_generator_equivalent.voltage_real, tl1_and_generator_equivalent.voltage_imag)
+	}
+	source_voltage.theta_degrees = source_voltage.theta * 180 / Math.PI;
+	console.log(source_voltage);
+}
+
+globalThis.get_s_params_from_simulated_circuit = (generator_side_sim_vals, load_side_sim_vals, /*generator, load_impedance, frequency,*/ z0_magnitude/*, beta*/, reverse_setup) => {
+	// important: variable names and comments are geared towards the non-reversed case, but the reverse case is simply a mirror image of the other	
+	
+	const generator_side_impedance_at_distance_l1 = divideComplexNums_v2(generator_side_sim_vals.voltage, generator_side_sim_vals.current);
+	
+	let S11, S22;
+	const reflection_at_port_generator_side = divideComplexNums(
+		generator_side_impedance_at_distance_l1.real - z0_magnitude,
+		generator_side_impedance_at_distance_l1.imag,
+		generator_side_impedance_at_distance_l1.real + z0_magnitude,
+		generator_side_impedance_at_distance_l1.imag,		
+	);
+	if (!reverse_setup) {
+		S11 = reflection_at_port_generator_side;
+		console.log('sim based S11', S11);
+	} else {
+		S22 = reflection_at_port_generator_side;
+		console.log('sim based S22', S22);
+	}
+
+	// (1 + gamma) * a1 = a1 + b1 = generator_side_sim_vals.voltage / sqrt(z0)
+	const normalized_generator_side_voltage = {
+		real: generator_side_sim_vals.voltage.real / Math.sqrt(z0_magnitude),
+		imag: generator_side_sim_vals.voltage.imag / Math.sqrt(z0_magnitude),		
+	}
+	const a1 = divideComplexNums(
+		normalized_generator_side_voltage.real,
+		normalized_generator_side_voltage.imag,
+		reflection_at_port_generator_side.real + 1,
+		reflection_at_port_generator_side.imag
+	);
+
+	const load_side_impedance_at_distance_l2 = divideComplexNums_v2(
+		multiplyComplexNums_v2(
+			load_side_sim_vals.voltage,
+			{real: -1, imag: 0}
+		),
+		load_side_sim_vals.current
+	);
+	const load_side_reflection = divideComplexNums(
+		load_side_impedance_at_distance_l2.real - z0_magnitude,
+		load_side_impedance_at_distance_l2.imag,
+		load_side_impedance_at_distance_l2.real + z0_magnitude,
+		load_side_impedance_at_distance_l2.imag,		
+	);
+
+	// (1 + gamma) * b2 = b2 + a2 = load_side_sim_vals.voltage / sqrt(z0)
+	const normalized_load_side_voltage = {
+		real: load_side_sim_vals.voltage.real / Math.sqrt(z0_magnitude),
+		imag: load_side_sim_vals.voltage.imag / Math.sqrt(z0_magnitude),		
+	}
+	const b2 = divideComplexNums(
+		normalized_load_side_voltage.real,
+		normalized_load_side_voltage.imag,
+		load_side_reflection.real + 1,
+		load_side_reflection.imag
+	);
+
+	let S21, S12;
+	const b2_to_a1_ratio = divideComplexNums_v2(b2, a1);
+	if (!reverse_setup) {
+		S21 = b2_to_a1_ratio;
+		console.log('sim based S21', S21);
+
+		return { S11, S21 };
+	} else {
+		S12 = b2_to_a1_ratio;
+		console.log('sim based S12', S12);
+
+		return { S22, S12 };
+	}
+}
+
+globalThis.frequency = Math.pow(10, 8);
+globalThis.load_impedance = {
+	real: 75,
+	imag: -25
+}
+globalThis.generator = {
+	generator_distance: 1,
+	generator_tl1_length: 0.6,
+	generator_tl2_length: 0.4,
+	generator_voltage_real: 1, 
+	generator_voltage_imag: 0, 
+	generator_impedance_real: 50, 
+	generator_impedance_imag: 0
+}
+globalThis.two_port_z_parallel_pre_series = {
+	real: 100,
+	imag: -50
+}
+globalThis.two_port_z_series = {
+	real: 100,
+	imag: 0
+}
+globalThis.two_port_z_parallel_post_series = {
+	real: 50,
+	imag: 100
+}
+
+// getTLWaveParams(1, 167e-9, 0, 172e-12, Math.pow(10, 9));
+const tlWaveParams = getTLWaveParams(0 /* R */, 250e-9 /* L */, 0 /* G */, 100e-12 /* C */, frequency);
+const reflectionParams = getTLRefelectionCoefficient(load_impedance.real, load_impedance.imag, tlWaveParams.z0_magnitude, tlWaveParams.z0_theta);
+const standingWaveRatio = getStandingWaveRatio_lossless_TL(reflectionParams.reflection);
+const derived_impedance_at_load = getImpedanceAtDistanceFromLoad_lossless_TL(0, reflectionParams.reflection, tlWaveParams.z0_magnitude, tlWaveParams.beta);
+if (Math.abs(derived_impedance_at_load.real - load_impedance.real) < 1e-4 && Math.abs(derived_impedance_at_load.imag - load_impedance.imag) < 1e-4) {
+	console.log('derived impedance at load matched set load impedance value');
+}
+const v0plus = get_generator_related_values_lossless_TL(
+	generator.generator_distance,
+	generator.generator_voltage_real,
+	generator.generator_voltage_imag,
+	generator.generator_impedance_real,
+	generator.generator_impedance_imag,
+	reflectionParams.reflection, 
+	tlWaveParams.z0_magnitude, 
+	tlWaveParams.beta
+);
+const constant_swr_circle = get_swr_circle_lossless_TL(reflectionParams.reflection, v0plus, standingWaveRatio, tlWaveParams.z0_magnitude, tlWaveParams.beta);
+
+match_real_impedance_by_quarter_wave_length_lossless_TL(tlWaveParams.z0_magnitude /* same as z0_real */, 800e-9 /* L */, frequency);
+
+match_impedance_by_quarter_wave_length_plus_reactance_cancelling_segment_lossless_TL(
+	reflectionParams.reflection, 
+	tlWaveParams.z0_magnitude /* same as z0_real */, 
+	tlWaveParams.beta,
+	800e-9 /* L */,
+	frequency
+);
+
+match_impedance_by_series_reactive_element_lossless_TL(reflectionParams.reflection, tlWaveParams.z0_magnitude, tlWaveParams.beta, frequency);
+
+match_impedance_by_shunt_reactive_element_lossless_TL(reflectionParams.reflection, tlWaveParams.z0_magnitude, tlWaveParams.beta, frequency);
+
+const thevenin_equivalent = find_thevenin_equivalent_circuit(generator, reflectionParams.reflection, tlWaveParams.z0_magnitude, tlWaveParams.beta);
+
+const S_params = find_S_params(
+	generator,
+	two_port_z_parallel_pre_series, 
+	two_port_z_series, 
+	two_port_z_parallel_post_series,
+	tlWaveParams.z0_magnitude, 
+	tlWaveParams.beta
+);
+
+/*
+ 	-- New section --
+ 	Now that it is known how to obtain S params from a two-port network between a source and a load,
+ 	any given set of S params can be used without it feeling like hand waving the details.
+*/
+
+frequency = Math.pow(10, 8);
+generator = {
+	generator_distance: 1,
+	generator_tl1_length: 0.5,
+	generator_tl2_length: 0.5,
+	generator_voltage_real: 0.001, 
+	generator_voltage_imag: 0, 
+	generator_impedance_real: 50, 
+	generator_impedance_imag: 0
+}
+load_impedance = {
+	real: 50,
+	imag: 0
+}
+globalThis.S11 = {
+    real: 0.225000,
+    imag: -0.389711
+};
+globalThis.S21 = {
+    real: 0.855050,
+    imag: 2.349232
+};
+globalThis.S12 = {
+    real: 0.046985,
+    imag: 0.017101
+};
+globalThis.S22 = {
+    real: 0.303109,
+    imag: -0.175000
+};
+
+let signalFlowVals = findSignalFlowNodeValues(
+	generator,
+	load_impedance,
 	S11,
 	S21,
 	S12,
 	S22,
-	0.5,
-	0.5,
 	tlWaveParams.z0_magnitude,
 	tlWaveParams.beta
 );
+console.log(signalFlowVals);
+
+get_generator_and_load_thevenin_circuit_components(generator, load_impedance, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
+
+globalThis.V1 = { real: -2.4651624e-4, imag: -4.0180555e-4 };
+globalThis.I1 = { real:  4.9686111e-6, imag: -1.1948075e-5 };
+globalThis.generator_side_sim_vals = {
+	voltage: V1,
+	current: I1
+};
+
+globalThis.V2 = { real:  1.4592868e-3, imag:  4.6964979e-4 };
+globalThis.I2 = { real: -2.9146574e-5, imag: -9.4815455e-6 };
+globalThis.load_side_sim_vals = {
+	voltage: V2,
+	current: I2
+};
+
+const s_params_gen_side = get_s_params_from_simulated_circuit(generator_side_sim_vals, load_side_sim_vals, tlWaveParams.z0_magnitude);
+S11 = s_params_gen_side.S11;
+S21 = s_params_gen_side.S21;
+
+globalThis.V1 = { real: 1.1513372e-5, imag: -3.1736097e-5 };
+globalThis.I1 = { real: -2.3229474e-7, imag:  6.3408930e-7 };
+globalThis.load_side_sim_vals_reverse_setup = {
+	voltage: V1,
+	current: I1
+};
+
+globalThis.V2 = { real: -1.2938578e-4, imag: -8.0598078e-4 };
+globalThis.I2 = { real:  2.5992959e-6, imag: -3.8725388e-6 };
+globalThis.generator_side_sim_vals_reverse_setup = {
+	voltage: V2,
+	current: I2
+};
+
+const s_params_load_side = get_s_params_from_simulated_circuit(generator_side_sim_vals_reverse_setup, load_side_sim_vals_reverse_setup, tlWaveParams.z0_magnitude, true);
+S22 = s_params_load_side.S22;
+S12 = s_params_load_side.S12;
+
+signalFlowVals = findSignalFlowNodeValues(
+	generator,
+	load_impedance,
+	S11,
+	S21,
+	S12,
+	S22,
+	tlWaveParams.z0_magnitude,
+	tlWaveParams.beta
+);
+console.log(signalFlowVals);
