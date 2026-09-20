@@ -1130,14 +1130,19 @@ globalThis.match_gammaIn_at_generator = (signalFlowVals, generator, frequency, z
 	const tl1_length = generator.generator_tl1_length;
 
 	const gamma_in = signalFlowVals.gamma_in_b1_to_a1_ratio;
+	const gamma_in_polar = convert_complex_num_from_cartesian_to_polar(gamma_in.real, gamma_in.imag);
+	gamma_in.magnitude = gamma_in_polar.magnitude;
+	gamma_in.theta = gamma_in_polar.theta;
+
 	const conjugate_gamma_in = {
 		real: gamma_in.real,
 		imag: -gamma_in.imag
 	}
-	const conjugate_gamma_in_polar = convert_complex_num_from_cartesian_to_polar(conjugate_gamma_in.real, conjugate_gamma_in.imag);
+	const conjugate_gamma_in_polar = convert_complex_num_from_cartesian_to_polar(gamma_in.real, -gamma_in.imag);
 	conjugate_gamma_in.magnitude = conjugate_gamma_in_polar.magnitude;
 	conjugate_gamma_in.theta = conjugate_gamma_in_polar.theta;
 
+	// this function just converts reflection to impedance (distance of 0 for not rolling back the phase)
 	const conjugate_impedance_at_tl1_length = getImpedanceAtDistanceFromLoad_lossless_TL(
 		0, 
 		conjugate_gamma_in, 
@@ -1145,17 +1150,24 @@ globalThis.match_gammaIn_at_generator = (signalFlowVals, generator, frequency, z
 		beta
 	);
 
-	// what reflection from impedance at the generator would look like at distance generator_tl1_length
+	// gamma_in at the generator
 	const theta_shift = 2 * beta * tl1_length;
-	const reflection_at_generator_to_yield_conjugate_gammaIn_at_tl1_length = {
-		magnitude: conjugate_gamma_in.magnitude,
-		theta: conjugate_gamma_in.theta + theta_shift,
-		...convert_complex_num_from_polar_to_cartesian(conjugate_gamma_in.magnitude, conjugate_gamma_in.theta + theta_shift)
+	const gamma_in_at_generator = {
+		magnitude: gamma_in.magnitude,
+		theta: gamma_in.theta - theta_shift,
+		...convert_complex_num_from_polar_to_cartesian(gamma_in.magnitude, gamma_in.theta - theta_shift)
 	}
 
+	const conjugate_gamma_in_at_generator = {
+		real: gamma_in_at_generator.real,
+		imag: -gamma_in_at_generator.imag,
+		...convert_complex_num_from_cartesian_to_polar(gamma_in_at_generator.real, -gamma_in_at_generator.imag)
+	};
+
+	// this function just converts reflection to impedance (distance of 0 for not rolling back the phase)
 	const conjugate_impedance_at_generator = getImpedanceAtDistanceFromLoad_lossless_TL(
 		0, 
-		reflection_at_generator_to_yield_conjugate_gammaIn_at_tl1_length, 
+		conjugate_gamma_in_at_generator, 
 		z0_magnitude, 
 		beta
 	);
@@ -1167,18 +1179,21 @@ globalThis.match_gammaIn_at_generator = (signalFlowVals, generator, frequency, z
 }
 
 globalThis.match_gammaOut_at_load = (signalFlowVals, generator, frequency, z0_magnitude, beta) => {
-	const tl2_length = generator.generator_tl2_length;
+	const tl2_length = generator.generator_tl2_length; 	// distance from load to port
 
 	const gamma_out = signalFlowVals.gamma_out_b2_to_a2_ratio;
+	const gamma_out_polar = convert_complex_num_from_cartesian_to_polar(gamma_out.real, gamma_out.imag);
+	gamma_out.magnitude = gamma_out_polar.magnitude;
+	gamma_out.theta = gamma_out_polar.theta;
+
 	const conjugate_gamma_out = {
 		real: gamma_out.real,
 		imag: -gamma_out.imag
 	}
-	const conjugate_gamma_out_polar = convert_complex_num_from_cartesian_to_polar(conjugate_gamma_out.real, conjugate_gamma_out.imag);
+	const conjugate_gamma_out_polar = convert_complex_num_from_cartesian_to_polar(gamma_out.real, -gamma_out.imag);
 	conjugate_gamma_out.magnitude = conjugate_gamma_out_polar.magnitude;
 	conjugate_gamma_out.theta = conjugate_gamma_out_polar.theta;
 
-	// tl2_length: distance from load to port
 	const conjugate_impedance_at_tl2_length = getImpedanceAtDistanceFromLoad_lossless_TL(
 		0, // at port
 		conjugate_gamma_out, 
@@ -1186,10 +1201,30 @@ globalThis.match_gammaOut_at_load = (signalFlowVals, generator, frequency, z0_ma
 		beta
 	);
 
-	// add at load location
+	// gamma_out at the load
+	const theta_shift = 2 * beta * tl2_length;
+	const gamma_out_at_load = {
+		magnitude: gamma_out.magnitude,
+		theta: gamma_out.theta - theta_shift,
+		...convert_complex_num_from_polar_to_cartesian(gamma_out.magnitude, gamma_out.theta - theta_shift)
+	}
+
+	const conjugate_gamma_out_at_load = {
+		real: gamma_out_at_load.real,
+		imag: -gamma_out_at_load.imag,
+		...convert_complex_num_from_cartesian_to_polar(gamma_out_at_load.real, -gamma_out_at_load.imag)
+	};
+
+	const conjugate_impedance_at_load = getImpedanceAtDistanceFromLoad_lossless_TL(
+		0, 
+		conjugate_gamma_out_at_load, 
+		z0_magnitude, 
+		beta
+	);
 
 	return {
 		conjugate_impedance_at_tl2_length,
+		conjugate_impedance_at_load
 	}	
 }
 
