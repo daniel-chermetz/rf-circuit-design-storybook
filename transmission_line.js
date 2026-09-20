@@ -1126,6 +1126,114 @@ globalThis.convert_signal_flow_node_vals_to_voltage_current_vals = (signalFlowVa
 	return voltages;
 }
 
+globalThis.match_gammaIn_at_generator = (signalFlowVals, generator, frequency, z0_magnitude, beta) => {
+	const tl1_length = generator.generator_tl1_length;
+
+	const gamma_in = signalFlowVals.gamma_in_b1_to_a1_ratio;
+	const conjugate_gamma_in = {
+		real: gamma_in.real,
+		imag: -gamma_in.imag
+	}
+	const conjugate_gamma_in_polar = convert_complex_num_from_cartesian_to_polar(conjugate_gamma_in.real, conjugate_gamma_in.imag);
+	conjugate_gamma_in.magnitude = conjugate_gamma_in_polar.magnitude;
+	conjugate_gamma_in.theta = conjugate_gamma_in_polar.theta;
+
+	const conjugate_impedance_at_tl1_length = getImpedanceAtDistanceFromLoad_lossless_TL(
+		0, 
+		conjugate_gamma_in, 
+		z0_magnitude, 
+		beta
+	);
+
+	// what reflection from impedance at the generator would look like at distance generator_tl1_length
+	const theta_shift = 2 * beta * tl1_length;
+	const reflection_at_generator_to_yield_conjugate_gammaIn_at_tl1_length = {
+		magnitude: conjugate_gamma_in.magnitude,
+		theta: conjugate_gamma_in.theta + theta_shift,
+		...convert_complex_num_from_polar_to_cartesian(conjugate_gamma_in.magnitude, conjugate_gamma_in.theta + theta_shift)
+	}
+
+	const conjugate_impedance_at_generator = getImpedanceAtDistanceFromLoad_lossless_TL(
+		0, 
+		reflection_at_generator_to_yield_conjugate_gammaIn_at_tl1_length, 
+		z0_magnitude, 
+		beta
+	);
+
+	return {
+		conjugate_impedance_at_tl1_length,
+		conjugate_impedance_at_generator
+	}
+}
+
+globalThis.match_gammaOut_at_load = (signalFlowVals, generator, frequency, z0_magnitude, beta) => {
+	const tl2_length = generator.generator_tl2_length;
+
+	const gamma_out = signalFlowVals.gamma_out_b2_to_a2_ratio;
+	const conjugate_gamma_out = {
+		real: gamma_out.real,
+		imag: -gamma_out.imag
+	}
+	const conjugate_gamma_out_polar = convert_complex_num_from_cartesian_to_polar(conjugate_gamma_out.real, conjugate_gamma_out.imag);
+	conjugate_gamma_out.magnitude = conjugate_gamma_out_polar.magnitude;
+	conjugate_gamma_out.theta = conjugate_gamma_out_polar.theta;
+
+	// tl2_length: distance from load to port
+	const conjugate_impedance_at_tl2_length = getImpedanceAtDistanceFromLoad_lossless_TL(
+		0, // at port
+		conjugate_gamma_out, 
+		z0_magnitude, 
+		beta
+	);
+
+	// add at load location
+
+	return {
+		conjugate_impedance_at_tl2_length,
+	}	
+}
+
+globalThis.find_LC_components_to_obtain_target_impedance = (target_impedance, fixed_resistor, frequency) => {
+	const R_squared = fixed_resistor * fixed_resistor;
+	const denominator = (target_impedance.real * target_impedance.real + target_impedance.imag * target_impedance.imag);
+	const G = target_impedance.real / denominator;
+	const B = -target_impedance.imag / denominator;
+
+	const matching_components = [];
+
+	// G * R^2 + G * x1^2 = R
+	// x1^2 = (R - G * R^2) / G
+	let x1 = Math.sqrt((fixed_resistor - G * R_squared) / G);
+	let x2 = 1 / (-B - x1 / (R_squared + x1 * x1));
+
+	let matching_reactive_comp_1 = getRLCValsForImpedance({real: 0, imag: x1}, frequency);
+	let matching_reactive_comp_2 = getRLCValsForImpedance({real: 0, imag: x2}, frequency);
+
+	matching_components.push({
+		reactance_1: x1,
+		matching_reactive_comp_1,
+		reactance_2: x2,
+		matching_reactive_comp_2,
+		note: 'x1 in series with generator / load impedance and x2 in parallel after (generator case) or before (load case)'
+	});
+
+	x1 = -x1;
+	x2 = 1 / (-B - x1 / (R_squared + x1 * x1));
+
+	matching_reactive_comp_1 = getRLCValsForImpedance({real: 0, imag: x1}, frequency);
+	matching_reactive_comp_2 = getRLCValsForImpedance({real: 0, imag: x2}, frequency);
+
+	matching_components.push({
+		reactance_1: x1,
+		matching_reactive_comp_1,
+		reactance_2: x2,
+		matching_reactive_comp_2,
+		note: 'x1 in series with generator / load impedance and x2 in parallel after (generator case) or before (load case)'
+	});
+
+	return matching_components;
+}
+
 globalThis.frequency = Math.pow(10, 8);
 globalThis.load_impedance = {
 	real: 75,
@@ -1299,3 +1407,11 @@ console.log(signalFlowVals);
 
 const circuit_voltages = convert_signal_flow_node_vals_to_voltage_current_vals(signalFlowVals, tlWaveParams.z0_magnitude);
 console.log(circuit_voltages);
+
+const matching_impedance_generator_side = match_gammaIn_at_generator(signalFlowVals, generator, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
+const matching_LC_components_generator_side = find_LC_components_to_obtain_target_impedance(matching_impedance_generator_side.conjugate_impedance_at_tl1_length, generator.generator_impedance_real, frequency);
+console.log('matching_LC_components_generator_side', matching_LC_components_generator_side);
+
+const matching_impedance_load_side = match_gammaOut_at_load(signalFlowVals, generator, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
+const matching_LC_components_load_side = find_LC_components_to_obtain_target_impedance(matching_impedance_load_side.conjugate_impedance_at_tl2_length, generator.generator_impedance_real, frequency);
+console.log('matching_LC_components_load_side', matching_LC_components_load_side);
