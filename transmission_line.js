@@ -299,7 +299,7 @@ globalThis.get_swr_circle_lossless_TL = (reflection, v0_plus, standing_wave_rati
 		console.log('confirmed!');
 	}
 	
-	console.log(constant_swr_circle);
+	// console.log(constant_swr_circle);
 	return constant_swr_circle;
 }
 
@@ -409,7 +409,7 @@ globalThis.match_impedance_by_series_reactive_element_lossless_TL = (reflection,
 		}
 	});
 
-	console.log(impedance_matching_series_options);
+	// console.log(impedance_matching_series_options);
 	return impedance_matching_series_options;
 }
 
@@ -477,7 +477,7 @@ globalThis.match_impedance_by_shunt_reactive_element_lossless_TL = (reflection, 
 		}
 	});
 
-	console.log(impedance_matching_shunt_options);
+	// console.log(impedance_matching_shunt_options);
 	return impedance_matching_shunt_options;
 }
 
@@ -494,7 +494,7 @@ globalThis.find_thevenin_equivalent_circuit = (generator, reflection, z0_magnitu
 		voltage_real: 0,
 		voltage_imag: 0
 	};
-	console.log('z_looking_in_tl2:', z_looking_in_tl2);
+	// console.log('z_looking_in_tl2:', z_looking_in_tl2);
 
 	// Thevenin equivalent TL1 and generator
 
@@ -511,7 +511,7 @@ globalThis.find_thevenin_equivalent_circuit = (generator, reflection, z0_magnitu
 		z0_magnitude, 
 		beta
 	);
-	console.log('z_looking_into_tl1_towards_generator:', z_looking_into_tl1_towards_generator);
+	// console.log('z_looking_into_tl1_towards_generator:', z_looking_into_tl1_towards_generator);
 
 	// open circuited voltage
 
@@ -532,11 +532,11 @@ globalThis.find_thevenin_equivalent_circuit = (generator, reflection, z0_magnitu
 		z0_magnitude,
 		beta
 	);
-	console.log('v0_plus:', v0_plus);
+	// console.log('v0_plus:', v0_plus);
 
 	// distance is zero as the distance is defined from load towards generator, and zero is the load
 	const ratio = get_voltage_as_v0plus_ratio_at_distance_from_load_lossless_TL(0, openCircuitedReflection, beta);
-	console.log('v_v0plus_ratio_at_load_end_of_tl1: ', ratio);
+	// console.log('v_v0plus_ratio_at_load_end_of_tl1: ', ratio);
 	
 	const tl1_and_generator_equivalent = {
 		z_real: z_looking_into_tl1_towards_generator.real,
@@ -544,7 +544,7 @@ globalThis.find_thevenin_equivalent_circuit = (generator, reflection, z0_magnitu
 		voltage_real: (v0_plus.real * ratio.v_to_v0plus_ratio_real - v0_plus.imag * ratio.v_to_v0plus_ratio_imag),
 		voltage_imag: (v0_plus.real * ratio.v_to_v0plus_ratio_imag + v0_plus.imag * ratio.v_to_v0plus_ratio_real)
 	};
-	console.log('tl1_and_generator_equivalent:', tl1_and_generator_equivalent);
+	// console.log('tl1_and_generator_equivalent:', tl1_and_generator_equivalent);
 
 	return {
 		tl1_and_generator_equivalent,
@@ -625,7 +625,7 @@ globalThis.get_voltage_across_load_with_parallel_series_parallel_two_port_z = (
 		real: voltage_pre_two_port.real - voltage_drop_across_series.real,
 		imag: voltage_pre_two_port.imag - voltage_drop_across_series.imag
 	}
-	console.log('voltage_across_load', voltage_across_load);
+	// console.log('voltage_across_load', voltage_across_load);
 
 	return voltage_across_load;
 }
@@ -702,7 +702,7 @@ globalThis.find_S_params = (
 
 	const S11 = getTLRefelectionCoefficient(z_pre_two_port.real, z_pre_two_port.imag, z0_magnitude, 0).reflection;
 	const S11_indirect = getTLRefelectionCoefficient(z_pre_two_port_alternative_calculation.real, z_pre_two_port_alternative_calculation.imag, z0_magnitude, 0).reflection;
-	console.log('S11', S11);
+	// console.log('S11', S11);
 
 	console.log('S11 values should match across the two computations');
 	if (Math.abs(S11.real - S11_indirect.real) < 1e-4 && Math.abs(S11.imag - S11_indirect.imag) < 1e-4) {
@@ -741,8 +741,7 @@ globalThis.find_S_params = (
 		tl1_and_generator_equivalent.voltage_real,
 		tl1_and_generator_equivalent.voltage_imag
 	);
-
-	console.log('S21', S21);
+	// console.log('S21', S21);
 
 	const z_pre_two_port_from_tl2_side = get_parallel_series_parallel_equivalent_z(
 		two_port_z_parallel_post_series,
@@ -755,7 +754,7 @@ globalThis.find_S_params = (
 	);
 
 	const S22 = getTLRefelectionCoefficient(z_pre_two_port_from_tl2_side.real, z_pre_two_port_from_tl2_side.imag, z0_magnitude, 0).reflection;
-	console.log('S22', S22);
+	// console.log('S22', S22);
 
 	// load now conceptually on the tl1 side
 	const conceptual_generator_at_load = {
@@ -792,7 +791,7 @@ globalThis.find_S_params = (
 		tl2_and_generator_equivalent.voltage_real,
 		tl2_and_generator_equivalent.voltage_imag
 	);
-	console.log('S12', S12);
+	// console.log('S12', S12);
 
 	return { S11, S12, S21, S22 }
 }
@@ -916,11 +915,11 @@ globalThis.findSignalFlowNodeValues = (generator, load, S11, S21, S12, S22, z0_m
 		1 - denominator.real,
 		-denominator.imag
 	);
-	console.log('a1', a1);
+	// console.log('a1', a1);
 
 	// b1 = gamma_in_b1_to_a1_ratio * a1
 	const b1 = multiplyComplexNums_v2(gamma_in_b1_to_a1_ratio, a1);
-	console.log('b1', b1);
+	// console.log('b1', b1);
 
 	/*
 		Correct but not ideal:
@@ -952,11 +951,11 @@ globalThis.findSignalFlowNodeValues = (generator, load, S11, S21, S12, S22, z0_m
 		denominator.real,
 		denominator.imag
 	);
-	console.log('b2', b2);
+	// console.log('b2', b2);
 
 	// a2 = b2 * gamma_l
 	const a2 = multiplyComplexNums_v2(b2, reflection_load_phase_shifted);
-	console.log('a2', a2);
+	// console.log('a2', a2);
 
 	return {
 		a1, a2, b1, b2, 
@@ -991,7 +990,7 @@ globalThis.get_generator_and_load_thevenin_circuit_components = (generator, load
 	
 	const tl1_and_generator_equivalent = thevenin_equivalent.tl1_and_generator_equivalent;
 	const tl2_and_load_equivalent = thevenin_equivalent.tl2_and_load_equivalent;
-	console.log('tl2_and_load_equivalent', tl2_and_load_equivalent);
+	// console.log('tl2_and_load_equivalent', tl2_and_load_equivalent);
 
 	const source_RLC = getRLCValsForImpedance({
 		real: tl1_and_generator_equivalent.z_real,
@@ -1002,8 +1001,8 @@ globalThis.get_generator_and_load_thevenin_circuit_components = (generator, load
 		imag: tl2_and_load_equivalent.z_imag,		
 	}, frequency);
 
-	console.log('source_RLC', source_RLC);
-	console.log('load_RLC', load_RLC);
+	// console.log('source_RLC', source_RLC);
+	// console.log('load_RLC', load_RLC);
 
 	const source_voltage = {
 		real: tl1_and_generator_equivalent.voltage_real,
@@ -1011,7 +1010,7 @@ globalThis.get_generator_and_load_thevenin_circuit_components = (generator, load
 		...convert_complex_num_from_cartesian_to_polar(tl1_and_generator_equivalent.voltage_real, tl1_and_generator_equivalent.voltage_imag)
 	}
 	source_voltage.theta_degrees = source_voltage.theta * 180 / Math.PI;
-	console.log(source_voltage);
+	// console.log(source_voltage);
 }
 
 globalThis.get_s_params_from_simulated_circuit = (generator_side_sim_vals, load_side_sim_vals, /*generator, load_impedance, frequency,*/ z0_magnitude/*, beta*/, reverse_setup) => {
@@ -1236,10 +1235,21 @@ globalThis.find_LC_components_to_obtain_target_impedance = (target_impedance, fi
 
 	const matching_components = [];
 
+	let x1 = 0;
+	let x2 = 0;
+
 	// G * R^2 + G * x1^2 = R
 	// x1^2 = (R - G * R^2) / G
-	let x1 = Math.sqrt((fixed_resistor - G * R_squared) / G);
-	let x2 = 1 / (-B - x1 / (R_squared + x1 * x1));
+	let sqrtArg = (fixed_resistor - G * R_squared) / G;
+	console.log('sqrtArg', sqrtArg);
+
+	if (sqrtArg < 0) {
+		x1 = 0;
+		x2 = -1 / B;
+	} else {
+		x1 = Math.sqrt(sqrtArg);
+		x2 = 1 / (-B - x1 / (R_squared + x1 * x1));
+	}
 
 	let matching_reactive_comp_1 = getRLCValsForImpedance({real: 0, imag: x1}, frequency);
 	let matching_reactive_comp_2 = getRLCValsForImpedance({real: 0, imag: x2}, frequency);
@@ -1252,21 +1262,67 @@ globalThis.find_LC_components_to_obtain_target_impedance = (target_impedance, fi
 		note: 'x1 in series with generator / load impedance and x2 in parallel after (generator case) or before (load case)'
 	});
 
-	x1 = -x1;
-	x2 = 1 / (-B - x1 / (R_squared + x1 * x1));
+	if (sqrtArg > 0) {
+		x1 = -x1;
+		x2 = 1 / (-B - x1 / (R_squared + x1 * x1));
 
-	matching_reactive_comp_1 = getRLCValsForImpedance({real: 0, imag: x1}, frequency);
-	matching_reactive_comp_2 = getRLCValsForImpedance({real: 0, imag: x2}, frequency);
+		matching_reactive_comp_1 = getRLCValsForImpedance({real: 0, imag: x1}, frequency);
+		matching_reactive_comp_2 = getRLCValsForImpedance({real: 0, imag: x2}, frequency);
 
-	matching_components.push({
-		reactance_1: x1,
-		matching_reactive_comp_1,
-		reactance_2: x2,
-		matching_reactive_comp_2,
-		note: 'x1 in series with generator / load impedance and x2 in parallel after (generator case) or before (load case)'
-	});
+		matching_components.push({
+			reactance_1: x1,
+			matching_reactive_comp_1,
+			reactance_2: x2,
+			matching_reactive_comp_2,
+			note: 'x1 in series with generator / load impedance and x2 in parallel after (generator case) or before (load case)'
+		});
+	}
 
 	return matching_components;
+}
+
+globalThis.find_bilateral_match_numerically = (generator, load, S11, S21, S12, S22, frequency, z0_magnitude, beta) => {
+	const generator_with_evolving_impedance = Object.assign({}, generator);
+	const load_with_evolving_impedance = Object.assign({}, load);
+
+	let matching_impedance_generator_side; 
+	let matching_impedance_load_side;
+
+	for (let i = 0; i < 100; i++) {
+		const signalFlowVals = findSignalFlowNodeValues(
+			generator_with_evolving_impedance,
+			load_with_evolving_impedance,
+			S11,
+			S21,
+			S12,
+			S22,
+			z0_magnitude,
+			beta
+		);
+
+		matching_impedance_generator_side = match_gammaIn_at_generator(signalFlowVals, generator, frequency, z0_magnitude, beta);
+		matching_impedance_load_side = match_gammaOut_at_load(signalFlowVals, generator, frequency, z0_magnitude, beta);
+
+		const new_generator_z = matching_impedance_generator_side.conjugate_impedance_at_generator;
+		generator_with_evolving_impedance.generator_impedance_real = new_generator_z.real;
+		generator_with_evolving_impedance.generator_impedance_imag = new_generator_z.imag;
+
+		const new_load_z = matching_impedance_load_side.conjugate_impedance_at_load;
+		load_with_evolving_impedance.real = new_load_z.real;
+		load_with_evolving_impedance.imag = new_load_z.imag;
+	}
+
+	console.log('generator_with_evolving_impedance', generator_with_evolving_impedance);
+	console.log('load_with_evolving_impedance', load_with_evolving_impedance);
+
+	console.log('matching_impedance_generator_side', matching_impedance_generator_side);
+	console.log('generator.generator_impedance_real', generator.generator_impedance_real);
+	console.log('frequency', frequency);
+	const matching_LC_components_generator_side = find_LC_components_to_obtain_target_impedance(matching_impedance_generator_side.conjugate_impedance_at_tl1_length, generator.generator_impedance_real, frequency);
+	console.log('matching_impedance_generator_side.conjugate_impedance_at_tl1_length', matching_impedance_generator_side.conjugate_impedance_at_tl1_length);
+	console.log('matching_LC_components_generator_side', matching_LC_components_generator_side);
+	const matching_LC_components_load_side = find_LC_components_to_obtain_target_impedance(matching_impedance_load_side.conjugate_impedance_at_tl2_length, load.real, frequency);
+	console.log('matching_LC_components_load_side', matching_LC_components_load_side);		
 }
 
 globalThis.frequency = Math.pow(10, 8);
@@ -1388,7 +1444,7 @@ let signalFlowVals = findSignalFlowNodeValues(
 	tlWaveParams.z0_magnitude,
 	tlWaveParams.beta
 );
-console.log(signalFlowVals);
+// console.log(signalFlowVals);
 
 get_generator_and_load_thevenin_circuit_components(generator, load_impedance, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
 
@@ -1438,15 +1494,18 @@ signalFlowVals = findSignalFlowNodeValues(
 	tlWaveParams.z0_magnitude,
 	tlWaveParams.beta
 );
-console.log(signalFlowVals);
+// console.log(signalFlowVals);
 
 const circuit_voltages = convert_signal_flow_node_vals_to_voltage_current_vals(signalFlowVals, tlWaveParams.z0_magnitude);
-console.log(circuit_voltages);
+// console.log(circuit_voltages);
 
 const matching_impedance_generator_side = match_gammaIn_at_generator(signalFlowVals, generator, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
 const matching_LC_components_generator_side = find_LC_components_to_obtain_target_impedance(matching_impedance_generator_side.conjugate_impedance_at_tl1_length, generator.generator_impedance_real, frequency);
-console.log('matching_LC_components_generator_side', matching_LC_components_generator_side);
+console.log('matching_impedance_generator_side.conjugate_impedance_at_tl1_length', matching_impedance_generator_side.conjugate_impedance_at_tl1_length);
+// console.log('matching_LC_components_generator_side', matching_LC_components_generator_side);
 
 const matching_impedance_load_side = match_gammaOut_at_load(signalFlowVals, generator, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
 const matching_LC_components_load_side = find_LC_components_to_obtain_target_impedance(matching_impedance_load_side.conjugate_impedance_at_tl2_length, generator.generator_impedance_real, frequency);
-console.log('matching_LC_components_load_side', matching_LC_components_load_side);
+// console.log('matching_LC_components_load_side', matching_LC_components_load_side);
+
+find_bilateral_match_numerically(generator, load_impedance, S11, S21, S12, S22, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
