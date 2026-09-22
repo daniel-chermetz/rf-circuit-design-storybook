@@ -12,10 +12,10 @@ The following files were human written (100% manually written line-by-line):
 
      1511 ./radio_frequency_electric_circuit_calculator.js
 
-1511 lines of code human written in total (~30% of the project)
+1511 lines of code human written in total (~29% of the project)
 
 The rest of the project was wholly written by AI (I'm very grateful for AI's help and contribution - the project wouldn't have been possible without it):
 
-     3448 ./index.html
+     3785 ./index.html
 
-3448 lines of code AI written in total (~70% of the project)
+3785 lines of code AI written in total (~71% of the project)

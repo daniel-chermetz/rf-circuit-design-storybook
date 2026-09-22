@@ -516,6 +516,33 @@
             height: 100% !important;
         }
 
+        /* Circuit diagram illustration container */
+        .circuit-illustration-card {
+            background: #ffffff;
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px 24px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .circuit-illustration-card img {
+            max-width: 100%;
+            height: auto;
+            max-height: 420px;
+            display: block;
+            margin: 0 auto;
+            border-radius: 8px;
+        }
+
+        .circuit-illustration-caption {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
         /* Form Inputs matching design_example */
         .form-grid {
             display: grid;
@@ -815,7 +842,7 @@
             <div class="sidebar-footer">
                 <div>
                     <span class="status-dot"></span>
-                    <span id="api-status-text">transmission_line.js loaded</span>
+                    <span id="api-status-text">radio_frequency_electric_circuit_calculator.js loaded</span>
                 </div>
             </div>
         </aside>
@@ -827,7 +854,7 @@
                     <h1 id="page-title">Loading Page...</h1>
                     <p class="story-tagline" id="page-subtitle"></p>
                 </div>
-                <div class="page-counter-pill" id="page-counter">Page 1 of 6</div>
+                <div class="page-counter-pill" id="page-counter">Page 1 of 7</div>
             </div>
 
             <!-- Injected Story Page Body -->
@@ -1982,6 +2009,204 @@
                         </div>
 
                         <div class="code-display" id="demo-output">Click 'Simulate & Plot Both Charts' to execute end-to-end calculations and generate graphs...</div>
+                    </div>
+                `;
+                }
+            },
+            {
+                id: 'thevenin-equivalent-tl',
+                badge: '07',
+                title: 'Thevenin Equivalent Circuits: Eliminating Transmission Lines',
+                subtitle: 'Reducing distributed transmission line segments to lumped Thevenin sources and equivalent impedances',
+                deepDive: {
+                    title: 'Thevenin Reduction for Transmission Lines & Interstage Two-Port Simplification',
+                    preview: 'How observing only terminal node pairs allows distributed TL segments to be replaced by equivalent Thevenin generators (V_th, Z_th) and passive port impedances.',
+                    readingTime: '6 min read',
+                    content: `
+                        <h3>1. Terminal Node Equivalence: Not Caring About Internal Complexity</h3>
+                        <p>
+                            Consider an electronic circuit connected to a pair of designated terminal nodes. If we only care about the voltage 
+                            and current behavior across those two specific boundary nodes—without caring or needing to know how the network 
+                            is constructed internally—linear network theory allows us to replace the entire network with an equivalent circuit.
+                        </p>
+                        <p>
+                            <strong>The Thevenin Equivalent:</strong> Any linear one-port network containing energy sources and linear components 
+                            (resistors, inductors, capacitors, or transmission lines) behaves identically at its boundary terminals to an ideal 
+                            independent voltage source $V_{\\text{th}}$ in series with an equivalent impedance $Z_{\\text{th}}$.
+                        </p>
+                        <p>
+                            The core idea is straightforward:
+                        </p>
+                        <ul>
+                            <li>The terminal voltage is constructed by what the node pair sees from the internal sources when the terminals are in an <strong>open circuit</strong> condition ($I_{\\text{terminal}} = 0$).</li>
+                            <li>When current traverses into or out of the exposed nodes, the adjustment to that terminal voltage is determined by the <strong>internal impedance $Z_{\\text{th}}$</strong> exposed by the network looking back into the terminals with all internal independent sources deactivated.</li>
+                        </ul>
+
+                        <h3>2. Thevenin Reduction for Transmission Lines: Removing Distributed Lines Entirely</h3>
+                        <p>
+                            A typical RF architecture consists of a generator source ($V_g, Z_g$) driving a transmission line ($TL_1$), 
+                            connected to an intermediate network between nodes $L_1$ and $L_2$, which in turn connects via a second transmission line 
+                            ($TL_2$) to a terminating load ($Z_L$).
+                        </p>
+                        <p>
+                            By finding the Thevenin equivalent circuit on both the source side (at node $L_1$) and the load side (at node $L_2$), 
+                            <strong>we can remove the distributed transmission lines entirely</strong>! This collapses the complex wave problem into 
+                            an ordinary lumped circuit that can be analyzed and simulated directly.
+                        </p>
+
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/TL_circuit_and_thevenin_equivalent.png" alt="Transmission Line Circuit and its Thevenin Equivalent">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure:</strong> Bottom shows the distributed circuit with generator, $TL_1$, intermediate network ($L_1 \to L_2$), $TL_2$, and load. Top shows the reduced Thevenin equivalent with transmission lines removed.
+                            </div>
+                        </div>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Thevenin Recipe for Left Side (TL1 + Generator at Node L1)</div>
+                            $$\\text{Open-Circuit Voltage: } \\quad V_{\\text{th,1}} = V(L_1)\\big|_{Z_L = \\infty} = V_0^+(\\text{open}) \\cdot \\big(1 + \\Gamma_{\\text{open}}\\big) = 2 V_0^+(\\text{open})$$
+                            $$\\text{Equivalent Impedance: } \\quad Z_{\\text{th,1}} = Z_0 \\left[ \\frac{Z_g + j Z_0 \\tan(\\beta l_1)}{Z_0 + j Z_g \\tan(\\beta l_1)} \\right] = Z_0 \\left[ \\frac{1 + \\Gamma_g e^{-j2\\beta l_1}}{1 - \\Gamma_g e^{-j2\\beta l_1}} \\right]$$
+                        </div>
+
+                        <h3>3. Recipe for the Source Side ($TL_1$ and Generator at Node $L_1$)</h3>
+                        <p>
+                            To find the Thevenin equivalent at port 1 (node $L_1$):
+                        </p>
+                        <ol>
+                            <li><strong>Open-Circuit Voltage ($V_{\\text{th,1}}$):</strong> We ask: if node $L_1$ were an open circuit, what voltage appears at $L_1$? 
+                                We apply our solution for an open-circuit load ($Z_L \\to \\infty$, so $\\Gamma_{\\text{open}} = 1$) along a transmission line of length $l_1$. 
+                                As derived in chapter 05, we compute $V_0^+$ for an open circuit:
+                                $$V_0^+ = V_g \\cdot \\left[ \\frac{Z_{\\text{in}}(l_1)}{Z_{\\text{in}}(l_1) + Z_g} \\right] \\cdot \\left[ \\frac{1}{e^{j\\beta l_1} + \\Gamma_{\\text{open}} e^{-j\\beta l_1}} \\right]$$
+                                The open-circuit voltage at node $L_1$ (distance $d = 0$ of $TL_1$) is then $V_{\\text{th,1}} = V^+(0) + V^-(0) = V_0^+(1 + \\Gamma_{\\text{open}})$.
+                            </li>
+                            <li><strong>Thevenin Impedance ($Z_{\\text{th,1}}$):</strong> We ask: what impedance would a source placed at node $L_1$ see looking back toward the generator, with the independent generator source deactivated ($V_g = 0$)? 
+                                In this condition, the generator impedance $Z_g$ acts as the terminating load at the far end of $TL_1$. 
+                                Looking into $TL_1$ over distance $l_1$, the impedance is rolled back by phase angle $-2\\beta l_1$:
+                                $$Z_{\\text{th,1}} = Z_0 \\left[ \\frac{1 + \\Gamma_g e^{-j2\\beta l_1}}{1 - \\Gamma_g e^{-j2\\beta l_1}} \\right], \\quad \\text{where } \\Gamma_g = \\frac{Z_g - Z_0}{Z_g + Z_0}$$
+                            </li>
+                        </ol>
+                        <p>
+                            Having $V_{\\text{th,1}}$ and $Z_{\\text{th,1}}$, we can remove $TL_1$ and the generator entirely, replacing them with a single Thevenin source at node $L_1$.
+                        </p>
+
+                        <h3>4. Recipe for the Load Side ($TL_2$ and Load at Node $L_2$)</h3>
+                        <p>
+                            Now consider the right-hand network looking into node $L_2$ toward $TL_2$ and load $Z_L$:
+                        </p>
+                        <ul>
+                            <li><strong>Open-Circuit Voltage ($V_{\\text{th,2}}$):</strong> Because there are no independent active energy sources on the load side, the open-circuit voltage at node $L_2$ is identically zero:
+                                $$V_{\\text{th,2}} = 0$$
+                            </li>
+                            <li><strong>Equivalent Impedance ($Z_{\\text{th,2}}$):</strong> To find the impedance seen by current entering or exiting node $L_2$, we evaluate the input impedance looking into $TL_2$ of length $l_2$ terminated in load $Z_L$. 
+                                Rolling the load impedance $Z_L$ along distance $l_2$ (phase shift $2\\beta l_2$) gives:
+                                $$Z_{\\text{th,2}} = Z_0 \\left[ \\frac{1 + \\Gamma_L e^{-j2\\beta l_2}}{1 - \\Gamma_L e^{-j2\\beta l_2}} \\right] = Z_0 \\cdot \\frac{Z_L + j Z_0 \\tan(\\beta l_2)}{Z_0 + j Z_L \\tan(\\beta l_2)}$$
+                            </li>
+                        </ul>
+                        <p>
+                            We can now replace $TL_2$ and $Z_L$ entirely with the passive lumped equivalent impedance $Z_{\\text{th,2}}$ connected between node $L_2$ and ground.
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">The Reduced Lumped Simulation Model</div>
+                            $$\\text{Source Port } L_1: \\quad V_{\\text{th,1}} \\text{ in series with } Z_{\\text{th,1}}$$
+                            $$\\text{Intermediate Block: } \\quad \\text{Two-port network between } L_1 \\text{ and } L_2$$
+                            $$\\text{Load Port } L_2: \\quad Z_{\\text{th,2}} \\text{ connected to ground}$$
+                        </div>
+
+                        <h3>5. Reduction to an Ordinary Circuit & The Single Continuous Line Case</h3>
+                        <p>
+                            At this stage, the distributed transmission line system has been completely reduced to an ordinary lumped circuit! 
+                            Node voltages and branch currents through the intermediate network can now be calculated using standard circuit equations, 
+                            mesh/nodal analysis, or circuit simulators.
+                        </p>
+                        <p>
+                            <strong>What if there is a single continuous transmission line from source to load?</strong><br>
+                            If there is only one continuous transmission line between generator and load, the intermediate network between $L_1$ and $L_2$ 
+                            is simply a direct short circuit ($L_1 \\equiv L_2$). The Thevenin source ($V_{\\text{th,1}}, Z_{\\text{th,1}}$) connects directly 
+                            to the equivalent load impedance $Z_{\\text{th,2}}$, confirming the unity of the model.
+                        </p>
+                    `
+                },
+                render: function() {
+                    return `
+                    <div class="section-card">
+                        <h2>🔌 Thevenin Equivalent Circuits: Eliminating Transmission Lines</h2>
+                        <p>
+                            When analyzing an RF network connected between two designated nodes ($L_1$ and $L_2$), we only care about terminal 
+                            voltages and currents, not how the internal network is implemented. By deriving the Thevenin equivalent circuits 
+                            for $TL_1$ + generator on the left and $TL_2$ + load on the right, we eliminate both distributed transmission lines entirely!
+                        </p>
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/TL_circuit_and_thevenin_equivalent.png" alt="Transmission Line Circuit and Thevenin Equivalent">
+                            <div class="circuit-illustration-caption">
+                                <strong>Circuit Model:</strong> Bottom: distributed transmission line system ($TL_1, TL_2$) with intermediate node pair ($L_1, L_2$). Top: reduced lumped Thevenin equivalent.
+                            </div>
+                        </div>
+                        <div class="story-callout">
+                            "• <strong>Node Equivalence:</strong> Any linear network behaves at its terminals as a Thevenin open-circuit voltage $V_{\\text{th}}$ in series with impedance $Z_{\\text{th}}$.<br>
+                            • <strong>Left Side ($TL_1$ + Gen):</strong> Open-circuit voltage at $L_1$ is found by setting $Z_L \\to \\infty$ on $TL_1$; equivalent impedance $Z_{\\text{th,1}}$ is found by looking back into $TL_1$ with load $Z_g$ rolled by $-2\\beta l_1$.<br>
+                            • <strong>Right Side ($TL_2$ + Load):</strong> With no source, $V_{\\text{th,2}} = 0$; equivalent impedance $Z_{\\text{th,2}}$ is $Z_L$ rolled along $TL_2$ by $2\\beta l_2$.<br>
+                            • <strong>Simulated Circuit:</strong> Both transmission lines are removed and replaced by their lumped Thevenin equivalents, reducing the distributed system to an ordinary circuit."
+                        </div>
+                    </div>
+
+                    ${renderDeepDive(this.deepDive)}
+
+                    <div class="section-card">
+                        <h2>⚡ Interactive Thevenin Equivalent Generator & Circuit Reducer</h2>
+                        <p>
+                            Configure the generator, transmission lines ($TL_1, TL_2$), intermediate series resistor, and load. 
+                            Executes <code>globalThis.find_thevenin_equivalent_circuit</code> to compute both Thevenin equivalents ($V_{\\text{th,1}}, Z_{\\text{th,1}}$ and $V_{\\text{th,2}}, Z_{\\text{th,2}}$) 
+                            and solve the reduced lumped circuit.
+                        </p>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Generator Open |Vg| [V]</label>
+                                <input type="number" id="th-vg-mag" class="text-input" value="1.0" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label>Generator Source Re(Zg) [Ω]</label>
+                                <input type="number" id="th-zg-real" class="text-input" value="50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Line Characteristic Z₀ [Ω]</label>
+                                <input type="number" id="th-z0" class="text-input" value="50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Phase Constant β (rad/m)</label>
+                                <input type="number" id="th-beta" class="text-input" value="3.14159" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label>TL1 Length l₁ (m) [Source to L1]</label>
+                                <input type="number" id="th-tl1-len" class="text-input" value="0.5" step="0.05">
+                            </div>
+                            <div class="form-group">
+                                <label>TL2 Length l₂ (m) [L2 to Load]</label>
+                                <input type="number" id="th-tl2-len" class="text-input" value="0.5" step="0.05">
+                            </div>
+                            <div class="form-group">
+                                <label>Intermediate Resistor R_mid [Ω] (L1-L2)</label>
+                                <input type="number" id="th-rmid" class="text-input" value="50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Terminating Load Re(ZL) [Ω]</label>
+                                <input type="number" id="th-zl-real" class="text-input" value="50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Terminating Load Im(ZL) [Ω]</label>
+                                <input type="number" id="th-zl-imag" class="text-input" value="0" step="1">
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+                            <button class="secondary-btn" onclick="setTheveninPreset(50, 50, 0, 0.5, 0.5, 50)">Preset: Symmetric 50 Ω (Matched)</button>
+                            <button class="secondary-btn" onclick="setTheveninPreset(50, 100, 25, 0.5, 0.5, 50)">Preset: Mismatched Load (100 + j25 Ω)</button>
+                            <button class="secondary-btn" onclick="setTheveninPreset(50, 50, 0, 0.5, 0.5, 0)">Preset: Continuous Line (R_mid = 0 Ω)</button>
+                            <button class="secondary-btn" onclick="setTheveninPreset(50, 0, 0, 0.5, 0.5, 50)">Preset: Short Load (ZL = 0 Ω)</button>
+                        </div>
+
+                        <button class="primary-btn" onclick="calculateTheveninEquivalentDemo()">Calculate Thevenin Reduction & Node Voltages</button>
+                        <div class="code-display" id="thevenin-output">Click 'Calculate Thevenin Reduction & Node Voltages' to evaluate globalThis.find_thevenin_equivalent_circuit()...</div>
                     </div>
                 `;
                 }
@@ -3335,6 +3560,118 @@
             }
         }
 
+        // --- Thevenin Reduction & Simulation Helpers ---
+        function setTheveninPreset(z0, zlR, zlI, l1, l2, rMid) {
+            document.getElementById('th-z0').value = z0;
+            document.getElementById('th-zl-real').value = zlR;
+            document.getElementById('th-zl-imag').value = zlI;
+            document.getElementById('th-tl1-len').value = l1;
+            document.getElementById('th-tl2-len').value = l2;
+            document.getElementById('th-rmid').value = rMid;
+            calculateTheveninEquivalentDemo();
+        }
+
+        function calculateTheveninEquivalentDemo() {
+            if (typeof globalThis.find_thevenin_equivalent_circuit !== 'function' ||
+                typeof globalThis.getTLRefelectionCoefficient !== 'function') {
+                const outEl = document.getElementById('thevenin-output');
+                if (outEl) outEl.textContent = 'Error: find_thevenin_equivalent_circuit not found in radio_frequency_electric_circuit_calculator.js!';
+                return;
+            }
+
+            const vgMag = parseFloat(document.getElementById('th-vg-mag').value);
+            const zgReal = parseFloat(document.getElementById('th-zg-real').value);
+            const z0 = parseFloat(document.getElementById('th-z0').value);
+            const beta = parseFloat(document.getElementById('th-beta').value);
+            const l1 = parseFloat(document.getElementById('th-tl1-len').value);
+            const l2 = parseFloat(document.getElementById('th-tl2-len').value);
+            const rMid = parseFloat(document.getElementById('th-rmid').value);
+            const zlReal = parseFloat(document.getElementById('th-zl-real').value);
+            const zlImag = parseFloat(document.getElementById('th-zl-imag').value);
+
+            // Generator object formatted for API function
+            const generator = {
+                generator_distance: l1 + l2,
+                generator_tl1_length: l1,
+                generator_tl2_length: l2,
+                generator_voltage_real: vgMag,
+                generator_voltage_imag: 0,
+                generator_impedance_real: zgReal,
+                generator_impedance_imag: 0
+            };
+
+            // Load reflection coefficient
+            const reflResult = globalThis.getTLRefelectionCoefficient(zlReal, zlImag, z0, 0);
+            const reflectionLoad = reflResult.reflection;
+
+            // Execute find_thevenin_equivalent_circuit from project API
+            const theveninResult = globalThis.find_thevenin_equivalent_circuit(generator, reflectionLoad, z0, beta);
+
+            const tl1Th = theveninResult.tl1_and_generator_equivalent;
+            const tl2Th = theveninResult.tl2_and_load_equivalent;
+
+            const vTh1Mag = Math.hypot(tl1Th.voltage_real, tl1Th.voltage_imag);
+            const vTh1PhaseDeg = Math.atan2(tl1Th.voltage_imag, tl1Th.voltage_real) * 180 / Math.PI;
+
+            const zTh1Mag = Math.hypot(tl1Th.z_real, tl1Th.z_imag);
+            const zTh1PhaseDeg = Math.atan2(tl1Th.z_imag, tl1Th.z_real) * 180 / Math.PI;
+
+            const zTh2Mag = Math.hypot(tl2Th.z_real, tl2Th.z_imag);
+            const zTh2PhaseDeg = Math.atan2(tl2Th.z_imag, tl2Th.z_real) * 180 / Math.PI;
+
+            // Reduced Lumped Circuit Analysis:
+            // Single mesh loop: V_th1 in series with Z_th1, R_mid, and Z_th2 to ground
+            const totalMeshZReal = tl1Th.z_real + rMid + tl2Th.z_real;
+            const totalMeshZImag = tl1Th.z_imag + tl2Th.z_imag;
+
+            // Mesh Current I = V_th1 / (Z_th1 + R_mid + Z_th2)
+            const currentI = globalThis.divideComplexNums(
+                tl1Th.voltage_real, tl1Th.voltage_imag,
+                totalMeshZReal, totalMeshZImag
+            );
+            const currentIMag = Math.hypot(currentI.real, currentI.imag);
+
+            // Node L1 voltage: V(L1) = V_th1 - I * Z_th1
+            const dropZth1 = globalThis.multiplyComplexNums(currentI.real, currentI.imag, tl1Th.z_real, tl1Th.z_imag);
+            const vL1 = {
+                real: tl1Th.voltage_real - dropZth1.real,
+                imag: tl1Th.voltage_imag - dropZth1.imag
+            };
+            const vL1Mag = Math.hypot(vL1.real, vL1.imag);
+
+            // Node L2 voltage: V(L2) = I * Z_th2
+            const vL2 = globalThis.multiplyComplexNums(currentI.real, currentI.imag, tl2Th.z_real, tl2Th.z_imag);
+            const vL2Mag = Math.hypot(vL2.real, vL2.imag);
+
+            const isContinuous = Math.abs(rMid) < 1e-4;
+
+            document.getElementById('thevenin-output').textContent = 
+                `Thevenin Equivalent & Lumped Circuit Simulation Output:\n` +
+                `--------------------------------------------------\n` +
+                `System Configuration:\n` +
+                `• Generator:                    V_g = ${vgMag.toFixed(3)} V, Z_g = ${zgReal.toFixed(2)} Ω\n` +
+                `• Transmission Line 1 (TL1):    Length l₁ = ${l1.toFixed(2)} m, Z₀ = ${z0.toFixed(2)} Ω, β = ${beta.toFixed(3)} rad/m\n` +
+                `• Intermediate Component:       Series Resistor R_mid = ${rMid.toFixed(2)} Ω (connecting node L1 to L2)\n` +
+                `• Transmission Line 2 (TL2):    Length l₂ = ${l2.toFixed(2)} m, Z₀ = ${z0.toFixed(2)} Ω\n` +
+                `• Load:                         Z_L = ${zlReal.toFixed(2)} + j(${zlImag.toFixed(2)}) Ω\n\n` +
+                `Left-Side Thevenin Equivalent at Node L1 (Replacing Generator + TL1):\n` +
+                `• Open-Circuit Voltage V_th,1:  ${tl1Th.voltage_real.toFixed(4)} + j(${tl1Th.voltage_imag.toFixed(4)}) V  (|V_th,1| = ${vTh1Mag.toFixed(4)} V, θ = ${vTh1PhaseDeg.toFixed(2)}°)\n` +
+                `• Thevenin Impedance Z_th,1:    ${tl1Th.z_real.toFixed(3)} + j(${tl1Th.z_imag.toFixed(3)}) Ω  (|Z_th,1| = ${zTh1Mag.toFixed(3)} Ω, θ = ${zTh1PhaseDeg.toFixed(2)}°)\n\n` +
+                `Right-Side Thevenin Equivalent at Node L2 (Replacing TL2 + Load):\n` +
+                `• Open-Circuit Voltage V_th,2:  0.000 V (passive termination, no active source)\n` +
+                `• Equivalent Impedance Z_th,2:  ${tl2Th.z_real.toFixed(3)} + j(${tl2Th.z_imag.toFixed(3)}) Ω  (|Z_th,2| = ${zTh2Mag.toFixed(3)} Ω, θ = ${zTh2PhaseDeg.toFixed(2)}°)\n\n` +
+                `Reduced Lumped Circuit Simulation:\n` +
+                `• Mesh Current I (L1 → L2):     ${(currentI.real * 1000).toFixed(3)} + j(${(currentI.imag * 1000).toFixed(3)}) mA  (|I| = ${(currentIMag * 1000).toFixed(3)} mA)\n` +
+                `• Voltage at Node L1:           ${vL1.real.toFixed(4)} + j(${vL1.imag.toFixed(4)}) V  (|V(L1)| = ${vL1Mag.toFixed(4)} V)\n` +
+                `• Voltage at Node L2:           ${vL2.real.toFixed(4)} + j(${vL2.imag.toFixed(4)}) V  (|V(L2)| = ${vL2Mag.toFixed(4)} V)\n` +
+                `• Drop across R_mid:            ${(vL1.real - vL2.real).toFixed(4)} + j(${(vL1.imag - vL2.imag).toFixed(4)}) V\n\n` +
+                `Synthesis Conclusion:\n` +
+                (isContinuous
+                    ? `• Continuous Line Case (R_mid = 0 Ω): Node L1 and L2 are shorted. V(L1) === V(L2) === ${vL1Mag.toFixed(4)} V.\n  The distributed line has been completely solved by connecting the two Thevenin equivalents directly!`
+                    : `• Two-Port Case: Both transmission lines (TL1 and TL2) were successfully eliminated.\n  The entire distributed RF system has been reduced to an ordinary 3-element loop simulated with standard Ohm's law!`
+                );
+        }
+
         function calculateWaveParams() {
             if (typeof globalThis.getTLWaveParams !== 'function') {
                 document.getElementById('wave-params-output').textContent = 'Error: globalThis.getTLWaveParams is not defined!';
@@ -3440,7 +3777,7 @@
             if (typeof globalThis.getTLWaveParams === 'function') {
                 document.getElementById('api-status-text').textContent = 'API connected & ready';
             } else {
-                document.getElementById('api-status-text').textContent = 'Warning: transmission_line.js pending';
+                document.getElementById('api-status-text').textContent = 'Warning: API pending';
             }
         });
     </script>
