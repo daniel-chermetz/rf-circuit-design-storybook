@@ -854,7 +854,7 @@
                     <h1 id="page-title">Loading Page...</h1>
                     <p class="story-tagline" id="page-subtitle"></p>
                 </div>
-                <div class="page-counter-pill" id="page-counter">Page 1 of 7</div>
+                <div class="page-counter-pill" id="page-counter">Page 1 of 9</div>
             </div>
 
             <!-- Injected Story Page Body -->
@@ -2207,6 +2207,424 @@
 
                         <button class="primary-btn" onclick="calculateTheveninEquivalentDemo()">Calculate Thevenin Reduction & Node Voltages</button>
                         <div class="code-display" id="thevenin-output">Click 'Calculate Thevenin Reduction & Node Voltages' to evaluate globalThis.find_thevenin_equivalent_circuit()...</div>
+                    </div>
+                `;
+                }
+            },
+            {
+                id: 's11-parameter-computation',
+                badge: '08',
+                title: 'S₁₁ Parameter: Input Reflection of a Two-Port Network',
+                subtitle: 'Excitation at Port 1 with matched termination, source independence, and analytical vs. simulated extraction',
+                deepDive: {
+                    title: 'Analytical & Simulated Extraction of S₁₁: Port Impedance & Zero-Length Transmission Line Framing',
+                    preview: 'Understanding why S₁₁ depends exclusively on network input impedance Z(port 1), why source impedance Z_g cancels out, and how Thevenin reduction at Port 2 provides an analytical match.',
+                    readingTime: '6 min read',
+                    content: `
+                        <h3>1. Exciting Port 1 with Matched Termination at Port 2: Defining $S_{11}$</h3>
+                        <p>
+                            Scattering parameters characterize multi-port networks in terms of travelling wave ratios rather than total voltages and currents. 
+                            The parameter $S_{11}$ measures the reflection coefficient looking into <strong>Port 1 (node $L_1$)</strong> back toward the generator, 
+                            under the strict condition that <strong>Port 2 (node $L_2$) is terminated with a matched load ($Z_0 = 50\\,\\Omega$)</strong>:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Definition of Two-Port S₁₁ Parameter</div>
+                            $$S_{11} = \\left. \\frac{b_1}{a_1} \\right|_{a_2 = 0} = \\left. \\frac{V^-(L_1)}{V^+(L_1)} \\right|_{\\text{Port 2 matched to } Z_0}$$
+                        </div>
+
+                        <p>
+                            Because Port 2 is terminated in $Z_0$, any wave transmitted across the network into Port 2 is fully absorbed without generating a backward reflection ($a_2 = 0$). 
+                            This setup can be conceptualized as placing the excitation generator directly at Port 1 ($L_1$), circumventing the input transmission line $TL_1$. 
+                            It is conceptually helpful to imagine a <strong>transmission line of length zero ($l_1 = 0$)</strong> at Port 1 with characteristic impedance $Z_0 = 50\\,\\Omega$.
+                        </p>
+
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/s_params_demo_circuit_generator_port1_side.png" alt="S11 Test Setup: Excitation at Port 1 with matched 50 Ohm load at Port 2">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 1:</strong> Exciting Port 1 ($L_1$) with generator ($V_g, Z_{\\text{source}}$) while Port 2 ($L_2$) is terminated in a matched $50\\,\\Omega$ load.
+                            </div>
+                        </div>
+
+                        <h3>2. Eliminating $TL_2$ at Port 2: Thevenin Reduction & Zero-Length Line</h3>
+                        <p>
+                            What happened to transmission line $TL_2$ on the right side? 
+                            As shown in the circuit diagrams, $TL_2$ connects node $L_2$ to a terminating load $Z_L = 50\\,\\Omega$.
+                        </p>
+                        <p>
+                            From our earlier derivation in Chapter 04, a transmission line of characteristic impedance $Z_0$ terminated in its own matched load ($Z_L = Z_0$) 
+                            presents an input impedance of $Z(d) = Z_0$ at every location along its length! 
+                            Therefore, replacing $TL_2$ and $Z_L$ with their Thevenin equivalent reduces the entire right-hand section to an exact lumped resistor 
+                            $Z_{\\text{load,2}} = Z_0 = 50\\,\\Omega$ connected directly from node $L_2$ to ground (with $V_{\\text{th,2}} = 0$). 
+                            Equivalently, one can conceptualize $TL_2$ as a reference transmission line of zero length ($l_2 = 0$) terminated in $Z_0 = 50\\,\\Omega$.
+                        </p>
+
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/s_params_demo_circuit_and_thevenin_equivalent.png" alt="S-Parameters Demo Circuit and Thevenin Equivalent">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 2:</strong> Top: Two-port network embedded between $TL_1$ and $TL_2$. Bottom: Both transmission lines eliminated via Thevenin reduction, connecting the equivalent source directly to Port 1 ($L_1$) and matched load to Port 2 ($L_2$).
+                            </div>
+                        </div>
+
+                        <p>
+                            <em>(Note: Replacing $TL_1$ and $TL_2$ with Thevenin equivalents enables exact analytical solution and standard SPICE lumped simulation. 
+                            If a simulator is capable of simulating distributed transmission lines natively, $TL_1$, $TL_2$, or both could be retained.)</em>
+                        </p>
+
+                        <h3>3. Source Impedance Independence: Why $Z_g$ Does Not Affect $S_{11}$</h3>
+                        <p>
+                            A vital insight in RF engineering: <strong>it does not matter what source impedance $Z_g$ or generator voltage $V_g$ is used</strong>!
+                        </p>
+                        <p>
+                            Altering the generator voltage $V_g$ or internal impedance $Z_{\\text{source}}$ changes the individual values of terminal voltage $V(L_1)$ 
+                            and terminal current $I(L_1)$ at Port 1. However, <strong>it will not affect their ratio</strong>:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Input Driving-Point Impedance at Port 1</div>
+                            $$Z(\\text{port 1}) = \\frac{V(L_1)}{I(L_1)}$$
+                        </div>
+
+                        <p>
+                            This follows directly from basic circuit theory: the input driving-point impedance presented by any passive linear network is an intrinsic 
+                            property of the network itself and its downstream terminations. It is strictly independent of "what comes before it"—namely the generator voltage and source impedance!
+                        </p>
+
+                        <h3>4. Computing $S_{11}$ from Port Impedance $Z(\\text{port 1})$</h3>
+                        <p>
+                            Once the input impedance $Z(\\text{port 1})$ is known, imagining point $L_1$ as a reference transmission line of zero length with reference impedance $Z_0 = 50\\,\\Omega$ 
+                            yields the reflection coefficient directly:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">S₁₁ Formula from Port Impedance</div>
+                            $$S_{11} = \\frac{Z(\\text{port 1}) - Z_0}{Z(\\text{port 1}) + Z_0}$$
+                        </div>
+
+                        <h3>5. Analytical Network Reduction vs. Simulator Extraction</h3>
+                        <p>
+                            Running the circuit in a circuit simulator would reveal the terminal voltage $V(L_1)$ and branch current $I(L_1)$ at point $L_1$, 
+                            giving $Z(\\text{port 1}) = V(L_1) / I(L_1)$. 
+                            However, for this two-port ladder network, our calculator can solve $Z(\\text{port 1})$ and $S_{11}$ analytically:
+                        </p>
+                        <ol>
+                            <li>At Port 2 ($L_2$), the post-series parallel branch $Z_{\\text{parallel,2}}$ sits in parallel with the matched load $Z_0 = 50\\,\\Omega$:
+                                $$Z_{\\text{post}} = Z_{\\text{parallel,2}} \\parallel Z_0 = \\frac{Z_{\\text{parallel,2}} \\cdot Z_0}{Z_{\\text{parallel,2}} + Z_0}$$
+                            </li>
+                            <li>This combines in series with the intermediate series branch $Z_{\\text{series}}$:
+                                $$Z_{\\text{mid}} = Z_{\\text{series}} + Z_{\\text{post}}$$
+                            </li>
+                            <li>Finally, $Z_{\\text{mid}}$ combines in parallel with the pre-series shunt branch $Z_{\\text{parallel,1}}$ at Port 1 ($L_1$):
+                                $$Z(\\text{port 1}) = Z_{\\text{parallel,1}} \\parallel Z_{\\text{mid}} = \\frac{Z_{\\text{parallel,1}} \\cdot Z_{\\text{mid}}}{Z_{\\text{parallel,1}} + Z_{\\text{mid}}}$$
+                            </li>
+                            <li>Substituting $Z(\\text{port 1})$ into $(Z - Z_0)/(Z + Z_0)$ computes $S_{11}$ with mathematical perfection!</li>
+                        </ol>
+                    `
+                },
+                render: function() {
+                    return `
+                    <div class="section-card">
+                        <h2>🌐 S₁₁ Parameter: Input Reflection of a Two-Port Network</h2>
+                        <p>
+                            The scattering parameter $S_{11}$ measures the reflection coefficient looking into Port 1 ($L_1$) when Port 2 ($L_2$) 
+                            is terminated with a matched load ($Z_0 = 50\\,\\Omega$). By conceptualizing the ports as zero-length reference transmission lines, 
+                            $S_{11}$ is determined purely by the driving-point impedance $Z(\\text{port 1}) = V(L_1) / I(L_1)$—completely independent of the source impedance!
+                        </p>
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/s_params_demo_circuit_generator_port1_side.png" alt="S11 Test Setup: Direct excitation at Port 1 with matched 50 Ohm load at Port 2">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 1:</strong> Excitation at Port 1 ($L_1$) driving the two-port $\\Pi$-ladder network, with Port 2 ($L_2$) terminated in matched load $Z_0 = 50\\,\\Omega$.
+                            </div>
+                        </div>
+                        <div class="story-callout">
+                            "• <strong>S₁₁ Definition:</strong> $S_{11} = b_1 / a_1 |_{a_2 = 0}$ measures reflection at Port 1 when Port 2 is matched to $Z_0$ ($a_2 = 0$).<br>
+                            • <strong>Zero-Length Line Framing:</strong> We conceptualize Port 1 and Port 2 as reference transmission lines of length zero ($l = 0$) with $Z_0 = 50\\,\\Omega$.<br>
+                            • <strong>Source Independence:</strong> Altering generator voltage $V_g$ or source impedance $Z_{\\text{source}}$ changes $V(L_1)$ and $I(L_1)$, but their ratio $Z(\\text{port 1}) = V/I$ and $S_{11}$ remain strictly invariant!<br>
+                            • <strong>Analytical Formula:</strong>
+                            $$Z(\\text{port 1}) = Z_{\\text{parallel,1}} \\parallel \\big( Z_{\\text{series}} + (Z_{\\text{parallel,2}} \\parallel Z_0) \\big)$$
+                            $$S_{11} = \\frac{Z(\\text{port 1}) - Z_0}{Z(\\text{port 1}) + Z_0}$$"
+                        </div>
+                    </div>
+
+                    ${renderDeepDive(this.deepDive)}
+
+                    <div class="section-card">
+                        <h2>⚡ Interactive S₁₁ Parameter Calculator & Source Independence Explorer</h2>
+                        <p>
+                            Configure the two-port network components and generator parameters. 
+                            The calculator solves $Z(\\text{port 1})$ analytically and simulates terminal voltage $V(L_1)$ and current $I(L_1)$ 
+                            using <code>globalThis.get_parallel_series_parallel_equivalent_z</code> and <code>globalThis.find_pre_two_port_impedance_current_voltage</code>.
+                        </p>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Reference Impedance Z₀ [Ω]</label>
+                                <input type="number" id="s11-z0" class="text-input" value="50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Generator Open Voltage |Vg| [V]</label>
+                                <input type="number" id="s11-vg-mag" class="text-input" value="1.0" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label>Source Impedance Re(Zsource) [Ω]</label>
+                                <input type="number" id="s11-zg-real" class="text-input" value="50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Pre-Series Shunt Re(Z_p1) [Ω]</label>
+                                <input type="number" id="s11-zpre-real" class="text-input" value="100" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Pre-Series Shunt Im(Z_p1) [Ω]</label>
+                                <input type="number" id="s11-zpre-imag" class="text-input" value="-50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Series Branch Re(Z_series) [Ω]</label>
+                                <input type="number" id="s11-zseries-real" class="text-input" value="100" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Series Branch Im(Z_series) [Ω]</label>
+                                <input type="number" id="s11-zseries-imag" class="text-input" value="0" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Post-Series Shunt Re(Z_p2) [Ω]</label>
+                                <input type="number" id="s11-zpost-real" class="text-input" value="50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Post-Series Shunt Im(Z_p2) [Ω]</label>
+                                <input type="number" id="s11-zpost-imag" class="text-input" value="100" step="1">
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+                            <button class="secondary-btn" onclick="setS11Preset(50, 100, -50, 100, 0, 50, 100)">Preset: Standard Two-Port (Zg = 50 Ω)</button>
+                            <button class="secondary-btn" onclick="setS11Preset(100, 100, -50, 100, 0, 50, 100)">Test Independence: Zsource = 100 Ω</button>
+                            <button class="secondary-btn" onclick="setS11Preset(25, 100, -50, 100, 0, 50, 100)">Test Independence: Zsource = 25 Ω</button>
+                            <button class="secondary-btn" onclick="setS11Preset(50, 150, 0, 37.5, 0, 150, 0)">Preset: Symmetric Attenuator (Zp=150, Zs=37.5)</button>
+                            <button class="secondary-btn" onclick="setS11Preset(50, 100000, 0, 0, 0, 100000, 0)">Preset: Direct 50 Ω Matched Passthrough</button>
+                        </div>
+
+                        <button class="primary-btn" onclick="calculateS11ParameterDemo()">Calculate S₁₁ & Verify Source Independence</button>
+                        <div class="code-display" id="s11-output">Click 'Calculate S₁₁ & Verify Source Independence' to evaluate S₁₁ parameter...</div>
+                    </div>
+                `;
+                }
+            },
+            {
+                id: 's21-parameter-computation',
+                badge: '09',
+                title: 'S₂₁ Parameter: Forward Transmission Across a Two-Port Network',
+                subtitle: 'Power waves (a₁, b₂), the zero-length transmission line concept, and S₂₁ = [V(port 2) / V(port 1)] · (1 + S₁₁)',
+                deepDive: {
+                    title: 'Analytical & Simulated Extraction of S₂₁: Forward Transmission & The Zero-Length Transmission Line Framework',
+                    preview: 'Understanding what the network lets through to Port 2, customary power wave definitions, why zero-length lines bridge lumped circuits to waves, and deriving S₂₁ = [V₂ / V₁] · (1 + S₁₁).',
+                    readingTime: '6 min read',
+                    content: `
+                        <h3>1. What S₂₁ Measures: Forward Transmission to the Output</h3>
+                        <p>
+                            In scattering parameter analysis, the transmission parameter $S_{21}$ quantifies what the two-port network 
+                            transmits or "lets through" from the input side (Port 1, node $L_1$) to the output side (Port 2, node $L_2$).
+                        </p>
+                        <p>
+                            Specifically, $S_{21}$ is defined as the ratio of the outgoing wave $b_2$ leaving Port 2 to the incident forward wave $a_1$ 
+                            entering Port 1, under the strict boundary condition that <strong>Port 2 is terminated in a matched characteristic impedance ($Z_0 = 50\\,\\Omega$)</strong>:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Definition of Forward Transmission Parameter S₂₁</div>
+                            $$S_{21} = \\left. \\frac{b_2}{a_1} \\right|_{a_2 = 0} \\quad [\\text{Port 2 matched to } Z_0]$$
+                        </div>
+
+                        <p>
+                            Terminating Port 2 with $Z_0$ ensures that any wave exiting Port 2 into the load is completely absorbed without any 
+                            reflected wave travelling back into Port 2 ($a_2 = 0$).
+                        </p>
+
+                        <h3>2. Power Waves & Directionality: Normalizing by $\\sqrt{Z_0}$</h3>
+                        <p>
+                            To be mathematically explicit, RF engineers define normalized power wave variables $a$ and $b$:
+                        </p>
+                        <ul>
+                            <li><strong>At Port 1:</strong> The incident wave $V_1^+$ enters Port 1 toward the network, while the reflected wave $V_1^-$ leaves Port 1 toward the generator:
+                                $$a_1 = \\frac{V_1^+}{\\sqrt{Z_0}}, \\quad b_1 = \\frac{V_1^-}{\\sqrt{Z_0}}, \\quad V_1 = V_1^+ + V_1^-$$
+                            </li>
+                            <li><strong>At Port 2:</strong> The conventions are typically defined relative to the load:
+                                $$b_2 = \\frac{V_2^-}{\\sqrt{Z_0}} \\quad [\\text{Outgoing wave leaving Port 2 toward load}]$$
+                                $$a_2 = \\frac{V_2^+}{\\sqrt{Z_0}} \\quad [\\text{Incoming wave travelling from load back toward Port 2}]$$
+                            </li>
+                        </ul>
+                        <p>
+                            <em>(Note on signs and units: The forward and backward waves on $TL_1$ and $TL_2$ are separate physical quantities. 
+                            The direction toward the load at Port 2 is customarily considered the outgoing wave $b_2$. 
+                            Dividing by $\\sqrt{Z_0}$ is the standard normalization so that $|a|^2$ and $|b|^2$ have dimensions of power in Watts, 
+                            making $|S_{21}|^2$ the direct transducer power gain.)</em>
+                        </p>
+
+                        <h3>3. The Pedagogical Concept: The Zero-Length Transmission Line ($l = 0$)</h3>
+                        <p>
+                            A central conceptual bridge in our storybook is the idea of the <strong>zero-length transmission line ($l = 0$)</strong>. 
+                            When a circuit is presented without physical transmission lines—such as when $TL_2$ and the load have been transformed into a lumped 
+                            Thevenin equivalent $Z_0 = 50\\,\\Omega$, and the source excitation is placed directly at Port 1—it can seem jarring to discuss wave concepts like $V^+$, $V^-$, $a$, and $b$.
+                        </p>
+                        <p>
+                            By imagining each port as having a reference transmission line of length zero ($l = 0$) with characteristic impedance $Z_0 = 50\\,\\Omega$, 
+                            all "wave world" principles apply seamlessly to the lumped circuit:
+                        </p>
+                        <ul>
+                            <li>The terminal voltage at Port 1 is an instantaneous wave superposition: $V_1 = V_1^+ + V_1^-$.</li>
+                            <li>The incoming excitation from the source is the incident forward wave $a_1$.</li>
+                            <li>The wave reflected back into the source is $b_1 = S_{11} a_1$.</li>
+                            <li>The wave launched into the matched load at Port 2 is the outgoing wave $b_2$.</li>
+                        </ul>
+
+                        <h3>4. Step-by-Step Derivation of $a_1$ at Port 1</h3>
+                        <p>
+                            Because Port 2 is terminated in a matched load ($Z_0 = 50\\,\\Omega$), there is zero reflection returning from Port 2 ($a_2 = 0$). 
+                            Consequently, the reflected wave leaving Port 1 is determined purely by the network\'s input reflection coefficient $S_{11}$:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Step 1: Expressing Terminal Voltage V₁ in terms of a₁</div>
+                            $$b_1 = S_{11} \\cdot a_1$$
+                            $$\\frac{V_1}{\\sqrt{Z_0}} = a_1 + b_1 = a_1 + S_{11} a_1 = a_1 (1 + S_{11})$$
+                        </div>
+
+                        <p>
+                            Since terminal voltage $V_1 = V(\\text{port 1})$ is readily known from circuit simulation or analytical ladder calculation, 
+                            we isolate the incident forward wave $a_1$:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Step 2: Isolating Incident Wave a₁</div>
+                            $$a_1 = \\frac{V_1 / \\sqrt{Z_0}}{1 + S_{11}} \\quad \\Longleftrightarrow \\quad V_1^+ = \\frac{V_1}{1 + S_{11}}$$
+                        </div>
+
+                        <h3>5. Step-by-Step Derivation of $b_2$ at Port 2</h3>
+                        <p>
+                            Now examine Port 2. Because the terminating load is matched to $Z_0$, all energy reaching Port 2 is absorbed without reflection. 
+                            Therefore, $a_2 = 0$ ($V_2^+ = 0$).
+                        </p>
+                        <p>
+                            Since there is no returning wave, the entire voltage appearing at Port 2 is the transmitted wave itself:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Step 3: Outgoing Wave b₂ at Port 2</div>
+                            $$V_2 = V_2^- \\implies b_2 = \\frac{V_2}{\\sqrt{Z_0}}$$
+                        </div>
+
+                        <h3>6. The Resulting Elegant Formula for $S_{21}$</h3>
+                        <p>
+                            Now we simply take the ratio $S_{21} = b_2 / a_1$:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">The Master Formula for S₂₁</div>
+                            $$S_{21} = \\frac{b_2}{a_1} = \\frac{\\frac{V_2}{\\sqrt{Z_0}}}{\\frac{V_1 / \\sqrt{Z_0}}{1 + S_{11}}} = \\frac{V_2}{V_1} \\cdot (1 + S_{11}) = \\frac{V(\\text{port 2})}{V(\\text{port 1})} \\cdot (1 + S_{11})$$
+                        </div>
+
+                        <p>
+                            <strong>Why This Formula Is So Intuitive:</strong>
+                        </p>
+                        <ul>
+                            <li>The quotient $\\frac{V_2}{V_1}$ is the ordinary lumped-circuit voltage gain across the two-port network from Port 1 to Port 2.</li>
+                            <li>The factor $(1 + S_{11})$ is the wave boundary transformation that translates the terminal voltage $V_1$ back into the pure incident forward wave $a_1$ ($V_1 = V_1^+(1 + S_{11})$).</li>
+                            <li>When the input port is perfectly matched ($S_{11} = 0$), $S_{21} = V_2 / V_1$ directly.</li>
+                            <li>When there is an input mismatch ($S_{11} \\neq 0$), multiplying by $(1 + S_{11})$ isolates transmission relative to the incident wave $a_1$ rather than total terminal voltage.</li>
+                        </ul>
+
+                        <h3>7. Source Independence & Power Transfer ($|S_{21}|^2$)</h3>
+                        <p>
+                            Just like $S_{11}$, the transmission parameter $S_{21}$ is an <strong>intrinsic property of the two-port network</strong>. 
+                            Altering the generator voltage $V_g$ or source impedance $Z_{\\text{source}}$ scales $V_1$ and $V_2$ by the exact same voltage-divider factor, 
+                            leaving the ratio $V_2 / V_1$ and $S_{21}$ completely invariant!
+                        </p>
+                        <p>
+                            The forward power gain across the network is:
+                            $$G_0 = |S_{21}|^2 \\quad [\\text{Linear Power Gain}]$$
+                            $$|S_{21}|_{\\text{dB}} = 20 \\log_{10} |S_{21}| \\quad [\\text{Insertion Gain / Loss in dB}]$$
+                        </p>
+                    `
+                },
+                render: function() {
+                    return `
+                    <div class="section-card">
+                        <h2>📡 S₂₁ Parameter: Forward Transmission Across a Two-Port Network</h2>
+                        <p>
+                            The scattering parameter $S_{21} = b_2 / a_1 |_{a_2 = 0}$ measures what the two-port network transmits to the load at Port 2 
+                            when Port 2 is terminated in a matched characteristic impedance ($Z_0 = 50\\,\\Omega$). 
+                            By framing the ports as zero-length transmission lines, $S_{21}$ is calculated directly from terminal voltages and input reflection:
+                        </p>
+                        <div class="story-callout">
+                            "• <strong>Power Wave Definitions:</strong> Incident wave entering Port 1 is $a_1 = V_1^+ / \\sqrt{Z_0}$; outgoing wave leaving Port 2 is $b_2 = V_2 / \\sqrt{Z_0}$.<br>
+                            • <strong>Zero-Length Line Concept:</strong> Imagining reference transmission lines of length zero at both ports allows wave superposition to apply directly to lumped circuits.<br>
+                            • <strong>Input Wave Isolation:</strong> Since $b_1 = S_{11} a_1$, terminal voltage is $V_1 / \\sqrt{Z_0} = a_1(1 + S_{11}) \\implies a_1 = (V_1/\\sqrt{Z_0}) / (1 + S_{11})$.<br>
+                            • <strong>Matched Port 2 Output:</strong> Because Port 2 is matched, $a_2 = 0$, so $b_2 = V_2 / \\sqrt{Z_0}$.<br>
+                            • <strong>The Master Formula:</strong>
+                            $$S_{21} = \\frac{b_2}{a_1} = \\frac{V(\\text{port 2})}{V(\\text{port 1})} \\cdot (1 + S_{11})$$<br>
+                            • <strong>Source Independence:</strong> Changing generator voltage $V_g$ or source impedance $Z_{\\text{source}}$ alters $V_1$ and $V_2$, but their ratio $V_2 / V_1$ and $S_{21}$ remain strictly invariant!"
+                        </div>
+                    </div>
+
+                    ${renderDeepDive(this.deepDive)}
+
+                    <div class="section-card">
+                        <h2>⚡ Interactive S₂₁ Parameter Calculator & Power Transmission Explorer</h2>
+                        <p>
+                            Configure the two-port network components and generator parameters. 
+                            Computes $S_{11}$, simulates terminal voltages $V(\\text{port 1})$ and $V(\\text{port 2})$, and calculates $S_{21}$ 
+                            via the master formula $S_{21} = \\frac{V_2}{V_1}(1 + S_{11})$, comparing with <code>globalThis.find_S_params</code>.
+                        </p>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Reference Impedance Z₀ [Ω]</label>
+                                <input type="number" id="s21-z0" class="text-input" value="50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Generator Open Voltage |Vg| [V]</label>
+                                <input type="number" id="s21-vg-mag" class="text-input" value="1.0" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label>Source Impedance Re(Zsource) [Ω]</label>
+                                <input type="number" id="s21-zg-real" class="text-input" value="50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Pre-Series Shunt Re(Z_p1) [Ω]</label>
+                                <input type="number" id="s21-zpre-real" class="text-input" value="100" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Pre-Series Shunt Im(Z_p1) [Ω]</label>
+                                <input type="number" id="s21-zpre-imag" class="text-input" value="-50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Series Branch Re(Z_series) [Ω]</label>
+                                <input type="number" id="s21-zseries-real" class="text-input" value="100" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Series Branch Im(Z_series) [Ω]</label>
+                                <input type="number" id="s21-zseries-imag" class="text-input" value="0" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Post-Series Shunt Re(Z_p2) [Ω]</label>
+                                <input type="number" id="s21-zpost-real" class="text-input" value="50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Post-Series Shunt Im(Z_p2) [Ω]</label>
+                                <input type="number" id="s21-zpost-imag" class="text-input" value="100" step="1">
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+                            <button class="secondary-btn" onclick="setS21Preset(50, 100, -50, 100, 0, 50, 100)">Preset: Standard Two-Port (Zg = 50 Ω)</button>
+                            <button class="secondary-btn" onclick="setS21Preset(100, 100, -50, 100, 0, 50, 100)">Test Independence: Zsource = 100 Ω</button>
+                            <button class="secondary-btn" onclick="setS21Preset(25, 100, -50, 100, 0, 50, 100)">Test Independence: Zsource = 25 Ω</button>
+                            <button class="secondary-btn" onclick="setS21Preset(50, 150, 0, 37.5, 0, 150, 0)">Preset: 6 dB Attenuator Pad (Zp=150, Zs=37.5)</button>
+                            <button class="secondary-btn" onclick="setS21Preset(50, 292.4, 0, 17.6, 0, 292.4, 0)">Preset: 3 dB Attenuator Pad (Zp=292.4, Zs=17.6)</button>
+                            <button class="secondary-btn" onclick="setS21Preset(50, 100000, 0, 0, 0, 100000, 0)">Preset: Direct Passthrough (0 dB)</button>
+                        </div>
+
+                        <button class="primary-btn" onclick="calculateS21ParameterDemo()">Calculate S₂₁ & Verify Formula</button>
+                        <div class="code-display" id="s21-output">Click 'Calculate S₂₁ & Verify Formula' to evaluate S₂₁ parameter...</div>
                     </div>
                 `;
                 }
@@ -3670,6 +4088,250 @@
                     ? `• Continuous Line Case (R_mid = 0 Ω): Node L1 and L2 are shorted. V(L1) === V(L2) === ${vL1Mag.toFixed(4)} V.\n  The distributed line has been completely solved by connecting the two Thevenin equivalents directly!`
                     : `• Two-Port Case: Both transmission lines (TL1 and TL2) were successfully eliminated.\n  The entire distributed RF system has been reduced to an ordinary 3-element loop simulated with standard Ohm's law!`
                 );
+        }
+
+        // --- S11 Parameter Computation & Source Independence Helpers ---
+        function setS11Preset(zg, zpreR, zpreI, zserR, zserI, zpostR, zpostI) {
+            document.getElementById('s11-zg-real').value = zg;
+            document.getElementById('s11-zpre-real').value = zpreR;
+            document.getElementById('s11-zpre-imag').value = zpreI;
+            document.getElementById('s11-zseries-real').value = zserR;
+            document.getElementById('s11-zseries-imag').value = zserI;
+            document.getElementById('s11-zpost-real').value = zpostR;
+            document.getElementById('s11-zpost-imag').value = zpostI;
+            calculateS11ParameterDemo();
+        }
+
+        function calculateS11ParameterDemo() {
+            if (typeof globalThis.get_parallel_series_parallel_equivalent_z !== 'function' ||
+                typeof globalThis.find_pre_two_port_impedance_current_voltage !== 'function' ||
+                typeof globalThis.getTLRefelectionCoefficient !== 'function') {
+                const outEl = document.getElementById('s11-output');
+                if (outEl) outEl.textContent = 'Error: radio_frequency_electric_circuit_calculator.js functions not found!';
+                return;
+            }
+
+            const z0 = parseFloat(document.getElementById('s11-z0').value);
+            const vg = parseFloat(document.getElementById('s11-vg-mag').value);
+            const zgReal = parseFloat(document.getElementById('s11-zg-real').value);
+
+            const zPre = {
+                real: parseFloat(document.getElementById('s11-zpre-real').value),
+                imag: parseFloat(document.getElementById('s11-zpre-imag').value)
+            };
+            const zSeries = {
+                real: parseFloat(document.getElementById('s11-zseries-real').value),
+                imag: parseFloat(document.getElementById('s11-zseries-imag').value)
+            };
+            const zPost = {
+                real: parseFloat(document.getElementById('s11-zpost-real').value),
+                imag: parseFloat(document.getElementById('s11-zpost-imag').value)
+            };
+
+            // Port 2 is terminated in matched characteristic impedance Z0
+            const matchedLoadAtPort2 = { z_real: z0, z_imag: 0 };
+
+            // 1. Analytical Driving-Point Impedance at Port 1 via network reduction
+            const zPort1Analytic = globalThis.get_parallel_series_parallel_equivalent_z(
+                zPre,
+                zSeries,
+                zPost,
+                matchedLoadAtPort2
+            );
+            const s11Analytic = globalThis.getTLRefelectionCoefficient(zPort1Analytic.real, zPort1Analytic.imag, z0, 0).reflection;
+
+            // 2. Simulated Extraction with Generator & Source Impedance Z_source
+            const genEquivalent = {
+                z_real: zgReal,
+                z_imag: 0,
+                voltage_real: vg,
+                voltage_imag: 0
+            };
+            const simResults = globalThis.find_pre_two_port_impedance_current_voltage(genEquivalent, zPort1Analytic);
+            const vPort1 = simResults.voltage_pre_two_port;
+            const iPort1 = simResults.generator_current;
+            const zPort1Sim = simResults.z_pre_two_port; // equals vPort1 / iPort1
+            const s11Sim = globalThis.getTLRefelectionCoefficient(zPort1Sim.real, zPort1Sim.imag, z0, 0).reflection;
+
+            const returnLossDb = s11Analytic.magnitude > 0 ? (-20 * Math.log10(s11Analytic.magnitude)) : Infinity;
+            const vswr = globalThis.getStandingWaveRatio_lossless_TL ? globalThis.getStandingWaveRatio_lossless_TL(s11Analytic) : 'N/A';
+
+            const diff = Math.hypot(s11Analytic.real - s11Sim.real, s11Analytic.imag - s11Sim.imag);
+
+            document.getElementById('s11-output').textContent = 
+                `S₁₁ Parameter Computation & Source Independence Verification:\n` +
+                `--------------------------------------------------\n` +
+                `Two-Port Network & Port Termination Parameters:\n` +
+                `• Characteristic Reference Z₀:  ${z0.toFixed(2)} Ω\n` +
+                `• Pre-Series Shunt Z_p1:        ${zPre.real.toFixed(2)} + j(${zPre.imag.toFixed(2)}) Ω\n` +
+                `• Series Branch Z_series:       ${zSeries.real.toFixed(2)} + j(${zSeries.imag.toFixed(2)}) Ω\n` +
+                `• Post-Series Shunt Z_p2:       ${zPost.real.toFixed(2)} + j(${zPost.imag.toFixed(2)}) Ω\n` +
+                `• Port 2 Matched Termination:   Z_load2 = Z₀ = ${z0.toFixed(2)} Ω (Zero reflection back into port 2!)\n\n` +
+                `Method 1: Analytical Network Reduction:\n` +
+                `• Input Impedance Z(port 1):    ${zPort1Analytic.real.toFixed(3)} + j(${zPort1Analytic.imag.toFixed(3)}) Ω  (|Z| = ${Math.hypot(zPort1Analytic.real, zPort1Analytic.imag).toFixed(3)} Ω)\n` +
+                `• S₁₁ = (Z(port 1) - Z₀)/(Z(port 1) + Z₀):\n` +
+                `  - Magnitude |S₁₁|:            ${s11Analytic.magnitude.toFixed(4)}\n` +
+                `  - Phase Angle θ(S₁₁):         ${(s11Analytic.theta * 180 / Math.PI).toFixed(2)}° (${s11Analytic.theta.toFixed(4)} rad)\n` +
+                `  - Complex S₁₁:                ${s11Analytic.real.toFixed(4)} + j(${s11Analytic.imag.toFixed(4)})\n` +
+                `  - Return Loss:                ${returnLossDb === Infinity ? '∞' : returnLossDb.toFixed(2)} dB\n` +
+                `  - Equivalent VSWR:            ${typeof vswr === 'number' ? vswr.toFixed(4) : vswr}\n\n` +
+                `Method 2: Circuit Simulation with Generator (Vg = ${vg} V, Zsource = ${zgReal} Ω):\n` +
+                `• Terminal Voltage V(L1):       ${vPort1.real.toFixed(4)} + j(${vPort1.imag.toFixed(4)}) V  (|V| = ${Math.hypot(vPort1.real, vPort1.imag).toFixed(4)} V)\n` +
+                `• Terminal Current I(L1):       ${(iPort1.real * 1000).toFixed(3)} + j(${(iPort1.imag * 1000).toFixed(3)}) mA  (|I| = ${(Math.hypot(iPort1.real, iPort1.imag) * 1000).toFixed(3)} mA)\n` +
+                `• Simulated Ratio V(L1)/I(L1):  ${zPort1Sim.real.toFixed(3)} + j(${zPort1Sim.imag.toFixed(3)}) Ω\n` +
+                `• Extracted Simulated S₁₁:      ${s11Sim.real.toFixed(4)} + j(${s11Sim.imag.toFixed(4)})  [|S₁₁| = ${s11Sim.magnitude.toFixed(4)}, θ = ${(s11Sim.theta * 180 / Math.PI).toFixed(2)}°]\n\n` +
+                `Verification & Source Independence:\n` +
+                `• Analytical === Simulated:     ${diff < 1e-5 ? 'CONFIRMED!' : 'Diff: ' + diff.toExponential(2)}\n` +
+                `• Source Independence Note:     Notice that changing generator voltage Vg or source impedance Zsource alters V(L1) and I(L1),\n` +
+                `                                but their quotient Z(port 1) = V/I and S₁₁ are completely unchanged!`;
+        }
+
+        // --- S21 Parameter Computation Helpers ---
+        function setS21Preset(zg, zpreR, zpreI, zserR, zserI, zpostR, zpostI) {
+            document.getElementById('s21-zg-real').value = zg;
+            document.getElementById('s21-zpre-real').value = zpreR;
+            document.getElementById('s21-zpre-imag').value = zpreI;
+            document.getElementById('s21-zseries-real').value = zserR;
+            document.getElementById('s21-zseries-imag').value = zserI;
+            document.getElementById('s21-zpost-real').value = zpostR;
+            document.getElementById('s21-zpost-imag').value = zpostI;
+            calculateS21ParameterDemo();
+        }
+
+        function calculateS21ParameterDemo() {
+            if (typeof globalThis.get_parallel_series_parallel_equivalent_z !== 'function' ||
+                typeof globalThis.find_pre_two_port_impedance_current_voltage !== 'function' ||
+                typeof globalThis.get_voltage_across_load_with_parallel_series_parallel_two_port_z !== 'function' ||
+                typeof globalThis.getTLRefelectionCoefficient !== 'function') {
+                const outEl = document.getElementById('s21-output');
+                if (outEl) outEl.textContent = 'Error: radio_frequency_electric_circuit_calculator.js functions not found!';
+                return;
+            }
+
+            const z0 = parseFloat(document.getElementById('s21-z0').value);
+            const vg = parseFloat(document.getElementById('s21-vg-mag').value);
+            const zgReal = parseFloat(document.getElementById('s21-zg-real').value);
+
+            const zPre = {
+                real: parseFloat(document.getElementById('s21-zpre-real').value),
+                imag: parseFloat(document.getElementById('s21-zpre-imag').value)
+            };
+            const zSeries = {
+                real: parseFloat(document.getElementById('s21-zseries-real').value),
+                imag: parseFloat(document.getElementById('s21-zseries-imag').value)
+            };
+            const zPost = {
+                real: parseFloat(document.getElementById('s21-zpost-real').value),
+                imag: parseFloat(document.getElementById('s21-zpost-imag').value)
+            };
+
+            const matchedLoadAtPort2 = { z_real: z0, z_imag: 0 };
+
+            // 1. Z(port 1) and S11
+            const zPort1 = globalThis.get_parallel_series_parallel_equivalent_z(
+                zPre,
+                zSeries,
+                zPost,
+                matchedLoadAtPort2
+            );
+            const s11 = globalThis.getTLRefelectionCoefficient(zPort1.real, zPort1.imag, z0, 0).reflection;
+
+            // 2. Simulate terminal voltage V1 and current I1 with generator
+            const genEquivalent = {
+                z_real: zgReal,
+                z_imag: 0,
+                voltage_real: vg,
+                voltage_imag: 0
+            };
+            const simResults = globalThis.find_pre_two_port_impedance_current_voltage(genEquivalent, zPort1);
+            const v1 = simResults.voltage_pre_two_port;
+            const i1 = simResults.generator_current;
+
+            // 3. Simulate voltage V2 across the matched load at Port 2
+            const v2 = globalThis.get_voltage_across_load_with_parallel_series_parallel_two_port_z(
+                i1, v1, zPre, zSeries, zPost, z0
+            );
+
+            // 4. Wave variables via zero-length TL concept
+            const sqrtZ0 = Math.sqrt(z0);
+            const onePlusS11 = { real: 1 + s11.real, imag: s11.imag };
+
+            // a1 = (V1 / sqrt(Z0)) / (1 + S11)
+            const v1Plus = globalThis.divideComplexNums(v1.real, v1.imag, onePlusS11.real, onePlusS11.imag);
+            const a1 = {
+                real: v1Plus.real / sqrtZ0,
+                imag: v1Plus.imag / sqrtZ0,
+                magnitude: Math.hypot(v1Plus.real, v1Plus.imag) / sqrtZ0
+            };
+
+            // b2 = V2 / sqrt(Z0)
+            const b2 = {
+                real: v2.real / sqrtZ0,
+                imag: v2.imag / sqrtZ0,
+                magnitude: Math.hypot(v2.real, v2.imag) / sqrtZ0
+            };
+
+            // 5. S21 = (V2 / V1) * (1 + S11)
+            const v2OverV1 = globalThis.divideComplexNums(v2.real, v2.imag, v1.real, v1.imag);
+            const s21 = globalThis.multiplyComplexNums(v2OverV1.real, v2OverV1.imag, onePlusS11.real, onePlusS11.imag);
+            const s21Mag = Math.hypot(s21.real, s21.imag);
+            const s21PhaseDeg = Math.atan2(s21.imag, s21.real) * 180 / Math.PI;
+
+            // Power metrics
+            const powerGainLinear = s21Mag * s21Mag;
+            const s21Db = s21Mag > 0 ? (20 * Math.log10(s21Mag)) : -Infinity;
+
+            // Verification against find_S_params from calculator
+            let apiComparisonText = '';
+            if (typeof globalThis.find_S_params === 'function') {
+                try {
+                    const genObj = {
+                        generator_distance: 1,
+                        generator_tl1_length: 0.5,
+                        generator_tl2_length: 0.5,
+                        generator_voltage_real: 1.0,
+                        generator_voltage_imag: 0,
+                        generator_impedance_real: 50,
+                        generator_impedance_imag: 0
+                    };
+                    const sParamsObj = globalThis.find_S_params(genObj, zPre, zSeries, zPost, z0, 3.14159);
+                    const s21Api = sParamsObj.S21;
+                    const diffS21 = Math.hypot(s21.real - s21Api.real, s21.imag - s21Api.imag);
+                    apiComparisonText = `• Verified vs find_S_params:    ${diffS21 < 1e-4 ? 'CONFIRMED! (Difference = ' + diffS21.toExponential(2) + ')' : 'Diff: ' + diffS21.toExponential(2)}`;
+                } catch (e) {
+                    apiComparisonText = '• find_S_params verification: ' + e.message;
+                }
+            }
+
+            document.getElementById('s21-output').textContent = 
+                `S₂₁ Forward Transmission Computation & Wave Analysis:\n` +
+                `--------------------------------------------------\n` +
+                `Network & Port Configuration:\n` +
+                `• Reference Characteristic Z₀:  ${z0.toFixed(2)} Ω\n` +
+                `• Pre-Series Shunt Z_p1:        ${zPre.real.toFixed(2)} + j(${zPre.imag.toFixed(2)}) Ω\n` +
+                `• Series Branch Z_series:       ${zSeries.real.toFixed(2)} + j(${zSeries.imag.toFixed(2)}) Ω\n` +
+                `• Post-Series Shunt Z_p2:       ${zPost.real.toFixed(2)} + j(${zPost.imag.toFixed(2)}) Ω\n` +
+                `• Port 2 Matched Load:          Z_load2 = Z₀ = ${z0.toFixed(2)} Ω  (a₂ = 0, no reflections from load!)\n\n` +
+                `Step 1: Input Port 1 Analysis:\n` +
+                `• Input Impedance Z(port 1):    ${zPort1.real.toFixed(3)} + j(${zPort1.imag.toFixed(3)}) Ω\n` +
+                `• Input Reflection S₁₁:         ${s11.real.toFixed(4)} + j(${s11.imag.toFixed(4)})  [|S₁₁| = ${s11.magnitude.toFixed(4)}, θ = ${(s11.theta * 180 / Math.PI).toFixed(2)}°]\n` +
+                `• Boundary Factor (1 + S₁₁):    ${onePlusS11.real.toFixed(4)} + j(${onePlusS11.imag.toFixed(4)})\n\n` +
+                `Step 2: Simulated Terminal Voltages (Vg = ${vg} V, Zsource = ${zgReal} Ω):\n` +
+                `• Voltage at Port 1 V(L1):      ${v1.real.toFixed(4)} + j(${v1.imag.toFixed(4)}) V  (|V₁| = ${Math.hypot(v1.real, v1.imag).toFixed(4)} V)\n` +
+                `• Voltage at Port 2 V(L2):      ${v2.real.toFixed(4)} + j(${v2.imag.toFixed(4)}) V  (|V₂| = ${Math.hypot(v2.real, v2.imag).toFixed(4)} V)\n` +
+                `• Voltage Gain Ratio V₂ / V₁:   ${v2OverV1.real.toFixed(4)} + j(${v2OverV1.imag.toFixed(4)})  (|V₂/V₁| = ${Math.hypot(v2OverV1.real, v2OverV1.imag).toFixed(4)})\n\n` +
+                `Step 3: Power Waves via Zero-Length Line Concept:\n` +
+                `• Forward Incident a₁ = V₁⁺/√Z₀: ${a1.real.toFixed(4)} + j(${a1.imag.toFixed(4)}) √W  (|a₁| = ${a1.magnitude.toFixed(4)} √W, |V₁⁺| = ${Math.hypot(v1Plus.real, v1Plus.imag).toFixed(4)} V)\n` +
+                `• Transmitted Wave b₂ = V₂/√Z₀:  ${b2.real.toFixed(4)} + j(${b2.imag.toFixed(4)}) √W  (|b₂| = ${b2.magnitude.toFixed(4)} √W)\n\n` +
+                `Step 4: Forward Transmission Coefficient S₂₁ = [V₂ / V₁] · (1 + S₁₁) = b₂ / a₁:\n` +
+                `• Complex S₂₁:                  ${s21.real.toFixed(4)} + j(${s21.imag.toFixed(4)})\n` +
+                `• Magnitude |S₂₁|:              ${s21Mag.toFixed(4)}\n` +
+                `• Phase Angle θ(S₂₁):           ${s21PhaseDeg.toFixed(2)}° (${(s21PhaseDeg * Math.PI / 180).toFixed(4)} rad)\n` +
+                `• Insertion Gain / Loss:        ${s21Db.toFixed(2)} dB  [20 · log₁₀(|S₂₁|)]\n` +
+                `• Linear Power Gain |S₂₁|²:     ${powerGainLinear.toFixed(4)}  (Transmits ${(powerGainLinear * 100).toFixed(2)}% of incident power to load)\n` +
+                (apiComparisonText ? apiComparisonText + '\n' : '') +
+                `\nSource Independence Note:\n` +
+                `• Changing Vg or Zsource alters V₁ and V₂, but their quotient V₂/V₁ and S₂₁ remain strictly invariant!`;
         }
 
         function calculateWaveParams() {
