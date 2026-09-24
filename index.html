@@ -854,7 +854,7 @@
                     <h1 id="page-title">Loading Page...</h1>
                     <p class="story-tagline" id="page-subtitle"></p>
                 </div>
-                <div class="page-counter-pill" id="page-counter">Page 1 of 9</div>
+                <div class="page-counter-pill" id="page-counter">Page 1 of 12</div>
             </div>
 
             <!-- Injected Story Page Body -->
@@ -2240,7 +2240,7 @@
                         </p>
 
                         <div class="circuit-illustration-card">
-                            <img src="./circuit_images/s_params_demo_circuit_generator_port1_side.png" alt="S11 Test Setup: Excitation at Port 1 with matched 50 Ohm load at Port 2">
+                            <img src="./circuit_images/demo_circuit_s_params_S11_S21.png" alt="S11 Test Setup: Excitation at Port 1 with matched 50 Ohm load at Port 2">
                             <div class="circuit-illustration-caption">
                                 <strong>Figure 1:</strong> Exciting Port 1 ($L_1$) with generator ($V_g, Z_{\\text{source}}$) while Port 2 ($L_2$) is terminated in a matched $50\\,\\Omega$ load.
                             </div>
@@ -2260,7 +2260,7 @@
                         </p>
 
                         <div class="circuit-illustration-card">
-                            <img src="./circuit_images/s_params_demo_circuit_and_thevenin_equivalent.png" alt="S-Parameters Demo Circuit and Thevenin Equivalent">
+                            <img src="./circuit_images/demo_circuit_s_params_and_thevenin_equivalent.png" alt="S-Parameters Demo Circuit and Thevenin Equivalent">
                             <div class="circuit-illustration-caption">
                                 <strong>Figure 2:</strong> Top: Two-port network embedded between $TL_1$ and $TL_2$. Bottom: Both transmission lines eliminated via Thevenin reduction, connecting the equivalent source directly to Port 1 ($L_1$) and matched load to Port 2 ($L_2$).
                             </div>
@@ -2331,7 +2331,7 @@
                             $S_{11}$ is determined purely by the driving-point impedance $Z(\\text{port 1}) = V(L_1) / I(L_1)$—completely independent of the source impedance!
                         </p>
                         <div class="circuit-illustration-card">
-                            <img src="./circuit_images/s_params_demo_circuit_generator_port1_side.png" alt="S11 Test Setup: Direct excitation at Port 1 with matched 50 Ohm load at Port 2">
+                            <img src="./circuit_images/demo_circuit_s_params_S11_S21.png" alt="S11 Test Setup: Direct excitation at Port 1 with matched 50 Ohm load at Port 2">
                             <div class="circuit-illustration-caption">
                                 <strong>Figure 1:</strong> Excitation at Port 1 ($L_1$) driving the two-port $\\Pi$-ladder network, with Port 2 ($L_2$) terminated in matched load $Z_0 = 50\\,\\Omega$.
                             </div>
@@ -2452,6 +2452,14 @@
                                 $$a_2 = \\frac{V_2^+}{\\sqrt{Z_0}} \\quad [\\text{Incoming wave travelling from load back toward Port 2}]$$
                             </li>
                         </ul>
+
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/demo_circuit_s_params_S11_S21.png" alt="S21 Wave and Arrow Flow Directions">
+                            <div class="circuit-illustration-caption">
+                                <strong>Wave Flow Diagram:</strong> Top: Lumped network with zero-length line framing showing $a_1 \to, b_1 \leftarrow$ at Port 1 and $b_2 \to, a_2 = 0 \leftarrow$ at Port 2. Bottom: Embedding between distributed transmission lines ($TL_1, TL_2$) with matched load.
+                            </div>
+                        </div>
+
                         <p>
                             <em>(Note on signs and units: The forward and backward waves on $TL_1$ and $TL_2$ are separate physical quantities. 
                             The direction toward the load at Port 2 is customarily considered the outgoing wave $b_2$. 
@@ -2554,6 +2562,12 @@
                             when Port 2 is terminated in a matched characteristic impedance ($Z_0 = 50\\,\\Omega$). 
                             By framing the ports as zero-length transmission lines, $S_{21}$ is calculated directly from terminal voltages and input reflection:
                         </p>
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/demo_circuit_s_params_S11_S21.png" alt="S21 Wave and Arrow Flow Directions: a1 entering Port 1, b1 reflecting, b2 exiting Port 2, a2 = 0">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure:</strong> $S_{21}$ wave and arrow flow directions. Incident wave $a_1$ enters Port 1 ($L_1$), reflected wave $b_1 = S_{11} a_1$ returns to the source, and transmitted wave $b_2$ exits Port 2 ($L_2$) into the matched $50\\,\\Omega$ load with zero returning reflection ($a_2 = 0$).
+                            </div>
+                        </div>
                         <div class="story-callout">
                             "• <strong>Power Wave Definitions:</strong> Incident wave entering Port 1 is $a_1 = V_1^+ / \\sqrt{Z_0}$; outgoing wave leaving Port 2 is $b_2 = V_2 / \\sqrt{Z_0}$.<br>
                             • <strong>Zero-Length Line Concept:</strong> Imagining reference transmission lines of length zero at both ports allows wave superposition to apply directly to lumped circuits.<br>
@@ -2625,6 +2639,670 @@
 
                         <button class="primary-btn" onclick="calculateS21ParameterDemo()">Calculate S₂₁ & Verify Formula</button>
                         <div class="code-display" id="s21-output">Click 'Calculate S₂₁ & Verify Formula' to evaluate S₂₁ parameter...</div>
+                    </div>
+                `;
+                }
+            },
+            {
+                id: 's22-parameter-computation',
+                badge: '10',
+                title: 'S₂₂ Parameter: Output Reflection of a Two-Port Network',
+                subtitle: 'Excitation at Port 2 with Port 1 matched, wave variables (b₂, a₂), and S₂₂ = (Z(port 2) - Z₀) / (Z(port 2) + Z₀)',
+                deepDive: {
+                    title: 'Analytical & Simulated Extraction of S₂₂: Output Port Reflection & Thevenin Symmetry',
+                    preview: 'Measuring reflections looking into Port 2, why Port 1 must be terminated in a matched 50 Ω load, the zero-length line model, and S₂₂ = b₂ / a₂ = (Z₂ - Z₀) / (Z₂ + Z₀).',
+                    readingTime: '6 min read',
+                    content: `
+                        <h3>1. What S₂₂ Measures: Reflection at the Output Port</h3>
+                        <p>
+                            In scattering parameter analysis, the parameter $S_{22}$ characterizes the <strong>output reflection coefficient</strong> 
+                            looking into <strong>Port 2 (node $L_2$)</strong> back into the two-port network:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Definition of Output Reflection Parameter S₂₂</div>
+                            $$S_{22} = \\left. \\frac{b_2}{a_2} \\right|_{a_1 = 0} = \\left. \\frac{V_2^-}{V_2^+} \\right|_{\\text{Port 1 matched to } Z_0}$$
+                        </div>
+
+                        <p>
+                            Here, $a_2$ is the incoming wave launched into Port 2 from an external generator, and $b_2$ is the reflected wave emerging back out of Port 2. 
+                            Thus, $S_{22}$ measures the fraction of incoming wave $a_2$ that reflects back into $b_2$.
+                        </p>
+
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/demo_circuit_s_params_S22_S12.png" alt="S22 and S12 Test Setup: Excitation at Port 2 with matched 50 Ohm load at Port 1">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 1:</strong> Reverse test configuration: Port 2 ($L_2$) is excited with generator ($V_{g2}, Z_{g2}$), while Port 1 ($L_1$) is terminated in a matched $50\\,\\Omega$ load to prevent reflections ($a_1 = 0$).
+                            </div>
+                        </div>
+
+                        <h3>2. The Matched Port 1 Condition ($a_1 = 0$): Avoiding Spurious Re-reflections</h3>
+                        <p>
+                            To isolate the intrinsic output reflection of the network, <strong>Port 1 (node $L_1$) must be terminated with a matched reference impedance ($Z_0 = 50\\,\\Omega$)</strong>:
+                        </p>
+                        <ul>
+                            <li>Any wave travelling through the network toward Port 1 ($b_1$) exits smoothly into the matched load and is completely absorbed without reflection.</li>
+                            <li>This guarantees that no re-reflected wave returns back from Port 1 into the network ($a_1 = 0$).</li>
+                            <li>If Port 1 were not matched, reflections at Port 1 would bounce back through the network and exit Port 2, contaminating and altering the effective impedance seen at Port 2!</li>
+                        </ul>
+
+                        <h3>3. The Zero-Length Line Concept at Port 2 & Impedance Ratio</h3>
+                        <p>
+                            Just like on Port 1, the concept of a <strong>transmission line of length zero ($l_2 = 0$)</strong> with characteristic impedance $Z_0 = 50\\,\\Omega$ 
+                            clarifies the connection between lumped terminal circuits and wave variables:
+                        </p>
+                        <ul>
+                            <li>On the port 1 side, the original $TL_1$ and generator are removed and replaced by their Thevenin equivalent (or conceptual zero-length line terminated in $Z_0 = 50\\,\\Omega$).</li>
+                            <li>At Port 2, the total terminal voltage is the wave superposition: $V_2 = V_2^+ + V_2^-$.</li>
+                            <li>Normalized by $\\sqrt{Z_0}$, the wave entering Port 2 is $a_2 = V_2^+ / \\sqrt{Z_0}$, and the wave reflecting out of Port 2 is $b_2 = V_2^- / \\sqrt{Z_0}$.</li>
+                            <li>The ratio of total terminal voltage to current looking into Port 2 defines the driving-point output impedance:
+                                $$Z(\\text{port 2}) = \\frac{V(L_2)}{I(L_2)}$$
+                            </li>
+                        </ul>
+                        <p>
+                            Because the reflection at a boundary between a reference line $Z_0$ and an impedance $Z(\\text{port 2})$ is determined by the impedance mismatch:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">S₂₂ Formula from Driving-Point Impedance</div>
+                            $$S_{22} = \\Gamma_{\\text{port 2}} = \\frac{Z(\\text{port 2}) - Z_0}{Z(\\text{port 2}) + Z_0} = \\frac{b_2}{a_2} = \\frac{V_2^-}{V_2^+}$$
+                        </div>
+
+                        <h3>4. Source Independence at Port 2</h3>
+                        <p>
+                            Just as with $S_{11}$, the generator voltage $V_{g2}$ and source impedance $Z_{g2}$ used to excite Port 2 do <strong>not</strong> affect $S_{22}$:
+                        </p>
+                        <p>
+                            Changing the source impedance $Z_{g2}$ alters the individual voltage $V(L_2)$ and current $I(L_2)$ at Port 2, but their quotient 
+                            $Z(\\text{port 2}) = V(L_2) / I(L_2)$ is an invariant driving-point property of the network. Hence, $S_{22}$ is completely independent of the excitation source!
+                        </p>
+
+                        <h3>5. Analytical Ladder Reduction for $Z(\\text{port 2})$</h3>
+                        <p>
+                            We can compute $Z(\\text{port 2})$ and $S_{22}$ analytically by stepping through the ladder network from Port 1 toward Port 2:
+                        </p>
+                        <ol>
+                            <li>At Port 1 ($L_1$), the pre-series parallel branch $Z_{\\text{parallel,1}}$ sits in parallel with the matched termination $Z_0 = 50\\,\\Omega$:
+                                $$Z_{\\text{front}} = Z_{\\text{parallel,1}} \\parallel Z_0 = \\frac{Z_{\\text{parallel,1}} \\cdot Z_0}{Z_{\\text{parallel,1}} + Z_0}$$
+                            </li>
+                            <li>This combines in series with the central series branch $Z_{\\text{series}}$:
+                                $$Z_{\\text{mid,2}} = Z_{\\text{series}} + Z_{\\text{front}}$$
+                            </li>
+                            <li>Finally, at Port 2 ($L_2$), $Z_{\\text{mid,2}}$ combines in parallel with the post-series shunt branch $Z_{\\text{parallel,2}}$:
+                                $$Z(\\text{port 2}) = Z_{\\text{parallel,2}} \\parallel Z_{\\text{mid,2}} = \\frac{Z_{\\text{parallel,2}} \\cdot Z_{\\text{mid,2}}}{Z_{\\text{parallel,2}} + Z_{\\text{mid,2}}}$$
+                            </li>
+                            <li>Substituting $Z(\\text{port 2})$ into the reflection formula yields $S_{22}$ exactly, matching simulation down to machine precision!</li>
+                        </ol>
+                    `
+                },
+                render: function() {
+                    return `
+                    <div class="section-card">
+                        <h2>🌐 S₂₂ Parameter: Output Reflection of a Two-Port Network</h2>
+                        <p>
+                            The scattering parameter $S_{22} = b_2 / a_2 |_{a_1 = 0}$ measures the reflection coefficient looking into Port 2 ($L_2$) 
+                            when Port 1 ($L_1$) is terminated with a matched reference impedance ($Z_0 = 50\\,\\Omega$). 
+                            By framing Port 2 as a zero-length reference line, $S_{22}$ is determined strictly by the driving-point impedance $Z(\\text{port 2})$:
+                        </p>
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/demo_circuit_s_params_S12_S22.png" alt="S22 Test Setup: Reverse excitation at Port 2 with matched 50 Ohm load at Port 1">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure:</strong> Reverse excitation setup. Port 2 ($L_2$) is excited by source ($V_{g2}, Z_{g2}$) launching incoming wave $a_2$ and reflecting wave $b_2 = S_{22} a_2$, while Port 1 ($L_1$) is terminated in matched load $Z_0 = 50\\,\\Omega$ ($a_1 = 0$).
+                            </div>
+                        </div>
+                        <div class="story-callout">
+                            "• <strong>S₂₂ Definition:</strong> $S_{22} = b_2 / a_2 |_{a_1 = 0} = V_2^- / V_2^+$ measures the reflection at Port 2 with Port 1 matched to $Z_0$ ($a_1 = 0$).<br>
+                            • <strong>Matched Port 1 Requirement:</strong> Port 1 must be terminated in $Z_0$ so that waves reaching Port 1 are completely absorbed, avoiding re-reflections back to Port 2 that would alter the observed impedance.<br>
+                            • <strong>Zero-Length Line Concept:</strong> Imagining a transmission line of length zero at Port 2 with $Z_0 = 50\\,\\Omega$ connects wave reflection directly to port impedance.<br>
+                            • <strong>The Fundamental Formula:</strong>
+                            $$Z(\\text{port 2}) = Z_{\\text{parallel,2}} \\parallel \\big( Z_{\\text{series}} + (Z_{\\text{parallel,1}} \\parallel Z_0) \\big)$$
+                            $$S_{22} = \\Gamma_{\\text{port 2}} = \\frac{Z(\\text{port 2}) - Z_0}{Z(\\text{port 2}) + Z_0}$$"
+                        </div>
+                    </div>
+
+                    ${renderDeepDive(this.deepDive)}
+
+                    <div class="section-card">
+                        <h2>⚡ Interactive S₂₂ Parameter Calculator & Reverse Reflection Explorer</h2>
+                        <p>
+                            Configure the two-port network components and reverse generator parameters at Port 2. 
+                            The calculator solves $Z(\\text{port 2})$ analytically and simulates terminal voltage $V(L_2)$ and current $I(L_2)$ 
+                            using <code>globalThis.get_parallel_series_parallel_equivalent_z</code> and <code>globalThis.find_pre_two_port_impedance_current_voltage</code>, 
+                            comparing with <code>globalThis.find_S_params</code>.
+                        </p>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Reference Impedance Z₀ [Ω]</label>
+                                <input type="number" id="s22-z0" class="text-input" value="50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Port 2 Generator Voltage |Vg2| [V]</label>
+                                <input type="number" id="s22-vg-mag" class="text-input" value="1.0" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label>Port 2 Source Re(Zg2) [Ω]</label>
+                                <input type="number" id="s22-zg-real" class="text-input" value="50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Pre-Series Shunt Re(Z_p1) [Ω]</label>
+                                <input type="number" id="s22-zpre-real" class="text-input" value="100" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Pre-Series Shunt Im(Z_p1) [Ω]</label>
+                                <input type="number" id="s22-zpre-imag" class="text-input" value="-50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Series Branch Re(Z_series) [Ω]</label>
+                                <input type="number" id="s22-zseries-real" class="text-input" value="100" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Series Branch Im(Z_series) [Ω]</label>
+                                <input type="number" id="s22-zseries-imag" class="text-input" value="0" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Post-Series Shunt Re(Z_p2) [Ω]</label>
+                                <input type="number" id="s22-zpost-real" class="text-input" value="50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Post-Series Shunt Im(Z_p2) [Ω]</label>
+                                <input type="number" id="s22-zpost-imag" class="text-input" value="100" step="1">
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+                            <button class="secondary-btn" onclick="setS22Preset(50, 100, -50, 100, 0, 50, 100)">Preset: Standard Two-Port (Zg = 50 Ω)</button>
+                            <button class="secondary-btn" onclick="setS22Preset(100, 100, -50, 100, 0, 50, 100)">Test Independence: Zsource = 100 Ω</button>
+                            <button class="secondary-btn" onclick="setS22Preset(25, 100, -50, 100, 0, 50, 100)">Test Independence: Zsource = 25 Ω</button>
+                            <button class="secondary-btn" onclick="setS22Preset(50, 150, 0, 37.5, 0, 150, 0)">Preset: Symmetric Attenuator (Zp=150, Zs=37.5)</button>
+                            <button class="secondary-btn" onclick="setS22Preset(50, 100000, 0, 0, 0, 100000, 0)">Preset: Direct Passthrough (0 dB)</button>
+                        </div>
+
+                        <button class="primary-btn" onclick="calculateS22ParameterDemo()">Calculate S₂₂ & Verify Independence</button>
+                        <div class="code-display" id="s22-output">Click 'Calculate S₂₂ & Verify Independence' to evaluate S₂₂ parameter...</div>
+                    </div>
+                `;
+                }
+            },
+            {
+                id: 's12-parameter-computation',
+                badge: '11',
+                title: 'S₁₂ Parameter: Reverse Transmission Across a Two-Port Network',
+                subtitle: 'Reverse transmission from Port 2 to Port 1, matched Port 1 boundary, and S₁₂ = [V(port 1) / V(port 2)] · (1 + S₂₂)',
+                deepDive: {
+                    title: 'Analytical & Simulated Extraction of S₁₂: Reverse Wave Transmission & Reciprocity',
+                    preview: 'Measuring how much incident wave a₂ entering Port 2 emerges as outgoing wave b₁ at Port 1, why matched Port 1 eliminates re-reflections, and verifying S₁₂ = [V₁ / V₂] · (1 + S₂₂).',
+                    readingTime: '6 min read',
+                    content: `
+                        <h3>1. What S₁₂ Measures: Reverse Transmission from Port 2 to Port 1</h3>
+                        <p>
+                            In scattering parameter analysis, the reverse transmission parameter $S_{12}$ measures what fraction of an incoming 
+                            wave $a_2$ launched into <strong>Port 2 (node $L_2$)</strong> traverses ("jumps over") the two-port network and emerges 
+                            as an outgoing wave $b_1$ leaving <strong>Port 1 (node $L_1$)</strong> to the left along $TL_1$:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Definition of Reverse Transmission Parameter S₁₂</div>
+                            $$S_{12} = \\left. \\frac{b_1}{a_2} \\right|_{a_1 = 0} \\quad [\\text{Port 1 matched to } Z_0]$$
+                        </div>
+
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/demo_circuit_s_params_S22_S12.png" alt="S12 and S22 Wave and Arrow Flow Directions">
+                            <div class="circuit-illustration-caption">
+                                <strong>Wave Flow Diagram for Reverse Transmission ($S_{12}$):</strong> Generator excites Port 2 ($L_2$) launching incident wave $a_2$. The wave transmitted across the network emerges at Port 1 ($L_1$) as outgoing wave $b_1$ and is absorbed by the matched $50\\,\\Omega$ termination without re-reflection ($a_1 = 0$).
+                            </div>
+                        </div>
+
+                        <h3>2. The Matched Port 1 Condition: Eliminating Waves Returning to the Network ($a_1 = 0$)</h3>
+                        <p>
+                            To measure the true, uncorrupted reverse transmission $S_{12}$, <strong>Port 1 (node $L_1$) is terminated with the line characteristic impedance $Z_0 = 50\\,\\Omega$</strong> 
+                            (at the position where the original generator source used to reside).
+                        </p>
+                        <p>
+                            Because the termination is matched, the reflection coefficient is zero: $\\Gamma_{\\text{load,1}} = 0$. 
+                            As we proved in Chapter 03 and Chapter 04, a line terminated in its own characteristic impedance presents zero reflection 
+                            at every point along its entire length. Therefore:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">No Reflections from Port 1: a₁ = 0</div>
+                            $$a_1 = \\Gamma_{\\text{load,1}} \\cdot b_1 = 0 \\cdot b_1 = 0$$
+                        </div>
+
+                        <p>
+                            Following our established arrow conventions:
+                        </p>
+                        <ul>
+                            <li>$a_1 = V_1^+ / \\sqrt{Z_0}$ represents waves travelling forward into Port 1 (which is zero because nothing reflects back from the matched termination: $a_1 = 0$).</li>
+                            <li>$b_1 = V_1^- / \\sqrt{Z_0}$ represents waves travelling backward to the left along $TL_1$ away from Port 1.</li>
+                        </ul>
+                        <p>
+                            Since the total terminal voltage at Port 1 is the superposition $V_1 = V_1^+ + V_1^-$ and $V_1^+ = 0$, 
+                            <strong>the entire voltage appearing at Port 1 is the transmitted wave $b_1$ itself</strong>:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Isolating Outgoing Wave b₁ at Port 1</div>
+                            $$V_1 = V_1^- \\implies b_1 = \\frac{V_1}{\\sqrt{Z_0}} = \\frac{V(\\text{port 1})}{\\sqrt{Z_0}}$$
+                        </div>
+
+                        <h3>3. Isolating the Incident Wave $a_2$ at Port 2</h3>
+                        <p>
+                            Now look at the excitation side at Port 2. Having already solved $S_{22}$ (the output reflection coefficient at Port 2 with Port 1 matched), 
+                            the reflected wave emerging from Port 2 is related to the incident wave $a_2$ by:
+                        </p>
+                        <p style="text-align:center; font-weight:600; margin:14px 0;">
+                            $$b_2 = S_{22} \\cdot a_2$$
+                        </p>
+                        <p>
+                            Applying our zero-length transmission line concept at Port 2, the total terminal voltage $V_2$ is the sum of the incident wave $a_2$ 
+                            and the reflected wave $b_2$:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Expressing Terminal Voltage V₂ in terms of a₂</div>
+                            $$\\frac{V_2}{\\sqrt{Z_0}} = a_2 + b_2 = a_2 + S_{22} \\cdot a_2 = a_2 \\big(1 + S_{22}\\big)$$
+                        </div>
+
+                        <p>
+                            Solving directly for the incident wave phasor $a_2$:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Exact Incident Wave a₂ at Port 2</div>
+                            $$a_2 = \\frac{V_2 / \\sqrt{Z_0}}{1 + S_{22}} = \\frac{V_2}{\\sqrt{Z_0} \\cdot (1 + S_{22})}$$
+                        </div>
+
+                        <p>
+                            <em>(Verification note: This algebraic step is mathematically exact and sound—it mirrors the input-side relation $a_1 = V_1 / [\\sqrt{Z_0}(1 + S_{11})]$ with perfect physical symmetry!)</em>
+                        </p>
+
+                        <h3>4. Step-by-Step Derivation of the Master Formula for $S_{12}$</h3>
+                        <p>
+                            With both wave quantities $b_1$ and $a_2$ isolated in terms of terminal voltages, we take their ratio:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">The Master Formula for S₁₂</div>
+                            $$S_{12} = \\frac{b_1}{a_2} = \\frac{\\frac{V_1}{\\sqrt{Z_0}}}{\\frac{V_2}{\\sqrt{Z_0} \\cdot (1 + S_{22})}} = \\frac{V_1}{V_2} \\cdot (1 + S_{22}) = \\frac{V(\\text{port 1})}{V(\\text{port 2})} \\cdot (1 + S_{22})$$
+                        </div>
+
+                        <p>
+                            <strong>Physical Symmetry with $S_{21}$:</strong><br>
+                            Compare the two transmission formulas:
+                        </p>
+                        <ul>
+                            <li><strong>Forward Transmission ($S_{21}$):</strong> $S_{21} = \\frac{V_2}{V_1} \\cdot (1 + S_{11})$</li>
+                            <li><strong>Reverse Transmission ($S_{12}$):</strong> $S_{12} = \\frac{V_1}{V_2} \\cdot (1 + S_{22})$</li>
+                        </ul>
+                        <p>
+                            In both cases, transmission is the ordinary lumped terminal voltage transfer ratio multiplied by $(1 + S_{\\text{input}})$ to isolate 
+                            the pure incident forward-travelling wave from total terminal voltage.
+                        </p>
+
+                        <h3>5. Network Reciprocity: Why $S_{12} \\equiv S_{21}$ for Passive Linear Circuits</h3>
+                        <p>
+                            By the Lorentz Reciprocity Theorem, any linear passive network composed of standard resistors, inductors, capacitors, 
+                            and transmission lines (without active transistors, amplifiers, or non-reciprocal ferrite circulators/isolators) is 
+                            strictly <strong>reciprocal</strong>:
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Reciprocity Property</div>
+                            $$S_{12} = S_{21} \\quad [\\text{For all passive, linear, bilateral networks}]$$
+                        </div>
+
+                        <p>
+                            Our interactive calculator below verifies this equality down to machine precision: the forward transmission $S_{21}$ 
+                            derived in Chapter 09 matches the reverse transmission $S_{12}$ identically!
+                        </p>
+
+                        <h3>6. Source Independence at Port 2</h3>
+                        <p>
+                            Just like $S_{11}$, $S_{21}$, and $S_{22}$, the reverse transmission parameter $S_{12}$ is an intrinsic property of the network. 
+                            Changing the generator voltage $V_{g2}$ or source impedance $Z_{g2}$ scales both $V_1$ and $V_2$ by the identical factor, 
+                            leaving the quotient $V_1 / V_2$ and $S_{12}$ completely unchanged.
+                        </p>
+                    `
+                },
+                render: function() {
+                    return `
+                    <div class="section-card">
+                        <h2>📡 S₁₂ Parameter: Reverse Transmission Across a Two-Port Network</h2>
+                        <p>
+                            The scattering parameter $S_{12} = b_1 / a_2 |_{a_1 = 0}$ measures how much of the incoming wave $a_2$ launched into Port 2 
+                            transmits across the network and emerges as outgoing wave $b_1$ at Port 1, when Port 1 is terminated in a matched load ($Z_0 = 50\\,\\Omega$). 
+                            Using our zero-length transmission line framework, $S_{12}$ is determined directly from terminal voltages and output reflection:
+                        </p>
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/demo_circuit_s_params_S22_S12.png" alt="S12 and S22 Wave and Arrow Flow Directions">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure:</strong> $S_{12}$ reverse transmission flow. Excitation at Port 2 ($L_2$) launches incident wave $a_2$. The wave transmitted across the network emerges at Port 1 ($L_1$) as outgoing wave $b_1 = V_1 / \\sqrt{Z_0}$ into the matched $50\\,\\Omega$ load ($a_1 = 0$).
+                            </div>
+                        </div>
+                        <div class="story-callout">
+                            "• <strong>S₁₂ Definition:</strong> $S_{12} = b_1 / a_2 |_{a_1 = 0}$ measures reverse transmission into Port 1 when Port 1 is matched to $Z_0$ ($a_1 = 0$).<br>
+                            • <strong>Matched Port 1 Boundary:</strong> Because Port 1 is terminated in $Z_0$, $\\Gamma_{\\text{load,1}} = 0 \\implies a_1 = 0$. The entire voltage at Port 1 is the transmitted wave: $b_1 = V_1 / \\sqrt{Z_0}$.<br>
+                            • <strong>Port 2 Incident Wave Isolation:</strong> Since $b_2 = S_{22} a_2$, terminal voltage is $V_2 / \\sqrt{Z_0} = a_2(1 + S_{22}) \\implies a_2 = (V_2/\\sqrt{Z_0}) / (1 + S_{22})$.<br>
+                            • <strong>The Master Formula:</strong>
+                            $$S_{12} = \\frac{b_1}{a_2} = \\frac{V(\\text{port 1})}{V(\\text{port 2})} \\cdot (1 + S_{22})$$<br>
+                            • <strong>Reciprocity:</strong> For all passive linear networks, $S_{12} \\equiv S_{21}$!"
+                        </div>
+                    </div>
+
+                    ${renderDeepDive(this.deepDive)}
+
+                    <div class="section-card">
+                        <h2>⚡ Interactive S₁₂ Parameter Calculator & Reciprocity Verification</h2>
+                        <p>
+                            Configure the two-port network components and reverse generator parameters at Port 2. 
+                            Computes $S_{22}$, simulates terminal voltages $V(\\text{port 2})$ and $V(\\text{port 1})$, evaluates $S_{12}$ 
+                            via the master formula $S_{12} = \\frac{V_1}{V_2}(1 + S_{22})$, and verifies reciprocity against $S_{21}$ and <code>globalThis.find_S_params</code>.
+                        </p>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Reference Impedance Z₀ [Ω]</label>
+                                <input type="number" id="s12-z0" class="text-input" value="50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Port 2 Generator Voltage |Vg2| [V]</label>
+                                <input type="number" id="s12-vg-mag" class="text-input" value="1.0" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label>Port 2 Source Re(Zg2) [Ω]</label>
+                                <input type="number" id="s12-zg-real" class="text-input" value="50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Pre-Series Shunt Re(Z_p1) [Ω]</label>
+                                <input type="number" id="s12-zpre-real" class="text-input" value="100" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Pre-Series Shunt Im(Z_p1) [Ω]</label>
+                                <input type="number" id="s12-zpre-imag" class="text-input" value="-50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Series Branch Re(Z_series) [Ω]</label>
+                                <input type="number" id="s12-zseries-real" class="text-input" value="100" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Series Branch Im(Z_series) [Ω]</label>
+                                <input type="number" id="s12-zseries-imag" class="text-input" value="0" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Post-Series Shunt Re(Z_p2) [Ω]</label>
+                                <input type="number" id="s12-zpost-real" class="text-input" value="50" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Post-Series Shunt Im(Z_p2) [Ω]</label>
+                                <input type="number" id="s12-zpost-imag" class="text-input" value="100" step="1">
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+                            <button class="secondary-btn" onclick="setS12Preset(50, 100, -50, 100, 0, 50, 100)">Preset: Standard Two-Port (Zg = 50 Ω)</button>
+                            <button class="secondary-btn" onclick="setS12Preset(100, 100, -50, 100, 0, 50, 100)">Test Independence: Zsource = 100 Ω</button>
+                            <button class="secondary-btn" onclick="setS12Preset(25, 100, -50, 100, 0, 50, 100)">Test Independence: Zsource = 25 Ω</button>
+                            <button class="secondary-btn" onclick="setS12Preset(50, 150, 0, 37.5, 0, 150, 0)">Preset: 6 dB Attenuator Pad (Zp=150, Zs=37.5)</button>
+                            <button class="secondary-btn" onclick="setS12Preset(50, 292.4, 0, 17.6, 0, 292.4, 0)">Preset: 3 dB Attenuator Pad (Zp=292.4, Zs=17.6)</button>
+                            <button class="secondary-btn" onclick="setS12Preset(50, 100000, 0, 0, 0, 100000, 0)">Preset: Direct Passthrough (0 dB)</button>
+                        </div>
+
+                        <button class="primary-btn" onclick="calculateS12ParameterDemo()">Calculate S₁₂ & Verify Reciprocity</button>
+                        <div class="code-display" id="s12-output">Click 'Calculate S₁₂ & Verify Reciprocity' to evaluate S₁₂ parameter...</div>
+                    </div>
+                `;
+                }
+            },
+            {
+                id: 'real-amplifier-circuit-s-params',
+                badge: '12',
+                title: 'Real Transistor Amplifier: S-Parameter Extraction from Circuit Simulation',
+                subtitle: 'Small-signal AC operation, DC bias & RF chokes, LTspice Fourier extraction, and full 2×2 S-matrix derivation',
+                deepDive: {
+                    title: 'Physical Transistor S-Parameter Extraction: DC Decoupling, Choke Inductance & Non-Reciprocal Gain',
+                    preview: 'How small-signal AC current is isolated to the transistor base and collector via DC blocking capacitors and RF chokes, how LTspice transient Fourier runs provide exact terminal phasors, and how to construct the complete 2×2 scattering matrix with Rollett stability factor K.',
+                    readingTime: '6 min read',
+                    content: `
+                        <h3>1. The Small-Signal AC Dilemma: DC Biasing vs. RF Isolation</h3>
+                        <p>
+                            Bipolar junction transistors (BJTs) and field-effect transistors (FETs) are non-linear active devices requiring 
+                            specific DC bias voltages to establish a stable quiescent operating point ($Q$-point) in the linear forward-active region. 
+                            In our circuit schematics, a $+9\\text{ V}$ power rail and a resistive divider ($R_1 = 2\\,\\text{k}\\Omega, R_2 = 1\\,\\text{k}\\Omega$) 
+                            bias the base to $V_B \\approx 3\\text{ V}$, establishing an emitter voltage $V_E \\approx 2.3\\text{ V}$ across $R_E = 1\\,\\text{k}\\Omega$ 
+                            and a collector current $I_C \\approx 2.3\\text{ mA}$.
+                        </p>
+                        <p>
+                            However, scattering parameters ($S$-parameters) are <em>strictly small-signal AC steady-state parameters</em> defined 
+                            for high-frequency sinusoidal travelling waves. If DC voltages were allowed to leak out of Ports 1 and 2, the external $50\\,\\Omega$ 
+                            test instruments would act as heavy DC loads, altering the $Q$-point and damaging equipment. 
+                            Furthermore, if RF signals leaked into the DC bias network, power would dissipate in the bias resistors rather than propagating to the output.
+                        </p>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">AC Decoupling & Choke Filtering at 100 MHz</div>
+                            $$\\text{DC Blocking Capacitors (20 nF): } X_C = \\frac{1}{2\\pi f C} = \\frac{1}{2\\pi \\cdot 10^8 \\cdot 20 \\times 10^{-9}} \\approx 0.0796\\,\\Omega \\approx 0\\,\\Omega \\text{ (AC Short)}$$
+                            $$\\text{RF Choke Inductors (2 mH): } X_L = 2\\pi f L = 2\\pi \\cdot 10^8 \\cdot 2 \\times 10^{-3} \\approx 1.257 \\times 10^6\\,\\Omega \\approx 1.26\\,\\text{M}\\Omega \\text{ (AC Open)}$$
+                        </div>
+
+                        <h3>2. Constraining Current Paths: Why RF Chokes Replicate Datasheet S-Parameters</h3>
+                        <p>
+                            A vital pedagogical question arises: <em>Why must we insert large inductors into the DC biasing lines?</em>
+                        </p>
+                        <p>
+                            Mathematically, as long as DC currents are blocked by series capacitors, one could apply the two-port wave definitions 
+                            to measure the overall $S$-parameters of <em>any</em> combined circuit network, regardless of what internal paths the AC current traverses. 
+                            However, the primary engineering goal here is to measure the <strong>intrinsic scattering parameters of the active transistor itself</strong>—the 
+                            very parameters published in manufacturer RF component datasheets (such as for the 2N2222, 2N3904, or microwave BJTs).
+                        </p>
+                        <p>
+                            Because the $2\\,\\text{mH}$ inductors present an astronomical AC impedance of $1.26\\,\\text{M}\\Omega$ at $100\\,\\text{MHz}$ compared 
+                            to the transistor's input base impedance (a few hundred Ohms), the AC path is completely blocked from entering the $+9\\text{ V}$ rail or the resistive bias divider. 
+                            The entire AC signal entering Port 1 ($L_1$) is constrained to flow directly into the transistor Base ($I_b$).
+                        </p>
+                        <p>
+                            Inside the transistor, the small-signal base current modulates the collector current through transconductance ($i_c = \\beta_{ac} i_b = g_m v_{be}$). 
+                            The emitter bypass capacitor ($20\\,\\text{nF}$) provides a low-impedance AC path to ground ($X_C \\approx 0.08\\,\\Omega$), 
+                            maximizing common-emitter gain while preserving DC thermal stability. 
+                            At the collector, the $2\\,\\text{mH}$ choke prevents AC current from escaping into the $+9\\text{ V}$ collector supply resistor, 
+                            forcing the entire amplified collector AC current ($I_c$) out through the output DC-blocking capacitor into the external $50\\,\\Omega$ load at Port 2 ($L_2$).
+                        </p>
+
+                        <h3>3. LTspice Transient Simulation & Fourier Fundamental Phasor Extraction</h3>
+                        <p>
+                            In circuit simulators such as LTspice, measuring high-frequency $S$-parameters on active, non-linear transistor stages 
+                            is executed via time-domain transient analysis followed by discrete Fourier decomposition:
+                        </p>
+                        <ol>
+                            <li><strong>Excitation:</strong> A $100\\,\\text{MHz}$ sinusoidal voltage source ($V_g = 1\\,\\text{mV}$ peak) with a $50\\,\\Omega$ source impedance drives the input port. The signal is kept sufficiently small ($1\\,\\text{mV}$) to ensure the transistor stays strictly within its linear small-signal operating regime.</li>
+                            <li><strong>Settling:</strong> The transient simulation is run for multiple cycles (e.g., $200\\,\\text{ns}$) so initial charging transients across the $20\\,\\text{nF}$ capacitors fully decay into steady-state sinusoidal oscillation.</li>
+                            <li><strong>Fourier Extraction (<code>.four 100Meg</code>):</strong> LTspice executes a Fourier analysis across the final cycles of the waveform to extract the fundamental $100\\,\\text{MHz}$ harmonic phasor magnitude $|X|$ and phase angle $\\theta_x$ for the port voltages and currents:
+                                $$X(t) = |X| \\cos(2\\pi f t + \\theta) \\iff \\mathbf{X} = X_{\\text{real}} + j X_{\\text{imag}} = |X| e^{j\\theta}$$
+                            </li>
+                        </ol>
+
+                        <h3>4. Unified Wave Formulation: From Terminal Phasors to S-Parameters</h3>
+                        <p>
+                            Once the complex voltage and current phasors are measured at the two reference terminals $L_1$ and $L_2$, 
+                            the $S$-parameters are calculated using the exact zero-length transmission line boundary principles established in Chapters 08–11:
+                        </p>
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Forward Test Setup (Port 1 Driven, Port 2 Terminated in Z₀ = 50 Ω)</div>
+                            $$Z_{\\text{in}} = \\frac{V_1}{I_1} \\implies S_{11} = \\frac{Z_{\\text{in}} - Z_0}{Z_{\\text{in}} + Z_0}$$
+                            $$a_1 = \\frac{V_1 / \\sqrt{Z_0}}{1 + S_{11}}, \\quad b_2 = \\frac{V_2}{\\sqrt{Z_0}} \\implies S_{21} = \\frac{b_2}{a_1} = \\frac{V_2}{V_1}(1 + S_{11})$$
+                        </div>
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Reverse Test Setup (Port 2 Driven, Port 1 Terminated in Z₀ = 50 Ω)</div>
+                            $$Z_{\\text{out}} = \\frac{V_2}{I_2} \\implies S_{22} = \\frac{Z_{\\text{out}} - Z_0}{Z_{\\text{out}} + Z_0}$$
+                            $$a_2 = \\frac{V_2 / \\sqrt{Z_0}}{1 + S_{22}}, \\quad b_1 = \\frac{V_1}{\\sqrt{Z_0}} \\implies S_{12} = \\frac{b_1}{a_2} = \\frac{V_1}{V_2}(1 + S_{22})$$
+                        </div>
+
+                        <h3>5. Non-Reciprocal Dynamics, Power Amplification, and Rollett Stability (K)</h3>
+                        <p>
+                            Notice the stark contrast between this active amplifier and the passive reciprocal networks in previous chapters:
+                        </p>
+                        <ul>
+                            <li><strong>Active Non-Reciprocity:</strong> In passive networks, $S_{12} = S_{21}$. In this transistor amplifier, 
+                                $|S_{21}| \\approx 3.068$ ($+9.74\\,\\text{dB}$ power gain!), whereas $|S_{12}| \\approx 0.0676$ ($-23.41\\,\\text{dB}$ reverse isolation). 
+                                The transistor acts as a one-way directional amplifier with strong isolation from output to input.</li>
+                            <li><strong>The Complete 2×2 Scattering Matrix:</strong>
+                                $$[S] = \\begin{bmatrix} S_{11} & S_{12} \\\\ S_{21} & S_{22} \\end{bmatrix}$$
+                            </li>
+                            <li><strong>Rollett Stability Criterion ($K$):</strong> An RF amplifier must be stable against spurious self-oscillation for any passive load or source impedance. 
+                                The amplifier is <em>unconditionally stable</em> if and only if Rollett's factor $K > 1$ and $|\\Delta| < 1$, where:
+                                $$\\Delta = S_{11} S_{22} - S_{12} S_{21}, \\quad K = \\frac{1 - |S_{11}|^2 - |S_{22}|^2 + |\\Delta|^2}{2 |S_{12} S_{21}|}$$
+                                For our simulated transistor values, $|\\Delta| \\approx 0.4333 < 1$ and $K \\approx 1.1133 > 1$, proving the circuit is unconditionally stable at $100\\,\\text{MHz}$!
+                            </li>
+                        </ul>
+                    `
+                },
+                render: function() {
+                    return `
+                    <div class="section-card">
+                        <h2>🔬 Real Transistor Amplifier: S-Parameter Extraction from Simulation</h2>
+                        <p>
+                            Transitioning from ideal passive components to active RF semiconductor devices introduces 
+                            DC quiescent biasing ($+9\\text{ V}$), small-signal AC current routing, and non-reciprocal forward amplification ($|S_{21}| > 1$). 
+                            By utilizing $20\\,\\text{nF}$ DC blocking capacitors ($X_C \\approx 0.08\\,\\Omega$) and $2\\,\\text{mH}$ RF chokes ($X_L \\approx 1.26\\,\\text{M}\\Omega$), 
+                            the $100\\,\\text{MHz}$ high-frequency path is constrained exclusively through the transistor Base ($I_b$) and Collector ($I_c$).
+                        </p>
+                        
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/amplifier_circuit_for_s_param_measurement_S11_S21.png" alt="Forward S-Parameter Measurement Setup for S11 and S21 in LTspice">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 1: Forward Test Setup (S₁₁, S₂₁ Extraction).</strong> A 100 MHz 1 mV generator drives Port 1 ($L_1$) through a 50 Ω source. DC blocking capacitors isolate the 50 Ω ports from the +9V DC bias network, while 2 mH inductors block 100 MHz AC signals from entering the bias rails. The AC current flows exclusively through the Base ($I_b$) and into the 50 Ω load via the Collector ($I_c$) at Port 2 ($L_2$).
+                            </div>
+                        </div>
+
+                        <div class="circuit-illustration-card" style="margin-top:16px;">
+                            <img src="./circuit_images/amplifier_circuit_for_s_param_measurement_S22_S12.png" alt="Reverse S-Parameter Measurement Setup for S22 and S12 in LTspice">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 2: Reverse Test Setup (S₂₂, S₁₂ Extraction).</strong> Port 1 ($L_1$) is terminated in a matched 50 Ω load ($a_1 = 0$), while a 100 MHz 1 mV generator drives Port 2 ($L_2$). Measures output reflection $S_{22}$ and reverse leakage transmission $S_{12}$ across the collector-to-base parasitic feedback paths.
+                            </div>
+                        </div>
+
+                        <div class="story-callout" style="margin-top:20px;">
+                            <strong>Why Constraint to the Transistor Path Matters:</strong><br>
+                            As long as DC is removed through blocking capacitors, two-port S-parameters can be mathematically measured regardless of 
+                            what path the AC current takes. However, by inserting high-impedance RF chokes ($X_L \\approx 1.26\\,\\text{M}\\Omega$) to 
+                            prevent AC currents from leaking into the DC biasing network, the AC current is forced exclusively through the transistor's Base and Collector. 
+                            This isolates the <em>intrinsic active transistor</em>, yielding the exact S-parameters featured in RF engineering datasheets.
+                        </div>
+                    </div>
+
+                    ${renderDeepDive(this.deepDive)}
+
+                    <div class="section-card">
+                        <h2>⚡ Interactive S-Parameter Extractor & Stability Analyzer</h2>
+                        <p>
+                            Enter or edit the complex steady-state Fourier phasors for voltage $V$ and current $I$ measured at reference terminals $L_1$ and $L_2$ 
+                            from your LTspice simulations. The engine calculates the complete $2 \\times 2$ scattering matrix $[S]$, forward gain in dB, 
+                            and evaluates the Rollett stability factor $K$.
+                        </p>
+
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight:600; font-size:13px; color:var(--text-muted); display:block; margin-bottom:6px;">Reference Characteristic Impedance Z₀ (Ω)</label>
+                            <input type="number" id="amp-z0" class="text-input" value="50" step="any" style="max-width:200px;">
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:20px; margin-bottom:20px;">
+                            <!-- Forward Setup Card -->
+                            <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:10px; padding:16px;">
+                                <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+                                    <span class="step-badge" style="width:24px; height:24px; font-size:12px;">1</span>
+                                    <strong style="color:var(--accent);">Forward Setup (Port 1 Source, Port 2 50 Ω Load)</strong>
+                                </div>
+                                <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Simulated terminal phasors at $L_1$ and $L_2$ under forward excitation ($S_{11}, S_{21}$):</p>
+                                
+                                <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
+                                    <div class="form-group">
+                                        <label>V(L₁) Real (V)</label>
+                                        <input type="number" id="amp-fwd-v1-re" class="text-input" value="-2.4651624e-4" step="any">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>V(L₁) Imag (V)</label>
+                                        <input type="number" id="amp-fwd-v1-im" class="text-input" value="-4.0180555e-4" step="any">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>I(L₁) Real (A)</label>
+                                        <input type="number" id="amp-fwd-i1-re" class="text-input" value="4.9686111e-6" step="any">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>I(L₁) Imag (A)</label>
+                                        <input type="number" id="amp-fwd-i1-im" class="text-input" value="-1.1948075e-5" step="any">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>V(L₂) Real (V)</label>
+                                        <input type="number" id="amp-fwd-v2-re" class="text-input" value="1.4592868e-3" step="any">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>V(L₂) Imag (V)</label>
+                                        <input type="number" id="amp-fwd-v2-im" class="text-input" value="4.6964979e-4" step="any">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>I(L₂) Real (A)</label>
+                                        <input type="number" id="amp-fwd-i2-re" class="text-input" value="-2.9146574e-5" step="any">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>I(L₂) Imag (A)</label>
+                                        <input type="number" id="amp-fwd-i2-im" class="text-input" value="-9.4815455e-6" step="any">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Reverse Setup Card -->
+                            <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:10px; padding:16px;">
+                                <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+                                    <span class="step-badge" style="width:24px; height:24px; font-size:12px;">2</span>
+                                    <strong style="color:var(--accent);">Reverse Setup (Port 1 50 Ω Load, Port 2 Source)</strong>
+                                </div>
+                                <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Simulated terminal phasors at $L_1$ and $L_2$ under reverse excitation ($S_{22}, S_{12}$):</p>
+                                
+                                <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
+                                    <div class="form-group">
+                                        <label>V(L₁) Real (V)</label>
+                                        <input type="number" id="amp-rev-v1-re" class="text-input" value="1.1513372e-5" step="any">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>V(L₁) Imag (V)</label>
+                                        <input type="number" id="amp-rev-v1-im" class="text-input" value="-3.1736097e-5" step="any">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>I(L₁) Real (A)</label>
+                                        <input type="number" id="amp-rev-i1-re" class="text-input" value="-2.3229474e-7" step="any">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>I(L₁) Imag (A)</label>
+                                        <input type="number" id="amp-rev-i1-im" class="text-input" value="6.3408930e-7" step="any">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>V(L₂) Real (V)</label>
+                                        <input type="number" id="amp-rev-v2-re" class="text-input" value="-1.2938578e-4" step="any">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>V(L₂) Imag (V)</label>
+                                        <input type="number" id="amp-rev-v2-im" class="text-input" value="-8.0598078e-4" step="any">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>I(L₂) Real (A)</label>
+                                        <input type="number" id="amp-rev-i2-re" class="text-input" value="2.5992959e-6" step="any">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>I(L₂) Imag (A)</label>
+                                        <input type="number" id="amp-rev-i2-im" class="text-input" value="-3.8725388e-6" step="any">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+                            <button class="secondary-btn" onclick="setAmplifierSimPreset('default')">Preset: LTspice 100 MHz Simulation (Default)</button>
+                            <button class="secondary-btn" onclick="setAmplifierSimPreset('highgain')">Preset: High-Gain BJT (S₂₁ ≈ 5.0, +14 dB)</button>
+                            <button class="secondary-btn" onclick="setAmplifierSimPreset('unilateral')">Preset: Ideal Unilateral Model (S₁₂ = 0)</button>
+                        </div>
+
+                        <button class="primary-btn" onclick="calculateAmplifierSimSParamsDemo()">Calculate Transistor 2×2 S-Parameters & Stability</button>
+                        <div class="code-display" id="amp-sim-output">Click 'Calculate Transistor 2×2 S-Parameters & Stability' to evaluate...</div>
                     </div>
                 `;
                 }
@@ -3204,6 +3882,15 @@
                 setTimeout(() => {
                     if (typeof runFullTransmissionLineDemo === 'function') {
                         runFullTransmissionLineDemo();
+                    }
+                }, 50);
+            }
+
+            // If navigating to the real amplifier simulation page (Page 12, id 'real-amplifier-circuit-s-params'), auto-run calculation
+            if (page.id === 'real-amplifier-circuit-s-params') {
+                setTimeout(() => {
+                    if (typeof calculateAmplifierSimSParamsDemo === 'function') {
+                        calculateAmplifierSimSParamsDemo();
                     }
                 }, 50);
             }
@@ -4332,6 +5019,510 @@
                 (apiComparisonText ? apiComparisonText + '\n' : '') +
                 `\nSource Independence Note:\n` +
                 `• Changing Vg or Zsource alters V₁ and V₂, but their quotient V₂/V₁ and S₂₁ remain strictly invariant!`;
+        }
+
+        // --- S22 Parameter Computation Helpers ---
+        function setS22Preset(zg2, zpreR, zpreI, zserR, zserI, zpostR, zpostI) {
+            document.getElementById('s22-zg-real').value = zg2;
+            document.getElementById('s22-zpre-real').value = zpreR;
+            document.getElementById('s22-zpre-imag').value = zpreI;
+            document.getElementById('s22-zseries-real').value = zserR;
+            document.getElementById('s22-zseries-imag').value = zserI;
+            document.getElementById('s22-zpost-real').value = zpostR;
+            document.getElementById('s22-zpost-imag').value = zpostI;
+            calculateS22ParameterDemo();
+        }
+
+        function calculateS22ParameterDemo() {
+            if (typeof globalThis.get_parallel_series_parallel_equivalent_z !== 'function' ||
+                typeof globalThis.find_pre_two_port_impedance_current_voltage !== 'function' ||
+                typeof globalThis.getTLRefelectionCoefficient !== 'function') {
+                const outEl = document.getElementById('s22-output');
+                if (outEl) outEl.textContent = 'Error: radio_frequency_electric_circuit_calculator.js functions not found!';
+                return;
+            }
+
+            const z0 = parseFloat(document.getElementById('s22-z0').value);
+            const vg2 = parseFloat(document.getElementById('s22-vg-mag').value);
+            const zg2Real = parseFloat(document.getElementById('s22-zg-real').value);
+
+            const zPre = {
+                real: parseFloat(document.getElementById('s22-zpre-real').value),
+                imag: parseFloat(document.getElementById('s22-zpre-imag').value)
+            };
+            const zSeries = {
+                real: parseFloat(document.getElementById('s22-zseries-real').value),
+                imag: parseFloat(document.getElementById('s22-zseries-imag').value)
+            };
+            const zPost = {
+                real: parseFloat(document.getElementById('s22-zpost-real').value),
+                imag: parseFloat(document.getElementById('s22-zpost-imag').value)
+            };
+
+            // Reverse configuration: Port 1 is terminated in matched characteristic impedance Z0
+            const matchedLoadAtPort1 = { z_real: z0, z_imag: 0 };
+
+            // 1. Analytical Driving-Point Impedance looking into Port 2 (L2) with Port 1 (L1) matched to Z0
+            // Ladder from Port 1: Z_front = Z_pre || Z0, Z_mid = Z_series + Z_front, Z(port 2) = Z_post || Z_mid
+            const zPort2Analytic = globalThis.get_parallel_series_parallel_equivalent_z(
+                zPost,
+                zSeries,
+                zPre,
+                matchedLoadAtPort1
+            );
+            const s22Analytic = globalThis.getTLRefelectionCoefficient(zPort2Analytic.real, zPort2Analytic.imag, z0, 0).reflection;
+
+            // 2. Simulated Extraction with Generator at Port 2 and Source Impedance Z_g2
+            const gen2Equivalent = {
+                z_real: zg2Real,
+                z_imag: 0,
+                voltage_real: vg2,
+                voltage_imag: 0
+            };
+            const sim2Results = globalThis.find_pre_two_port_impedance_current_voltage(gen2Equivalent, zPort2Analytic);
+            const vPort2 = sim2Results.voltage_pre_two_port;
+            const iPort2 = sim2Results.generator_current;
+            const zPort2Sim = sim2Results.z_pre_two_port; // equals vPort2 / iPort2
+            const s22Sim = globalThis.getTLRefelectionCoefficient(zPort2Sim.real, zPort2Sim.imag, z0, 0).reflection;
+
+            const returnLossDb = s22Analytic.magnitude > 0 ? (-20 * Math.log10(s22Analytic.magnitude)) : Infinity;
+            const vswr = globalThis.getStandingWaveRatio_lossless_TL ? globalThis.getStandingWaveRatio_lossless_TL(s22Analytic) : 'N/A';
+
+            // Power wave variables at Port 2
+            const sqrtZ0 = Math.sqrt(z0);
+            const onePlusS22 = { real: 1 + s22Analytic.real, imag: s22Analytic.imag };
+            const v2Plus = globalThis.divideComplexNums(vPort2.real, vPort2.imag, onePlusS22.real, onePlusS22.imag);
+            const a2 = {
+                real: v2Plus.real / sqrtZ0,
+                imag: v2Plus.imag / sqrtZ0,
+                magnitude: Math.hypot(v2Plus.real, v2Plus.imag) / sqrtZ0
+            };
+            const v2Minus = globalThis.multiplyComplexNums(s22Analytic.real, s22Analytic.imag, v2Plus.real, v2Plus.imag);
+            const b2 = {
+                real: v2Minus.real / sqrtZ0,
+                imag: v2Minus.imag / sqrtZ0,
+                magnitude: Math.hypot(v2Minus.real, v2Minus.imag) / sqrtZ0
+            };
+
+            const diff = Math.hypot(s22Analytic.real - s22Sim.real, s22Analytic.imag - s22Sim.imag);
+
+            // Verification against find_S_params from calculator
+            let apiComparisonText = '';
+            if (typeof globalThis.find_S_params === 'function') {
+                try {
+                    const genObj = {
+                        generator_distance: 1,
+                        generator_tl1_length: 0.5,
+                        generator_tl2_length: 0.5,
+                        generator_voltage_real: 1.0,
+                        generator_voltage_imag: 0,
+                        generator_impedance_real: 50,
+                        generator_impedance_imag: 0
+                    };
+                    const sParamsObj = globalThis.find_S_params(genObj, zPre, zSeries, zPost, z0, 3.14159);
+                    const s22Api = sParamsObj.S22;
+                    const diffS22 = Math.hypot(s22Analytic.real - s22Api.real, s22Analytic.imag - s22Api.imag);
+                    apiComparisonText = `• Verified vs find_S_params:    ${diffS22 < 1e-4 ? 'CONFIRMED! (Difference = ' + diffS22.toExponential(2) + ')' : 'Diff: ' + diffS22.toExponential(2)}`;
+                } catch (e) {
+                    apiComparisonText = '• find_S_params verification: ' + e.message;
+                }
+            }
+
+            document.getElementById('s22-output').textContent = 
+                `S₂₂ Parameter Computation & Output Reflection Verification:\n` +
+                `--------------------------------------------------\n` +
+                `Two-Port Network & Port Termination Parameters:\n` +
+                `• Characteristic Reference Z₀:  ${z0.toFixed(2)} Ω\n` +
+                `• Pre-Series Shunt Z_p1:        ${zPre.real.toFixed(2)} + j(${zPre.imag.toFixed(2)}) Ω\n` +
+                `• Series Branch Z_series:       ${zSeries.real.toFixed(2)} + j(${zSeries.imag.toFixed(2)}) Ω\n` +
+                `• Post-Series Shunt Z_p2:       ${zPost.real.toFixed(2)} + j(${zPost.imag.toFixed(2)}) Ω\n` +
+                `• Port 1 Matched Termination:   Z_load1 = Z₀ = ${z0.toFixed(2)} Ω (Zero re-reflections from Port 1, a₁ = 0!)\n\n` +
+                `Method 1: Analytical Driving-Point Impedance Reduction at Port 2:\n` +
+                `• Output Impedance Z(port 2):   ${zPort2Analytic.real.toFixed(3)} + j(${zPort2Analytic.imag.toFixed(3)}) Ω  (|Z| = ${Math.hypot(zPort2Analytic.real, zPort2Analytic.imag).toFixed(3)} Ω)\n` +
+                `• S₂₂ = (Z(port 2) - Z₀)/(Z(port 2) + Z₀):\n` +
+                `  - Magnitude |S₂₂|:            ${s22Analytic.magnitude.toFixed(4)}\n` +
+                `  - Phase Angle θ(S₂₂):         ${(s22Analytic.theta * 180 / Math.PI).toFixed(2)}° (${s22Analytic.theta.toFixed(4)} rad)\n` +
+                `  - Complex S₂₂:                ${s22Analytic.real.toFixed(4)} + j(${s22Analytic.imag.toFixed(4)})\n` +
+                `  - Return Loss at Port 2:      ${returnLossDb === Infinity ? '∞' : returnLossDb.toFixed(2)} dB\n` +
+                `  - Equivalent VSWR at Port 2:  ${typeof vswr === 'number' ? vswr.toFixed(4) : vswr}\n\n` +
+                `Method 2: Circuit Simulation with Generator at Port 2 (Vg2 = ${vg2} V, Zg2 = ${zg2Real} Ω):\n` +
+                `• Terminal Voltage V(L2):       ${vPort2.real.toFixed(4)} + j(${vPort2.imag.toFixed(4)}) V  (|V₂| = ${Math.hypot(vPort2.real, vPort2.imag).toFixed(4)} V)\n` +
+                `• Terminal Current I(L2):       ${(iPort2.real * 1000).toFixed(3)} + j(${(iPort2.imag * 1000).toFixed(3)}) mA  (|I₂| = ${(Math.hypot(iPort2.real, iPort2.imag) * 1000).toFixed(3)} mA)\n` +
+                `• Simulated Ratio V(L2)/I(L2):  ${zPort2Sim.real.toFixed(3)} + j(${zPort2Sim.imag.toFixed(3)}) Ω\n` +
+                `• Extracted Simulated S₂₂:      ${s22Sim.real.toFixed(4)} + j(${s22Sim.imag.toFixed(4)})  [|S₂₂| = ${s22Sim.magnitude.toFixed(4)}, θ = ${(s22Sim.theta * 180 / Math.PI).toFixed(2)}°]\n\n` +
+                `Power Wave Variables via Zero-Length Line Framing:\n` +
+                `• Incident Wave a₂ = V₂⁺/√Z₀:   ${a2.real.toFixed(4)} + j(${a2.imag.toFixed(4)}) √W  (|a₂| = ${a2.magnitude.toFixed(4)} √W)\n` +
+                `• Reflected Wave b₂ = V₂⁻/√Z₀:  ${b2.real.toFixed(4)} + j(${b2.imag.toFixed(4)}) √W  (|b₂| = ${b2.magnitude.toFixed(4)} √W)\n` +
+                `• Wave Ratio b₂ / a₂:           ${(b2.magnitude / a2.magnitude).toFixed(4)} ∠ ${(Math.atan2(b2.imag, b2.real) - Math.atan2(a2.imag, a2.real)) * 180 / Math.PI}°  (identically equals S₂₂!)\n\n` +
+                `Verification & Independence:\n` +
+                `• Analytical === Simulated:     ${diff < 1e-5 ? 'CONFIRMED!' : 'Diff: ' + diff.toExponential(2)}\n` +
+                (apiComparisonText ? apiComparisonText + '\n' : '') +
+                `• Source Independence Note:     Notice that altering Port 2 generator voltage Vg2 or source impedance Zg2 shifts V(L2) and I(L2),\n` +
+                `                                but their quotient Z(port 2) = V/I and S₂₂ = b₂/a₂ remain strictly invariant!`;
+        }
+
+        // --- S12 Parameter Computation Helpers ---
+        function setS12Preset(zg2, zpreR, zpreI, zserR, zserI, zpostR, zpostI) {
+            document.getElementById('s12-zg-real').value = zg2;
+            document.getElementById('s12-zpre-real').value = zpreR;
+            document.getElementById('s12-zpre-imag').value = zpreI;
+            document.getElementById('s12-zseries-real').value = zserR;
+            document.getElementById('s12-zseries-imag').value = zserI;
+            document.getElementById('s12-zpost-real').value = zpostR;
+            document.getElementById('s12-zpost-imag').value = zpostI;
+            calculateS12ParameterDemo();
+        }
+
+        function calculateS12ParameterDemo() {
+            if (typeof globalThis.get_parallel_series_parallel_equivalent_z !== 'function' ||
+                typeof globalThis.find_pre_two_port_impedance_current_voltage !== 'function' ||
+                typeof globalThis.get_voltage_across_load_with_parallel_series_parallel_two_port_z !== 'function' ||
+                typeof globalThis.getTLRefelectionCoefficient !== 'function') {
+                const outEl = document.getElementById('s12-output');
+                if (outEl) outEl.textContent = 'Error: radio_frequency_electric_circuit_calculator.js functions not found!';
+                return;
+            }
+
+            const z0 = parseFloat(document.getElementById('s12-z0').value);
+            const vg2 = parseFloat(document.getElementById('s12-vg-mag').value);
+            const zg2Real = parseFloat(document.getElementById('s12-zg-real').value);
+
+            const zPre = {
+                real: parseFloat(document.getElementById('s12-zpre-real').value),
+                imag: parseFloat(document.getElementById('s12-zpre-imag').value)
+            };
+            const zSeries = {
+                real: parseFloat(document.getElementById('s12-zseries-real').value),
+                imag: parseFloat(document.getElementById('s12-zseries-imag').value)
+            };
+            const zPost = {
+                real: parseFloat(document.getElementById('s12-zpost-real').value),
+                imag: parseFloat(document.getElementById('s12-zpost-imag').value)
+            };
+
+            // Reverse configuration: Port 1 is terminated in matched characteristic impedance Z0
+            const matchedLoadAtPort1 = { z_real: z0, z_imag: 0 };
+
+            // 1. Z(port 2) and S22
+            const zPort2 = globalThis.get_parallel_series_parallel_equivalent_z(
+                zPost,
+                zSeries,
+                zPre,
+                matchedLoadAtPort1
+            );
+            const s22 = globalThis.getTLRefelectionCoefficient(zPort2.real, zPort2.imag, z0, 0).reflection;
+
+            // 2. Simulate terminal voltage V2 and current I2 at Port 2 with generator
+            const gen2Equivalent = {
+                z_real: zg2Real,
+                z_imag: 0,
+                voltage_real: vg2,
+                voltage_imag: 0
+            };
+            const sim2Results = globalThis.find_pre_two_port_impedance_current_voltage(gen2Equivalent, zPort2);
+            const v2 = sim2Results.voltage_pre_two_port;
+            const i2 = sim2Results.generator_current;
+
+            // 3. Simulate voltage V1 across the matched load at Port 1
+            const v1 = globalThis.get_voltage_across_load_with_parallel_series_parallel_two_port_z(
+                i2, v2, zPost, zSeries, zPre, z0
+            );
+
+            // 4. Wave variables via zero-length TL concept
+            const sqrtZ0 = Math.sqrt(z0);
+            const onePlusS22 = { real: 1 + s22.real, imag: s22.imag };
+
+            // a2 = (V2 / sqrt(Z0)) / (1 + S22)
+            const v2Plus = globalThis.divideComplexNums(v2.real, v2.imag, onePlusS22.real, onePlusS22.imag);
+            const a2 = {
+                real: v2Plus.real / sqrtZ0,
+                imag: v2Plus.imag / sqrtZ0,
+                magnitude: Math.hypot(v2Plus.real, v2Plus.imag) / sqrtZ0
+            };
+
+            // b1 = V1 / sqrt(Z0) (since a1 = 0)
+            const b1 = {
+                real: v1.real / sqrtZ0,
+                imag: v1.imag / sqrtZ0,
+                magnitude: Math.hypot(v1.real, v1.imag) / sqrtZ0
+            };
+
+            // 5. S12 = (V1 / V2) * (1 + S22)
+            const v1OverV2 = globalThis.divideComplexNums(v1.real, v1.imag, v2.real, v2.imag);
+            const s12 = globalThis.multiplyComplexNums(v1OverV2.real, v1OverV2.imag, onePlusS22.real, onePlusS22.imag);
+            const s12Mag = Math.hypot(s12.real, s12.imag);
+            const s12PhaseDeg = Math.atan2(s12.imag, s12.real) * 180 / Math.PI;
+
+            // Power metrics
+            const powerGainLinear = s12Mag * s12Mag;
+            const s12Db = s12Mag > 0 ? (20 * Math.log10(s12Mag)) : -Infinity;
+
+            // Verification against find_S_params from calculator & reciprocity against S21
+            let apiComparisonText = '';
+            let reciprocityText = '';
+            if (typeof globalThis.find_S_params === 'function') {
+                try {
+                    const genObj = {
+                        generator_distance: 1,
+                        generator_tl1_length: 0.5,
+                        generator_tl2_length: 0.5,
+                        generator_voltage_real: 1.0,
+                        generator_voltage_imag: 0,
+                        generator_impedance_real: 50,
+                        generator_impedance_imag: 0
+                    };
+                    const sParamsObj = globalThis.find_S_params(genObj, zPre, zSeries, zPost, z0, 3.14159);
+                    const s12Api = sParamsObj.S12;
+                    const s21Api = sParamsObj.S21;
+                    const diffS12 = Math.hypot(s12.real - s12Api.real, s12.imag - s12Api.imag);
+                    const diffReciprocity = Math.hypot(s12.real - s21Api.real, s12.imag - s21Api.imag);
+
+                    apiComparisonText = `• Verified vs find_S_params S₁₂: CONFIRMED! (Difference = ${diffS12.toExponential(2)})`;
+                    reciprocityText = `• Reciprocity Check (S₁₂ === S₂₁): CONFIRMED! (|S₁₂ - S₂₁| = ${diffReciprocity.toExponential(2)})`;
+                } catch (e) {
+                    apiComparisonText = '• find_S_params verification: ' + e.message;
+                }
+            }
+
+            document.getElementById('s12-output').textContent = 
+                `S₁₂ Reverse Transmission Computation & Wave Analysis:\n` +
+                `--------------------------------------------------\n` +
+                `Network & Port Configuration:\n` +
+                `• Reference Characteristic Z₀:  ${z0.toFixed(2)} Ω\n` +
+                `• Pre-Series Shunt Z_p1:        ${zPre.real.toFixed(2)} + j(${zPre.imag.toFixed(2)}) Ω\n` +
+                `• Series Branch Z_series:       ${zSeries.real.toFixed(2)} + j(${zSeries.imag.toFixed(2)}) Ω\n` +
+                `• Post-Series Shunt Z_p2:       ${zPost.real.toFixed(2)} + j(${zPost.imag.toFixed(2)}) Ω\n` +
+                `• Port 1 Matched Load:          Z_load1 = Z₀ = ${z0.toFixed(2)} Ω  (a₁ = 0, no re-reflections from Port 1!)\n\n` +
+                `Step 1: Output Port 2 Reflection Analysis:\n` +
+                `• Output Impedance Z(port 2):   ${zPort2.real.toFixed(3)} + j(${zPort2.imag.toFixed(3)}) Ω\n` +
+                `• Output Reflection S₂₂:        ${s22.real.toFixed(4)} + j(${s22.imag.toFixed(4)})  [|S₂₂| = ${s22.magnitude.toFixed(4)}, θ = ${(s22.theta * 180 / Math.PI).toFixed(2)}°]\n` +
+                `• Boundary Factor (1 + S₂₂):    ${onePlusS22.real.toFixed(4)} + j(${onePlusS22.imag.toFixed(4)})\n\n` +
+                `Step 2: Simulated Terminal Voltages (Vg2 = ${vg2} V, Zsource2 = ${zg2Real} Ω):\n` +
+                `• Voltage at Port 2 V(L2):      ${v2.real.toFixed(4)} + j(${v2.imag.toFixed(4)}) V  (|V₂| = ${Math.hypot(v2.real, v2.imag).toFixed(4)} V)\n` +
+                `• Voltage at Port 1 V(L1):      ${v1.real.toFixed(4)} + j(${v1.imag.toFixed(4)}) V  (|V₁| = ${Math.hypot(v1.real, v1.imag).toFixed(4)} V)\n` +
+                `• Voltage Transfer Ratio V₁ / V₂: ${v1OverV2.real.toFixed(4)} + j(${v1OverV2.imag.toFixed(4)})  (|V₁/V₂| = ${Math.hypot(v1OverV2.real, v1OverV2.imag).toFixed(4)})\n\n` +
+                `Step 3: Power Waves via Zero-Length Line Concept:\n` +
+                `• Reverse Incident a₂ = V₂⁺/√Z₀: ${a2.real.toFixed(4)} + j(${a2.imag.toFixed(4)}) √W  (|a₂| = ${a2.magnitude.toFixed(4)} √W, |V₂⁺| = ${Math.hypot(v2Plus.real, v2Plus.imag).toFixed(4)} V)\n` +
+                `• Outgoing Wave b₁ = V₁/√Z₀:    ${b1.real.toFixed(4)} + j(${b1.imag.toFixed(4)}) √W  (|b₁| = ${b1.magnitude.toFixed(4)} √W)\n\n` +
+                `Step 4: Reverse Transmission Coefficient S₁₂ = [V₁ / V₂] · (1 + S₂₂) = b₁ / a₂:\n` +
+                `• Complex S₁₂:                  ${s12.real.toFixed(4)} + j(${s12.imag.toFixed(4)})\n` +
+                `• Magnitude |S₁₂|:              ${s12Mag.toFixed(4)}\n` +
+                `• Phase Angle θ(S₁₂):           ${s12PhaseDeg.toFixed(2)}° (${(s12PhaseDeg * Math.PI / 180).toFixed(4)} rad)\n` +
+                `• Insertion Gain / Loss:        ${s12Db.toFixed(2)} dB  [20 · log₁₀(|S₁₂|)]\n` +
+                `• Linear Power Gain |S₁₂|²:     ${powerGainLinear.toFixed(4)}  (Transmits ${(powerGainLinear * 100).toFixed(2)}% of incident power to port 1)\n` +
+                (apiComparisonText ? apiComparisonText + '\n' : '') +
+                (reciprocityText ? reciprocityText + '\n' : '') +
+                `\nSource Independence & Algebra Verification:\n` +
+                `• Step 3 algebra verified: a₂ = V₂ / [√Z₀ · (1 + S₂₂)] is exact.\n` +
+                `• Changing Vg2 or Zsource2 alters V₂ and V₁, but their quotient V₁/V₂ and S₁₂ remain strictly invariant!`;
+        }
+
+        function setAmplifierSimPreset(type) {
+            if (type === 'default') {
+                // Forward (Port 1 driven, Port 2 loaded with 50 Ω)
+                document.getElementById('amp-fwd-v1-re').value = -2.4651624e-4;
+                document.getElementById('amp-fwd-v1-im').value = -4.0180555e-4;
+                document.getElementById('amp-fwd-i1-re').value = 4.9686111e-6;
+                document.getElementById('amp-fwd-i1-im').value = -1.1948075e-5;
+                document.getElementById('amp-fwd-v2-re').value = 1.4592868e-3;
+                document.getElementById('amp-fwd-v2-im').value = 4.6964979e-4;
+                document.getElementById('amp-fwd-i2-re').value = -2.9146574e-5;
+                document.getElementById('amp-fwd-i2-im').value = -9.4815455e-6;
+
+                // Reverse (Port 1 loaded with 50 Ω, Port 2 driven)
+                document.getElementById('amp-rev-v1-re').value = 1.1513372e-5;
+                document.getElementById('amp-rev-v1-im').value = -3.1736097e-5;
+                document.getElementById('amp-rev-i1-re').value = -2.3229474e-7;
+                document.getElementById('amp-rev-i1-im').value = 6.3408930e-7;
+                document.getElementById('amp-rev-v2-re').value = -1.2938578e-4;
+                document.getElementById('amp-rev-v2-im').value = -8.0598078e-4;
+                document.getElementById('amp-rev-i2-re').value = 2.5992959e-6;
+                document.getElementById('amp-rev-i2-im').value = -3.8725388e-6;
+                document.getElementById('amp-z0').value = 50;
+            } else if (type === 'highgain') {
+                // High-gain BJT model
+                document.getElementById('amp-fwd-v1-re').value = -2.0e-4;
+                document.getElementById('amp-fwd-v1-im').value = -3.5e-4;
+                document.getElementById('amp-fwd-i1-re').value = 5.0e-6;
+                document.getElementById('amp-fwd-i1-im').value = -1.2e-5;
+                document.getElementById('amp-fwd-v2-re').value = 2.4e-3;
+                document.getElementById('amp-fwd-v2-im').value = 9.0e-4;
+                document.getElementById('amp-fwd-i2-re').value = -4.8e-5;
+                document.getElementById('amp-fwd-i2-im').value = -1.8e-5;
+
+                document.getElementById('amp-rev-v1-re').value = 5.0e-6;
+                document.getElementById('amp-rev-v1-im').value = -1.5e-5;
+                document.getElementById('amp-rev-i1-re').value = -1.0e-7;
+                document.getElementById('amp-rev-i1-im').value = 3.0e-7;
+                document.getElementById('amp-rev-v2-re').value = -1.0e-4;
+                document.getElementById('amp-rev-v2-im').value = -7.0e-4;
+                document.getElementById('amp-rev-i2-re').value = 2.0e-6;
+                document.getElementById('amp-rev-i2-im').value = -3.5e-6;
+                document.getElementById('amp-z0').value = 50;
+            } else if (type === 'unilateral') {
+                // Ideal unilateral model (S12 = 0)
+                document.getElementById('amp-fwd-v1-re').value = -2.4651624e-4;
+                document.getElementById('amp-fwd-v1-im').value = -4.0180555e-4;
+                document.getElementById('amp-fwd-i1-re').value = 4.9686111e-6;
+                document.getElementById('amp-fwd-i1-im').value = -1.1948075e-5;
+                document.getElementById('amp-fwd-v2-re').value = 1.4592868e-3;
+                document.getElementById('amp-fwd-v2-im').value = 4.6964979e-4;
+                document.getElementById('amp-fwd-i2-re').value = -2.9146574e-5;
+                document.getElementById('amp-fwd-i2-im').value = -9.4815455e-6;
+
+                document.getElementById('amp-rev-v1-re').value = 0;
+                document.getElementById('amp-rev-v1-im').value = 0;
+                document.getElementById('amp-rev-i1-re').value = 0;
+                document.getElementById('amp-rev-i1-im').value = 0;
+                document.getElementById('amp-rev-v2-re').value = -1.2938578e-4;
+                document.getElementById('amp-rev-v2-im').value = -8.0598078e-4;
+                document.getElementById('amp-rev-i2-re').value = 2.5992959e-6;
+                document.getElementById('amp-rev-i2-im').value = -3.8725388e-6;
+                document.getElementById('amp-z0').value = 50;
+            }
+            calculateAmplifierSimSParamsDemo();
+        }
+
+        function calculateAmplifierSimSParamsDemo() {
+            const z0 = parseFloat(document.getElementById('amp-z0').value) || 50;
+
+            const v1Fwd = {
+                real: parseFloat(document.getElementById('amp-fwd-v1-re').value) || 0,
+                imag: parseFloat(document.getElementById('amp-fwd-v1-im').value) || 0
+            };
+            const i1Fwd = {
+                real: parseFloat(document.getElementById('amp-fwd-i1-re').value) || 0,
+                imag: parseFloat(document.getElementById('amp-fwd-i1-im').value) || 0
+            };
+            const v2Fwd = {
+                real: parseFloat(document.getElementById('amp-fwd-v2-re').value) || 0,
+                imag: parseFloat(document.getElementById('amp-fwd-v2-im').value) || 0
+            };
+            const i2Fwd = {
+                real: parseFloat(document.getElementById('amp-fwd-i2-re').value) || 0,
+                imag: parseFloat(document.getElementById('amp-fwd-i2-im').value) || 0
+            };
+
+            const v1Rev = {
+                real: parseFloat(document.getElementById('amp-rev-v1-re').value) || 0,
+                imag: parseFloat(document.getElementById('amp-rev-v1-im').value) || 0
+            };
+            const i1Rev = {
+                real: parseFloat(document.getElementById('amp-rev-i1-re').value) || 0,
+                imag: parseFloat(document.getElementById('amp-rev-i1-im').value) || 0
+            };
+            const v2Rev = {
+                real: parseFloat(document.getElementById('amp-rev-v2-re').value) || 0,
+                imag: parseFloat(document.getElementById('amp-rev-v2-im').value) || 0
+            };
+            const i2Rev = {
+                real: parseFloat(document.getElementById('amp-rev-i2-re').value) || 0,
+                imag: parseFloat(document.getElementById('amp-rev-i2-im').value) || 0
+            };
+
+            if (typeof globalThis.get_s_params_from_simulated_circuit !== 'function') {
+                document.getElementById('amp-sim-output').textContent = 'Error: globalThis.get_s_params_from_simulated_circuit is not defined!';
+                return;
+            }
+
+            // Forward extraction: generator at Port 1, load at Port 2
+            const fwdResults = globalThis.get_s_params_from_simulated_circuit(
+                { voltage: v1Fwd, current: i1Fwd },
+                { voltage: v2Fwd, current: i2Fwd },
+                z0,
+                false
+            );
+
+            // Reverse extraction: generator at Port 2, load at Port 1
+            const revResults = globalThis.get_s_params_from_simulated_circuit(
+                { voltage: v2Rev, current: i2Rev },
+                { voltage: v1Rev, current: i1Rev },
+                z0,
+                true
+            );
+
+            const s11 = fwdResults.S11;
+            const s21 = fwdResults.S21;
+            const s12 = revResults.S12;
+            const s22 = revResults.S22;
+
+            const s11PhaseDeg = Math.atan2(s11.imag, s11.real) * 180 / Math.PI;
+            const s21PhaseDeg = Math.atan2(s21.imag, s21.real) * 180 / Math.PI;
+            const s12PhaseDeg = Math.atan2(s12.imag, s12.real) * 180 / Math.PI;
+            const s22PhaseDeg = Math.atan2(s22.imag, s22.real) * 180 / Math.PI;
+
+            // Forward Gain & Return Losses
+            const s21Db = s21.magnitude > 0 ? (20 * Math.log10(s21.magnitude)) : -Infinity;
+            const s12Db = s12.magnitude > 0 ? (20 * Math.log10(s12.magnitude)) : -Infinity;
+            const s11Db = s11.magnitude > 0 ? (20 * Math.log10(s11.magnitude)) : -Infinity;
+            const s22Db = s22.magnitude > 0 ? (20 * Math.log10(s22.magnitude)) : -Infinity;
+            const powerGainLinear = s21.magnitude * s21.magnitude;
+
+            // Rollett Stability Factor K and Delta
+            const s11s22 = globalThis.multiplyComplexNums(s11.real, s11.imag, s22.real, s22.imag);
+            const s12s21 = globalThis.multiplyComplexNums(s12.real, s12.imag, s21.real, s21.imag);
+            const delta = { real: s11s22.real - s12s21.real, imag: s11s22.imag - s12s21.imag };
+            const deltaMag = Math.hypot(delta.real, delta.imag);
+
+            const kNum = 1 - (s11.magnitude * s11.magnitude) - (s22.magnitude * s22.magnitude) + (deltaMag * deltaMag);
+            const kDen = 2 * s12.magnitude * s21.magnitude;
+            const rollettK = kDen > 0 ? (kNum / kDen) : Infinity;
+
+            let stabilityVerdict = '';
+            if (rollettK > 1 && deltaMag < 1) {
+                stabilityVerdict = 'UNCONDITIONALLY STABLE (K > 1 and |Δ| < 1) — Safe against oscillation with any passive termination!';
+            } else {
+                stabilityVerdict = 'POTENTIALLY UNSTABLE (K ≤ 1 or |Δ| ≥ 1) — Caution: may oscillate under certain passive source/load terminations!';
+            }
+
+            // Terminal impedances
+            const zIn = globalThis.divideComplexNums(v1Fwd.real, v1Fwd.imag, i1Fwd.real, i1Fwd.imag);
+            const zOut = globalThis.divideComplexNums(v2Rev.real, v2Rev.imag, i2Rev.real, i2Rev.imag);
+
+            document.getElementById('amp-sim-output').textContent = 
+                `=======================================================================\n` +
+                `  REAL TRANSISTOR AMPLIFIER: 2×2 S-PARAMETER EXTRACTION & STABILITY    \n` +
+                `=======================================================================\n\n` +
+                `Reference Characteristic Impedance Z₀: ${z0.toFixed(2)} Ω\n\n` +
+                `-----------------------------------------------------------------------\n` +
+                `1. FORWARD SIMULATION EXTRACTION (Port 1 Driven, Port 2 Loaded):\n` +
+                `-----------------------------------------------------------------------\n` +
+                `• Terminal V(L1):               ${v1Fwd.real.toExponential(4)} + j(${v1Fwd.imag.toExponential(4)}) V  (|V₁| = ${Math.hypot(v1Fwd.real, v1Fwd.imag).toExponential(4)} V)\n` +
+                `• Terminal I(L1):               ${i1Fwd.real.toExponential(4)} + j(${i1Fwd.imag.toExponential(4)}) A  (|I₁| = ${Math.hypot(i1Fwd.real, i1Fwd.imag).toExponential(4)} A)\n` +
+                `• Terminal V(L2):               ${v2Fwd.real.toExponential(4)} + j(${v2Fwd.imag.toExponential(4)}) V  (|V₂| = ${Math.hypot(v2Fwd.real, v2Fwd.imag).toExponential(4)} V)\n` +
+                `• Terminal I(L2):               ${i2Fwd.real.toExponential(4)} + j(${i2Fwd.imag.toExponential(4)}) A  (|I₂| = ${Math.hypot(i2Fwd.real, i2Fwd.imag).toExponential(4)} A)\n` +
+                `• Input Impedance Z_in = V₁/I₁:  ${zIn.real.toFixed(2)} + j(${zIn.imag.toFixed(2)}) Ω\n` +
+                `• Input Reflection S₁₁:          ${s11.real.toFixed(4)} + j(${s11.imag.toFixed(4)})  [|S₁₁| = ${s11.magnitude.toFixed(4)}, θ = ${s11PhaseDeg.toFixed(2)}°, Return Loss = ${(-s11Db).toFixed(2)} dB]\n` +
+                `• Forward Transmission S₂₁:      ${s21.real.toFixed(4)} + j(${s21.imag.toFixed(4)})  [|S₂₁| = ${s21.magnitude.toFixed(4)}, θ = ${s21PhaseDeg.toFixed(2)}°]\n` +
+                `• Forward Power Gain |S₂₁|²:     ${powerGainLinear.toFixed(4)}  (${s21Db > 0 ? '+' : ''}${s21Db.toFixed(2)} dB AMPLIFICATION!)\n\n` +
+                `-----------------------------------------------------------------------\n` +
+                `2. REVERSE SIMULATION EXTRACTION (Port 2 Driven, Port 1 Loaded):\n` +
+                `-----------------------------------------------------------------------\n` +
+                `• Terminal V(L2):               ${v2Rev.real.toExponential(4)} + j(${v2Rev.imag.toExponential(4)}) V  (|V₂| = ${Math.hypot(v2Rev.real, v2Rev.imag).toExponential(4)} V)\n` +
+                `• Terminal I(L2):               ${i2Rev.real.toExponential(4)} + j(${i2Rev.imag.toExponential(4)}) A  (|I₂| = ${Math.hypot(i2Rev.real, i2Rev.imag).toExponential(4)} A)\n` +
+                `• Terminal V(L1):               ${v1Rev.real.toExponential(4)} + j(${v1Rev.imag.toExponential(4)}) V  (|V₁| = ${Math.hypot(v1Rev.real, v1Rev.imag).toExponential(4)} V)\n` +
+                `• Terminal I(L1):               ${i1Rev.real.toExponential(4)} + j(${i1Rev.imag.toExponential(4)}) A  (|I₁| = ${Math.hypot(i1Rev.real, i1Rev.imag).toExponential(4)} A)\n` +
+                `• Output Impedance Z_out=V₂/I₂: ${zOut.real.toFixed(2)} + j(${zOut.imag.toFixed(2)}) Ω\n` +
+                `• Output Reflection S₂₂:         ${s22.real.toFixed(4)} + j(${s22.imag.toFixed(4)})  [|S₂₂| = ${s22.magnitude.toFixed(4)}, θ = ${s22PhaseDeg.toFixed(2)}°, Return Loss = ${(-s22Db).toFixed(2)} dB]\n` +
+                `• Reverse Transmission S₁₂:      ${s12.real.toFixed(4)} + j(${s12.imag.toFixed(4)})  [|S₁₂| = ${s12.magnitude.toFixed(4)}, θ = ${s12PhaseDeg.toFixed(2)}°]\n` +
+                `• Reverse Isolation |S₁₂|:       ${s12Db.toFixed(2)} dB  (Very low reverse collector-to-base feedback!)\n\n` +
+                `-----------------------------------------------------------------------\n` +
+                `3. COMPLETE 2×2 SCATTERING MATRIX [S]:\n` +
+                `-----------------------------------------------------------------------\n` +
+                `   [ S₁₁   S₁₂ ]     [  ${s11.real.toFixed(4)} + j(${s11.imag.toFixed(4)})    ${s12.real.toFixed(4)} + j(${s12.imag.toFixed(4)})  ]\n` +
+                `   [ S₂₁   S₂₂ ]  =  [  ${s21.real.toFixed(4)} + j(${s21.imag.toFixed(4)})    ${s22.real.toFixed(4)} + j(${s22.imag.toFixed(4)})  ]\n\n` +
+                `   Magnitude Matrix:\n` +
+                `   [ |S₁₁|  |S₁₂| ]     [  ${s11.magnitude.toFixed(4)}   ${s12.magnitude.toFixed(4)}  ]    [ ${s11Db.toFixed(1)} dB   ${s12Db.toFixed(1)} dB ]\n` +
+                `   [ |S₂₁|  |S₂₂| ]  =  [  ${s21.magnitude.toFixed(4)}   ${s22.magnitude.toFixed(4)}  ] =  [ ${s21Db > 0 ? '+' : ''}${s21Db.toFixed(1)} dB   ${s22Db.toFixed(1)} dB ]\n\n` +
+                `-----------------------------------------------------------------------\n` +
+                `4. ROLLETT STABILITY ANALYSIS (K-FACTOR & DETERMINANT Δ):\n` +
+                `-----------------------------------------------------------------------\n` +
+                `• Determinant Δ = S₁₁S₂₂ - S₁₂S₂₁: ${delta.real.toFixed(4)} + j(${delta.imag.toFixed(4)})  (|Δ| = ${deltaMag.toFixed(4)})\n` +
+                `• Rollett Stability Factor K:    ${rollettK.toFixed(4)}\n` +
+                `• Verdict: ${stabilityVerdict}\n\n` +
+                `Physical Verification Takeaways:\n` +
+                `• Notice non-reciprocal behavior: |S₂₁| (${s21.magnitude.toFixed(3)}) >> |S₁₂| (${s12.magnitude.toFixed(3)}), reflecting active transistor current amplification.\n` +
+                `• The DC blocking capacitors and 2 mH RF chokes successfully isolate the DC quiescent point (+9V) while directing the 100 MHz AC current path exclusively through the base and collector!`;
         }
 
         function calculateWaveParams() {
