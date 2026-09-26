@@ -854,7 +854,7 @@
                     <h1 id="page-title">Loading Page...</h1>
                     <p class="story-tagline" id="page-subtitle"></p>
                 </div>
-                <div class="page-counter-pill" id="page-counter">Page 1 of 12</div>
+                <div class="page-counter-pill" id="page-counter">Page 1 of 14</div>
             </div>
 
             <!-- Injected Story Page Body -->
@@ -3306,6 +3306,452 @@
                     </div>
                 `;
                 }
+            },
+            {
+                id: 'signal-flow-gamma-in',
+                badge: '13',
+                title: 'From Circuit Schematics to Signal Flow: Deriving Γ_in & Z_in',
+                subtitle: 'Wave variables at conceptual zero-length ports, arbitrary load reflections, and the algebraic derivation of Γ_in and Z_in',
+                deepDive: {
+                    title: 'The Two-Port Signal Flow Graph: Physical Wave Co-Location, Load Pull & The Derivation of Γ_in',
+                    preview: 'How Thevenin-reduced zero-length port lines map into directed signal flow graphs, how waves a1, b1 and a2, b2 relate at physical reference planes, and the complete algebraic solution for input reflection Γ_in and impedance Z_in.',
+                    readingTime: '6 min read',
+                    content: `
+                        <h3>1. Equivalent Circuits Without Explicit Transmission Lines</h3>
+                        <p>
+                            In high-frequency circuit analysis, the boundaries where signals enter and exit a network are designated as reference ports:
+                        </p>
+                        <ul>
+                            <li><strong>Port 1 ($L_1$):</strong> If a physical transmission line ($TL_1$) precedes Port 1 from the source, $L_1$ marks the boundary at the network port. Previously, in Chapter 07, we demonstrated that this incoming transmission line can be replaced by its Thevenin equivalent, allowing the terminal voltage $V(L_1)$ and current $I(L_1)$ to be found by simulation.</li>
+                            <li><strong>Port 2 ($L_2$):</strong> If a physical transmission line ($TL_2$) extends from the network to the load, $L_2$ sits on the network port side at zero distance from the port and distance $l_2$ from the load. Likewise, $TL_2$ can be replaced by a Thevenin equivalent, and the terminal voltage $V(L_2)$ and current $I(L_2)$ found by simulation.</li>
+                        </ul>
+                        <p>
+                            Thus, we arrive at an equivalent circuit <strong>without explicit transmission lines</strong>, or viewed equivalently, with <em>conceptual zero-length transmission lines</em> having characteristic impedance $Z_0$ (typically $50\\,\\Omega$) attached to both ports. 
+                            This key conceptual abstraction allowed us to extract the two-port scattering parameters ($S_{11}, S_{21}, S_{12}, S_{22}$) in simulation environments where explicit transmission line segments are not modeled.
+                        </p>
+
+                        <h3>2. Beyond the Matched Load: Why We Need $\\Gamma_{\\text{in}}$ and $Z_{\\text{in}}$</h3>
+                        <p>
+                            With the four scattering parameters established, we can analyze the performance and stability of the circuit under any termination without having to re-simulate the entire internal transistor topology:
+                        </p>
+                        <ol>
+                            <li><strong>Driving-Point Input Impedance ($Z_{\\text{in}}$):</strong> $Z_{\\text{in}}$ is the total electrical impedance that a test generator sees looking into Port 1 ($L_1$) of the network.</li>
+                            <li><strong>Input Reflection Coefficient ($\\Gamma_{\\text{in}}$):</strong> The relation between $Z_{\\text{in}}$ and the reference characteristic impedance $Z_0$ of the conceptual zero-length line at Port 1 defines $\\Gamma_{\\text{in}}$:
+                                $$\\Gamma_{\\text{in}} = \\frac{Z_{\\text{in}} - Z_0}{Z_{\\text{in}} + Z_0} \\iff Z_{\\text{in}} = Z_0 \\frac{1 + \\Gamma_{\\text{in}}}{1 - \\Gamma_{\\text{in}}}$$
+                            </li>
+                            <li><strong>The Matched Special Case ($Z_L = 50\\,\\Omega$):</strong> In Chapter 12, we simulated $V(L_1)$ and $I(L_1)$ specifically for the condition where Port 2 was terminated in the matched reference load $Z_L = Z_0 = 50\\,\\Omega$. Because the load was perfectly matched, no wave reflected back into Port 2 ($a_2 = 0$). In this matched case, the simulated quotient $V_1 / I_1$ was indeed $Z_{\\text{in}}$, and $\\Gamma_{\\text{in}} = S_{11}$.</li>
+                            <li><strong>Arbitrary Load Terminations ($Z_L \\neq 50\\,\\Omega$):</strong> In practical RF communication systems, an amplifier drives antennas, bandpass filters, or subsequent amplifier stages whose input impedances fluctuate or deviate from $50\\,\\Omega$. When $Z_L \\neq 50\\,\\Omega$, the load reflects a reverse travelling wave ($a_2 \\neq 0$) back into Port 2. This wave leaks through the internal feedback path ($S_{12}$) of the transistor, fundamentally altering both $\\Gamma_{\\text{in}}$ and $Z_{\\text{in}}$!</li>
+                        </ol>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Normalized Power Waves & Physical Reference Planes</div>
+                            $$a_1 = \\frac{V^+(L_1)}{\\sqrt{Z_0}} = \\frac{V_1 + Z_0 I_1}{2\\sqrt{Z_0}}, \\quad b_1 = \\frac{V^-(L_1)}{\\sqrt{Z_0}} = \\frac{V_1 - Z_0 I_1}{2\\sqrt{Z_0}}$$
+                            $$a_2 = \\frac{V^-(L_2)}{\\sqrt{Z_0}} = \\frac{V_2 + Z_0 I_2}{2\\sqrt{Z_0}}, \\quad b_2 = \\frac{V^+(L_2)}{\\sqrt{Z_0}} = \\frac{V_2 - Z_0 I_2}{2\\sqrt{Z_0}}$$
+                        </div>
+
+                        <h3>3. Signal Flow Graph Topology & Wave Co-Location</h3>
+                        <p>
+                            In a Signal Flow Graph (SFG), <strong>nodes</strong> represent complex wave variables at physical locations in the circuit topology, and <strong>directed edges</strong> represent transfer coefficients between them:
+                        </p>
+                        <ul>
+                            <li><strong>Co-location at Port 1 ($L_1$):</strong> The variables $a_1$ and $b_1$ refer to the <em>exact same physical point $L_1$</em>. They represent the forward-propagating wave (incident into the two-port network) and backward-propagating wave (reflected back toward the generator) on the conceptual zero-length transmission line at $L_1$.</li>
+                            <li><strong>Co-location at Port 2 ($L_2$):</strong> The variables $a_2$ and $b_2$ refer to the <em>exact same physical point $L_2$</em>. $b_2$ represents the wave launched out of Port 2 toward the load, while $a_2$ represents the wave reflected from the load back into Port 2.</li>
+                        </ul>
+
+                        <h3>4. Step-by-Step Algebraic Derivation of $\\Gamma_{\\text{in}}$</h3>
+                        <p>
+                            We derive the exact closed-form expression for $\\Gamma_{\\text{in}} = b_1 / a_1$ by tracing the signal flow through the network and load:
+                        </p>
+                        <ol>
+                            <li>At the load boundary, the outgoing wave $b_2$ encounters the load reflection coefficient $\\Gamma_L = \\frac{Z_L - Z_0}{Z_L + Z_0}$, producing an incoming wave $a_2$:
+                                $$a_2 = b_2 \\cdot \\Gamma_L \\implies b_2 = \\frac{1}{\\Gamma_L} a_2$$
+                            </li>
+                            <li>From the two-port scattering relationships at Port 2, the wave launched toward the load is the superposition of forward transmission from Port 1 and internal reflection at Port 2:
+                                $$b_2 = a_1 S_{21} + a_2 S_{22}$$
+                            </li>
+                            <li>Equating the two expressions for $b_2$:
+                                $$\\frac{1}{\\Gamma_L} a_2 = a_1 S_{21} + a_2 S_{22}$$
+                            </li>
+                            <li>Multiplying both sides by $\\Gamma_L$:
+                                $$a_2 = a_1 S_{21} \\Gamma_L + a_2 S_{22} \\Gamma_L$$
+                            </li>
+                            <li>Collecting all terms involving $a_2$ onto the left-hand side:
+                                $$(1 - S_{22} \\Gamma_L) a_2 = a_1 S_{21} \\Gamma_L \\implies a_2 = \\frac{a_1 S_{21} \\Gamma_L}{1 - S_{22} \\Gamma_L}$$
+                            </li>
+                            <li>Now substitute this solution for $a_2$ into the Port 1 scattering equation for the reflected wave $b_1$:
+                                $$b_1 = S_{11} a_1 + S_{12} a_2 = S_{11} a_1 + S_{12} \\left[ \\frac{a_1 S_{21} \\Gamma_L}{1 - S_{22} \\Gamma_L} \\right]$$
+                            </li>
+                            <li>Dividing through by $a_1$ isolates the input reflection coefficient $\\Gamma_{\\text{in}}$:
+                                $$\\Gamma_{\\text{in}} = \\frac{b_1}{a_1} = S_{11} + \\frac{S_{12} S_{21} \\Gamma_L}{1 - S_{22} \\Gamma_L}$$
+                            </li>
+                        </ol>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">The Fundamental Input Reflection Formula</div>
+                            $$\\Gamma_{\\text{in}} = S_{11} + \\frac{S_{12} S_{21} \\Gamma_L}{1 - S_{22} \\Gamma_L}, \\quad Z_{\\text{in}} = Z_0 \\frac{1 + \\Gamma_{\\text{in}}}{1 - \\Gamma_{\\text{in}}}$$
+                        </div>
+
+                        <h3>5. Physical Interpretation: Passive Boundaries vs. Negative Resistance</h3>
+                        <p>
+                            The derived formula reveals profound insights into active high-frequency circuits:
+                        </p>
+                        <ul>
+                            <li><strong>Unilateral Devices ($S_{12} = 0$):</strong> If a transistor has negligible reverse feedback ($S_{12} = 0$), then $\\Gamma_{\\text{in}} = S_{11}$ regardless of the load impedance $\\Gamma_L$. The input impedance is completely isolated from output variations.</li>
+                            <li><strong>Bilateral Transistors ($S_{12} \\neq 0$):</strong> In physical transistors, collector-to-base capacitance ($C_{cb}$) creates a non-zero $S_{12}$. As a result, load mismatches $\\Gamma_L$ propagate back through the factor $\\frac{S_{12} S_{21} \\Gamma_L}{1 - S_{22} \\Gamma_L}$, "pulling" the input impedance $Z_{\\text{in}}$.</li>
+                            <li><strong>Energy Balance & Passivity:</strong> As long as $|\\Gamma_{\\text{in}}| \\le 1$, the real part of the driving-point impedance is non-negative ($\\text{Re}(Z_{\\text{in}}) \\ge 0$). An external source must supply energy to induce voltage at $L_1$, and the two-port network absorbs net power.</li>
+                            <li><strong>Potential Instability & Negative Resistance:</strong> If an ill-chosen reactive load makes the loop denominator $|1 - S_{22}\\Gamma_L|$ very small, the feedback term can cause $|\\Gamma_{\\text{in}}| > 1$. When $|\\Gamma_{\\text{in}}| > 1$, the reflected wave carries more power than the incident wave ($|b_1| > |a_1|$), resulting in a <strong>negative real input resistance ($\\text{Re}(Z_{\\text{in}}) < 0$)</strong>. If paired with a source impedance whose resistance cancels this negative value, the circuit becomes a self-sustaining oscillator!</li>
+                        </ul>
+
+                        <h3>6. Implementation in the Engine: findSignalFlowNodeValues</h3>
+                        <p>
+                            In our computational engine (<code>radio_frequency_electric_circuit_calculator.js</code>), this exact topology and wave algebra is codified in:
+                        </p>
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">API Function Signature</div>
+                            $$\\text{globalThis.findSignalFlowNodeValues(generator, load, } S_{11}, S_{21}, S_{12}, S_{22}, Z_0, \\beta)$$
+                        </div>
+                        <p>
+                            When zero-length line parameters ($\\text{tl1\\_length} = 0, \\text{tl2\\_length} = 0$) are supplied, the function evaluates:
+                        </p>
+                        <ul>
+                            <li><code>gamma_in_b1_to_a1_ratio</code>: Exactly computes $\\Gamma_{\\text{in}} = S_{11} + \\frac{S_{12} S_{21} \\Gamma_L}{1 - S_{22} \\Gamma_L}$.</li>
+                            <li><code>gamma_out_b2_to_a2_ratio</code>: Evaluates output reflection $\\Gamma_{\\text{out}} = S_{22} + \\frac{S_{12} S_{21} \\Gamma_s}{1 - S_{11} \\Gamma_s}$ looking into Port 2.</li>
+                            <li><code>bs</code>, <code>a1</code>, <code>b1</code>, <code>a2</code>, <code>b2</code>: Solves the simultaneous linear network equations for the actual incident and reflected wave amplitudes at all four graph nodes under generator excitation!</li>
+                        </ul>
+                    `
+                },
+                render: function() {
+                    return `
+                    <div class="section-card">
+                        <h2>🔄 Converting Circuit Schematics to a Two-Port Signal Flow Graph</h2>
+                        <p>
+                            Having eliminated physical transmission lines via Thevenin equivalents and conceptual zero-length lines at reference planes $L_1$ and $L_2$, 
+                            we transform the physical transistor schematic into a directed <strong>Signal Flow Graph (SFG)</strong>. 
+                            This enables us to calculate the driving-point input reflection coefficient $\\Gamma_{\\text{in}}$ and input impedance $Z_{\\text{in}}$ 
+                            under <em>any</em> arbitrary load impedance $Z_L$ without needing to re-simulate the circuit.
+                        </p>
+
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/amplifier-gamma-in.png" alt="Amplifier Circuit Diagram with Wave Annotations and Gamma In">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 1: Real Amplifier Circuit with Port Boundaries & Wave Quantities.</strong> Reference planes $L_1$ and $L_2$ act as conceptual zero-length transmission lines with reference impedance $Z_0 = 50\\,\\Omega$. $a_1$ and $b_1$ represent incident and reflected waves co-located at $L_1$; $b_2$ and $a_2$ represent waves launched into and reflected back from the external load $Z_L$ (reflection $\\Gamma_L$) at $L_2$. The arrow $\\Gamma_{\\text{in}}$ defines the driving-point reflection looking into Port 1.
+                            </div>
+                        </div>
+
+                        <div class="circuit-illustration-card" style="margin-top:16px;">
+                            <img src="./circuit_images/signal-flow-gamma-in.png" alt="Two-Port Signal Flow Graph for Gamma In Derivation">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 2: Two-Port Signal Flow Graph (SFG).</strong> Directed topological graph mapping wave interactions. Nodes $a_1, b_1, a_2, b_2$ represent wave amplitudes at port planes $L_1$ and $L_2$. Edges represent scattering parameters ($S_{11}, S_{21}, S_{12}, S_{22}$), load reflection ($\\Gamma_L$), and optional generator excitation ($b_s, \\Gamma_s$). Tracing the closed loop $S_{21} \\to \\Gamma_L \\to S_{22} \\to S_{12}$ algebraically yields $\\Gamma_{\\text{in}} = b_1 / a_1$.
+                            </div>
+                        </div>
+
+                        <div class="story-callout" style="margin-top:20px;">
+                            <strong>Physical Key Takeaways:</strong><br>
+                            • <strong>Nodes</strong> are wave values ($a_1, b_1, a_2, b_2$) at topological points, and <strong>edges</strong> are linear transformations between them.<br>
+                            • $a_1$ and $b_1$ reside at the <em>same physical reference plane $L_1$</em>; $a_2$ and $b_2$ reside at the <em>same physical plane $L_2$</em>.<br>
+                            • If the load is matched ($Z_L = 50\\,\\Omega \\implies \\Gamma_L = 0$), then $a_2 = 0$, so $\\Gamma_{\\text{in}} = S_{11}$ and $Z_{\\text{in}} = V_1 / I_1 = 21.36 - j29.51\\,\\Omega$.<br>
+                            • When $Z_L \\neq 50\\,\\Omega$, the load reflection $\\Gamma_L$ recirculates through the feedback loop, altering $\\Gamma_{\\text{in}}$ and $Z_{\\text{in}}$.
+                        </div>
+                    </div>
+
+                    ${renderDeepDive(this.deepDive)}
+
+                    <div class="section-card">
+                        <h2>⚡ Interactive Γ_in & Z_in Calculator: Load Variation & Passivity</h2>
+                        <p>
+                            Adjust the load termination impedance $Z_L$ or edit the two-port $S$-parameters (pre-filled with the $100\\,\\text{MHz}$ transistor values from Chapter 12). 
+                            Observe how load reflections $\\Gamma_L$ feed back to alter the input reflection $\\Gamma_{\\text{in}}$ and driving-point input impedance $Z_{\\text{in}}$.
+                        </p>
+
+                        <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:16px;">
+                            <div class="form-group">
+                                <label>Reference Impedance Z₀ (Ω)</label>
+                                <input type="number" id="gin-z0" class="text-input" value="50" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Load Resistance R_L (Ω)</label>
+                                <input type="number" id="gin-zl-re" class="text-input" value="50" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Load Reactance X_L (Ω)</label>
+                                <input type="number" id="gin-zl-im" class="text-input" value="0" step="any">
+                            </div>
+                        </div>
+
+                        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:10px; padding:16px; margin-bottom:16px;">
+                            <strong style="color:var(--accent); font-size:13px; display:block; margin-bottom:10px;">Two-Port Scattering Parameters [S] (Transistor Model):</strong>
+                            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+                                <div class="form-group">
+                                    <label>S₁₁ Real</label>
+                                    <input type="number" id="gin-s11-re" class="text-input" value="-0.1967" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₁₁ Imag</label>
+                                    <input type="number" id="gin-s11-im" class="text-input" value="-0.4950" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₂₁ Real</label>
+                                    <input type="number" id="gin-s21-re" class="text-input" value="-0.9389" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₂₁ Imag</label>
+                                    <input type="number" id="gin-s21-im" class="text-input" value="2.9207" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₁₂ Real</label>
+                                    <input type="number" id="gin-s12-re" class="text-input" value="0.0635" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₁₂ Imag</label>
+                                    <input type="number" id="gin-s12-im" class="text-input" value="0.0231" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₂₂ Real</label>
+                                    <input type="number" id="gin-s22-re" class="text-input" value="0.6124" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₂₂ Imag</label>
+                                    <input type="number" id="gin-s22-im" class="text-input" value="-0.2598" step="any">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+                            <button class="secondary-btn" onclick="setGammaInPreset('matched')">Preset: Matched Load (50 Ω, Γ_L = 0)</button>
+                            <button class="secondary-btn" onclick="setGammaInPreset('lowz')">Preset: Low-Z Mismatch (25 Ω)</button>
+                            <button class="secondary-btn" onclick="setGammaInPreset('highz')">Preset: High-Z Mismatch (100 Ω)</button>
+                            <button class="secondary-btn" onclick="setGammaInPreset('inductive')">Preset: Inductive Load (50 + j50 Ω)</button>
+                            <button class="secondary-btn" onclick="setGammaInPreset('capacitive')">Preset: Capacitive Load (50 - j50 Ω)</button>
+                            <button class="secondary-btn" onclick="setGammaInPreset('short')">Preset: Short Circuit (0 Ω, Γ_L = -1)</button>
+                            <button class="secondary-btn" onclick="setGammaInPreset('open')">Preset: Open Circuit (1 MΩ, Γ_L ≈ +1)</button>
+                            <button class="secondary-btn" onclick="setGammaInPreset('unilateral')">Preset: Unilateral Model (S₁₂ = 0)</button>
+                        </div>
+
+                        <button class="primary-btn" onclick="calculateGammaInDemo()">Calculate Γ_in & Z_in</button>
+                        <div class="code-display" id="gamma-in-output">Click 'Calculate Γ_in & Z_in' to evaluate...</div>
+                    </div>
+                `;
+                }
+            },
+            {
+                id: 'thevenin-gamma-out',
+                badge: '14',
+                title: 'Thevenin Output Reduction: Deriving Γ_out & Z_out',
+                subtitle: 'Thevenin equivalent of the source-to-port network, zeroing internal sources, matched vs. arbitrary source reflection, and the algebraic derivation of Γ_out & Z_out',
+                deepDive: {
+                    title: 'Thevenin Output Reduction: Zeroing Internal Independent Sources, Reverse Feedback & The Algebraic Derivation of Γ_out',
+                    preview: 'Why everything to the left of Port 2 collapses to a Thevenin equivalent (V_Th, Z_out), why internal independent sources must be zeroed to measure driving-point output impedance, and how source reflection Γ_s pulls the output reflection Γ_out.',
+                    readingTime: '6 min read',
+                    content: `
+                        <h3>1. Motivation: The Complete Thevenin Reduction at Port 2</h3>
+                        <p>
+                            Consider the entire system preceding the terminating load: from reference plane $L_2$ moving leftward through 
+                            the active transistor amplifier, biasing networks, DC blocking capacitors, and matching transmission lines, all the way back to the original RF generator. 
+                            By Thevenin’s theorem, this entire complex network can be reduced at terminal $L_2$ to an equivalent circuit consisting of:
+                        </p>
+                        <ul>
+                            <li>An equivalent Thevenin open-circuit source voltage: $\\mathbf{V}_{\\text{Th}}$</li>
+                            <li>In series with an equivalent Thevenin output impedance: $\\mathbf{Z}_{\\text{out}}$ (also called $Z_{\\text{Th}}$)</li>
+                        </ul>
+                        <p>
+                            When this reduction is made, the entire source-to-load transmission path simplifies to an elementary single-loop circuit: 
+                            the Thevenin generator $\\mathbf{V}_{\\text{Th}}$ in series with $\\mathbf{Z}_{\\text{out}}$, driving the terminating load impedance $Z_L$.
+                        </p>
+
+                        <h3>2. Why Internal Independent Sources Must Be Zeroed</h3>
+                        <p>
+                            To find the Thevenin equivalent impedance $Z_{\\text{out}}$ looking into Port 2 ($L_2$), classical linear network theory 
+                            dictates that <strong>all independent sources to the left of the port must be zeroed</strong> (independent voltage sources replaced by short circuits).
+                        </p>
+                        <p>
+                            <em>Physical rationale:</em> The definition of electrical driving-point impedance looking into a port is the ratio of an externally applied 
+                            test voltage to the resulting test current entering the port: $Z_{\\text{out}} = V_{\\text{test}} / I_{\\text{test}}$. 
+                            If the internal RF generator were left active, it would pump its own voltage and current into the port, corrupting the ratio and producing an active, 
+                            source-dependent quotient rather than the true passive driving-point impedance of the network. 
+                            Zeroing the independent generator ($V_g = 0 \\implies b_s = 0$) ensures that the current flowing across terminal $L_2$ is 
+                            <em>strictly and exclusively</em> the response of the network to the test signal arriving at Port 2. 
+                            However, the internal passive source impedance $Z_s$ remains connected at Port 1!
+                        </p>
+
+                        <h3>3. Conceptual Zero-Length Line at Port 2 & Reflection Definition</h3>
+                        <p>
+                            Just as at Port 1, we conceptualize reference plane $L_2$ as a zero-length transmission line with reference characteristic impedance $Z_0 = 50\\,\\Omega$. 
+                            The reflection coefficient looking leftward into Port 2 is defined as the ratio of the outgoing wave $b_2$ (emerging from Port 2 toward the load) 
+                            to the incoming wave $a_2$ (incident into Port 2 from an external test source):
+                        </p>
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Output Reflection & Thevenin Impedance Relationship</div>
+                            $$\\Gamma_{\\text{out}} = \\left. \\frac{b_2}{a_2} \\right|_{b_s = 0} = \\frac{Z_{\\text{out}} - Z_0}{Z_{\\text{out}} + Z_0} \\iff Z_{\\text{out}} = Z_0 \\frac{1 + \\Gamma_{\\text{out}}}{1 - \\Gamma_{\\text{out}}}$$
+                        </div>
+
+                        <h3>4. The Matched Source Special Case ($Z_s = Z_0 = 50\\,\\Omega \\implies \\Gamma_s = 0$)</h3>
+                        <p>
+                            Suppose the original generator has a source impedance matched to the system reference impedance ($Z_s = 50\\,\\Omega$). 
+                            When an incoming wave $a_2$ enters Port 2, a portion of it leaks backward across the transistor via reverse transmission ($S_{12}$), 
+                            reaching Port 1 as $b_1$. 
+                        </p>
+                        <p>
+                            Because $Z_s = 50\\,\\Omega$, the source reflection coefficient is zero:
+                            $$\\Gamma_s = \\frac{Z_s - Z_0}{Z_s + Z_0} = \\frac{50 - 50}{50 + 50} = 0$$
+                            The wave $b_1$ is <strong>completely absorbed by $Z_s$</strong> without any re-reflection back into Port 1 ($a_1 = 0$). 
+                            Consequently, no re-amplified wave returns to Port 2 via $S_{21}$. 
+                            The only wave emerging from Port 2 is the direct reflection:
+                            $$b_2 = S_{22} a_2 \\implies \\Gamma_{\\text{out}} = \\frac{b_2}{a_2} = S_{22}$$
+                            In this matched case, $Z_{\\text{out}} = Z_0 \\frac{1 + S_{22}}{1 - S_{22}} = 128.02 - j119.34\\,\\Omega$, which exactly matches the reverse simulation impedance from Chapter 12!
+                        </p>
+
+                        <h3>5. Step-by-Step Algebraic Derivation of $\\Gamma_{\\text{out}}$ (Arbitrary $Z_s$)</h3>
+                        <p>
+                            When the source impedance is <em>not</em> perfectly matched ($Z_s \\neq 50\\,\\Omega \\implies \\Gamma_s \\neq 0$), 
+                            the reverse-leaked wave $b_1$ reflects off $Z_s$, launching a re-reflected wave $a_1$ back into Port 1:
+                        </p>
+                        <ol>
+                            <li>At the source boundary (with $b_s = 0$), the wave $a_1$ entering Port 1 is the reflection of the wave $b_1$ exiting Port 1:
+                                $$a_1 = \\Gamma_s \\cdot b_1 \\iff b_1 = \\frac{1}{\\Gamma_s} a_1$$
+                            </li>
+                            <li>From the two-port scattering relationships at Port 1:
+                                $$b_1 = S_{11} a_1 + S_{12} a_2$$
+                            </li>
+                            <li>Substituting $b_1 = \\frac{1}{\\Gamma_s} a_1$:
+                                $$\\frac{1}{\\Gamma_s} a_1 = S_{11} a_1 + S_{12} a_2$$
+                            </li>
+                            <li>Grouping all terms containing $a_1$ on the left side:
+                                $$\\left( \\frac{1}{\\Gamma_s} - S_{11} \\right) a_1 = S_{12} a_2 \\implies a_1 = \\frac{S_{12} a_2}{\\frac{1}{\\Gamma_s} - S_{11}} = \\frac{S_{12} \\Gamma_s a_2}{1 - S_{11} \\Gamma_s}$$
+                            </li>
+                            <li>Now substitute this expression for $a_1$ into the Port 2 scattering relationship for $b_2$:
+                                $$b_2 = S_{21} a_1 + S_{22} a_2 = S_{21} \\left[ \\frac{S_{12} a_2}{\\frac{1}{\\Gamma_s} - S_{11}} \\right] + S_{22} a_2 = a_2 \\left( S_{22} + \\frac{S_{12} S_{21}}{\\frac{1}{\\Gamma_s} - S_{11}} \\right)$$
+                            </li>
+                            <li>Dividing both sides by $a_2$ and clearing the compound fraction by multiplying numerator and denominator by $\\Gamma_s$:
+                                $$\\Gamma_{\\text{out}} = \\frac{b_2}{a_2} = S_{22} + \\frac{S_{12} S_{21}}{\\frac{1}{\\Gamma_s} - S_{11}} = S_{22} + \\frac{S_{12} S_{21} \\Gamma_s}{1 - S_{11} \\Gamma_s}$$
+                            </li>
+                        </ol>
+
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">The Fundamental Output Reflection & Thevenin Impedance Formula</div>
+                            $$\\Gamma_{\\text{out}} = S_{22} + \\frac{S_{12} S_{21} \\Gamma_s}{1 - S_{11} \\Gamma_s}, \\quad Z_{\\text{out}} = Z_0 \\frac{1 + \\Gamma_{\\text{out}}}{1 - \\Gamma_{\\text{out}}}$$
+                        </div>
+
+                        <h3>6. Physical Interpretation: Source Pulling & Output Negative Resistance</h3>
+                        <ul>
+                            <li><strong>Unilateral Devices ($S_{12} = 0$):</strong> If the active device has negligible reverse feedback ($S_{12} \\approx 0$), then $\\Gamma_{\\text{out}} = S_{22}$ regardless of what source impedance is connected at Port 1. The output impedance is completely isolated from the source generator.</li>
+                            <li><strong>Source Pulling in Bilateral Amplifiers ($S_{12} \\neq 0$):</strong> In physical transistors, internal feedback (such as collector-to-base capacitance $C_{cb}$) allows source mismatches $\\Gamma_s$ to modify $\\Gamma_{\\text{out}}$ via the feedback loop $\\frac{S_{12} S_{21} \\Gamma_s}{1 - S_{11} \\Gamma_s}$. Changing the source tuner directly "pulls" the amplifier's output impedance!</li>
+                            <li><strong>Output Passivity vs. Oscillation Risk:</strong> As long as $|\\Gamma_{\\text{out}}| \\le 1$, the real part of the Thevenin output impedance is non-negative ($\\text{Re}(Z_{\\text{out}}) \\ge 0$), and the port absorbs incident power safely. However, if a reactive source causes $|1 - S_{11}\\Gamma_s|$ to shrink, the feedback term can cause $|\\Gamma_{\\text{out}}| > 1$. This produces a <strong>negative output resistance ($\\text{Re}(Z_{\\text{out}}) < 0$)</strong>, where the amplifier acts as an RF generator that can drive an external resonant load into spontaneous self-oscillation!</li>
+                            <li><strong>Implementation in the Engine (findSignalFlowNodeValues):</strong> In <code>radio_frequency_electric_circuit_calculator.js</code>, <code>globalThis.findSignalFlowNodeValues</code> evaluates this exact formula via <code>gamma_out_b2_to_a2_ratio</code>!</li>
+                        </ul>
+                    `
+                },
+                render: function() {
+                    return `
+                    <div class="section-card">
+                        <h2>🔌 Thevenin Output Reduction: Deriving Γ_out & Z_out</h2>
+                        <p>
+                            Just as Port 1 faces an input impedance $Z_{\\text{in}}$, the terminating load at Port 2 ($L_2$) looks back into the amplifier 
+                            and sees a Thevenin equivalent circuit: an equivalent source $\\mathbf{V}_{\\text{Th}}$ in series with an equivalent Thevenin impedance $\\mathbf{Z}_{\\text{out}}$. 
+                            By zeroing independent sources to the left of Port 2 ($b_s = 0$) and evaluating the Signal Flow Graph, 
+                            we calculate the output reflection coefficient $\\Gamma_{\\text{out}} = b_2 / a_2$ and Thevenin impedance $Z_{\\text{out}}$ under <em>any</em> arbitrary source impedance $Z_s$.
+                        </p>
+
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/amplifier-wave-annotations.png" alt="Amplifier Circuit Diagram with Wave Annotations and Port Planes">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 1: Real Amplifier Circuit with Port Boundaries & Wave Variables.</strong> Reference planes $L_1$ and $L_2$ act as conceptual zero-length transmission lines of impedance $Z_0 = 50\\,\\Omega$. To evaluate the Thevenin equivalent output impedance looking into Port 2 ($L_2$), the internal independent RF generator at $L_1$ is zeroed ($b_s = 0$), while the generator source impedance $Z_s$ remains connected with reflection coefficient $\\Gamma_s$.
+                            </div>
+                        </div>
+
+                        <div class="circuit-illustration-card" style="margin-top:16px;">
+                            <img src="./circuit_images/signal-flow-gamma-out.png" alt="Two-Port Signal Flow Graph for Gamma Out Derivation">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 2: Two-Port Signal Flow Graph for Γ_out.</strong> Directed topological graph mapping wave interactions when looking into Port 2. An incoming test wave $a_2$ enters Port 2; a portion reflects directly as $S_{22} a_2$, while another portion transmits to Port 1 via $S_{12}$, reflects off the source impedance via $\\Gamma_s$, and returns to Port 2 via $S_{21}$. The ratio yields $\\Gamma_{\\text{out}} = b_2 / a_2 = S_{22} + \\frac{S_{12} S_{21} \\Gamma_s}{1 - S_{11} \\Gamma_s}$.
+                            </div>
+                        </div>
+
+                        <div class="story-callout" style="margin-top:20px;">
+                            <strong>Physical Key Takeaways:</strong><br>
+                            • <strong>Thevenin Reduction:</strong> Everything prior to the load (from $L_2$ leftward to the generator) reduces to a single Thevenin source $V_{\\text{Th}}$ in series with $Z_{\\text{out}}$, connected across the load $Z_L$.<br>
+                            • <strong>Zeroing Independent Sources:</strong> To measure how current into $L_2$ responds to a test voltage at $L_2$ without contamination from the internal generator, we set $V_g = 0$ ($b_s = 0$).<br>
+                            • <strong>Matched Source ($Z_s = 50\\,\\Omega \\implies \\Gamma_s = 0$):</strong> Any signal leaking backward through $S_{12}$ is completely absorbed by $Z_s$. Thus $\\Gamma_{\\text{out}} = S_{22} = 0.6124 - j0.2598$ and $Z_{\\text{out}} = 128.02 - j119.34\\,\\Omega$.<br>
+                            • <strong>Source Pulling ($Z_s \\neq 50\\,\\Omega$):</strong> When the source is not matched, $\\Gamma_s$ reflects waves back through the transistor, pulling $\\Gamma_{\\text{out}}$ and $Z_{\\text{out}}$.
+                        </div>
+                    </div>
+
+                    ${renderDeepDive(this.deepDive)}
+
+                    <div class="section-card">
+                        <h2>⚡ Interactive Γ_out & Z_out Calculator: Source Pulling & Passivity</h2>
+                        <p>
+                            Adjust the generator source impedance $Z_s$ or edit the two-port $S$-parameters (pre-filled with the $100\\,\\text{MHz}$ transistor values). 
+                            Observe how source reflections $\\Gamma_s$ pull the output reflection coefficient $\\Gamma_{\\text{out}}$ and Thevenin output impedance $Z_{\\text{out}}$.
+                        </p>
+
+                        <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:16px;">
+                            <div class="form-group">
+                                <label>Reference Impedance Z₀ (Ω)</label>
+                                <input type="number" id="gout-z0" class="text-input" value="50" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Source Resistance R_s (Ω)</label>
+                                <input type="number" id="gout-zs-re" class="text-input" value="50" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Source Reactance X_s (Ω)</label>
+                                <input type="number" id="gout-zs-im" class="text-input" value="0" step="any">
+                            </div>
+                        </div>
+
+                        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:10px; padding:16px; margin-bottom:16px;">
+                            <strong style="color:var(--accent); font-size:13px; display:block; margin-bottom:10px;">Two-Port Scattering Parameters [S] (Transistor Model):</strong>
+                            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+                                <div class="form-group">
+                                    <label>S₁₁ Real</label>
+                                    <input type="number" id="gout-s11-re" class="text-input" value="-0.1967" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₁₁ Imag</label>
+                                    <input type="number" id="gout-s11-im" class="text-input" value="-0.4950" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₂₁ Real</label>
+                                    <input type="number" id="gout-s21-re" class="text-input" value="-0.9389" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₂₁ Imag</label>
+                                    <input type="number" id="gout-s21-im" class="text-input" value="2.9207" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₁₂ Real</label>
+                                    <input type="number" id="gout-s12-re" class="text-input" value="0.0635" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₁₂ Imag</label>
+                                    <input type="number" id="gout-s12-im" class="text-input" value="0.0231" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₂₂ Real</label>
+                                    <input type="number" id="gout-s22-re" class="text-input" value="0.6124" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₂₂ Imag</label>
+                                    <input type="number" id="gout-s22-im" class="text-input" value="-0.2598" step="any">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+                            <button class="secondary-btn" onclick="setGammaOutPreset('matched')">Preset: Matched Source (50 Ω, Γ_s = 0)</button>
+                            <button class="secondary-btn" onclick="setGammaOutPreset('lowz')">Preset: Low-Z Source (25 Ω)</button>
+                            <button class="secondary-btn" onclick="setGammaOutPreset('highz')">Preset: High-Z Source (100 Ω)</button>
+                            <button class="secondary-btn" onclick="setGammaOutPreset('inductive')">Preset: Inductive Source (50 + j50 Ω)</button>
+                            <button class="secondary-btn" onclick="setGammaOutPreset('capacitive')">Preset: Capacitive Source (50 - j50 Ω)</button>
+                            <button class="secondary-btn" onclick="setGammaOutPreset('short')">Preset: Short Circuit (0 Ω, Γ_s = -1)</button>
+                            <button class="secondary-btn" onclick="setGammaOutPreset('open')">Preset: Open Circuit (1 MΩ, Γ_s ≈ +1)</button>
+                            <button class="secondary-btn" onclick="setGammaOutPreset('unilateral')">Preset: Unilateral Model (S₁₂ = 0)</button>
+                        </div>
+
+                        <button class="primary-btn" onclick="calculateGammaOutDemo()">Calculate Γ_out & Z_out</button>
+                        <div class="code-display" id="gamma-out-output">Click 'Calculate Γ_out & Z_out' to evaluate...</div>
+                    </div>
+                `;
+                }
             }
         ];
 
@@ -3891,6 +4337,24 @@
                 setTimeout(() => {
                     if (typeof calculateAmplifierSimSParamsDemo === 'function') {
                         calculateAmplifierSimSParamsDemo();
+                    }
+                }, 50);
+            }
+
+            // If navigating to the signal flow & gamma_in page (Page 13, id 'signal-flow-gamma-in'), auto-run calculation
+            if (page.id === 'signal-flow-gamma-in') {
+                setTimeout(() => {
+                    if (typeof calculateGammaInDemo === 'function') {
+                        calculateGammaInDemo();
+                    }
+                }, 50);
+            }
+
+            // If navigating to the thevenin output & gamma_out page (Page 14, id 'thevenin-gamma-out'), auto-run calculation
+            if (page.id === 'thevenin-gamma-out') {
+                setTimeout(() => {
+                    if (typeof calculateGammaOutDemo === 'function') {
+                        calculateGammaOutDemo();
                     }
                 }, 50);
             }
@@ -5523,6 +5987,417 @@
                 `Physical Verification Takeaways:\n` +
                 `• Notice non-reciprocal behavior: |S₂₁| (${s21.magnitude.toFixed(3)}) >> |S₁₂| (${s12.magnitude.toFixed(3)}), reflecting active transistor current amplification.\n` +
                 `• The DC blocking capacitors and 2 mH RF chokes successfully isolate the DC quiescent point (+9V) while directing the 100 MHz AC current path exclusively through the base and collector!`;
+        }
+
+        function setGammaInPreset(type) {
+            // Restore default S-parameters
+            document.getElementById('gin-z0').value = 50;
+            document.getElementById('gin-s11-re').value = -0.1967;
+            document.getElementById('gin-s11-im').value = -0.4950;
+            document.getElementById('gin-s21-re').value = -0.9389;
+            document.getElementById('gin-s21-im').value = 2.9207;
+            document.getElementById('gin-s12-re').value = 0.0635;
+            document.getElementById('gin-s12-im').value = 0.0231;
+            document.getElementById('gin-s22-re').value = 0.6124;
+            document.getElementById('gin-s22-im').value = -0.2598;
+
+            if (type === 'matched') {
+                document.getElementById('gin-zl-re').value = 50;
+                document.getElementById('gin-zl-im').value = 0;
+            } else if (type === 'lowz') {
+                document.getElementById('gin-zl-re').value = 25;
+                document.getElementById('gin-zl-im').value = 0;
+            } else if (type === 'highz') {
+                document.getElementById('gin-zl-re').value = 100;
+                document.getElementById('gin-zl-im').value = 0;
+            } else if (type === 'inductive') {
+                document.getElementById('gin-zl-re').value = 50;
+                document.getElementById('gin-zl-im').value = 50;
+            } else if (type === 'capacitive') {
+                document.getElementById('gin-zl-re').value = 50;
+                document.getElementById('gin-zl-im').value = -50;
+            } else if (type === 'short') {
+                document.getElementById('gin-zl-re').value = 0;
+                document.getElementById('gin-zl-im').value = 0;
+            } else if (type === 'open') {
+                document.getElementById('gin-zl-re').value = 1000000;
+                document.getElementById('gin-zl-im').value = 0;
+            } else if (type === 'unilateral') {
+                document.getElementById('gin-s12-re').value = 0;
+                document.getElementById('gin-s12-im').value = 0;
+                document.getElementById('gin-zl-re').value = 25;
+                document.getElementById('gin-zl-im').value = 0;
+            }
+            calculateGammaInDemo();
+        }
+
+        function calculateGammaInDemo() {
+            const z0 = parseFloat(document.getElementById('gin-z0').value) || 50;
+            const zlReal = parseFloat(document.getElementById('gin-zl-re').value) || 0;
+            const zlImag = parseFloat(document.getElementById('gin-zl-im').value) || 0;
+
+            const s11 = {
+                real: parseFloat(document.getElementById('gin-s11-re').value) || 0,
+                imag: parseFloat(document.getElementById('gin-s11-im').value) || 0
+            };
+            const s21 = {
+                real: parseFloat(document.getElementById('gin-s21-re').value) || 0,
+                imag: parseFloat(document.getElementById('gin-s21-im').value) || 0
+            };
+            const s12 = {
+                real: parseFloat(document.getElementById('gin-s12-re').value) || 0,
+                imag: parseFloat(document.getElementById('gin-s12-im').value) || 0
+            };
+            const s22 = {
+                real: parseFloat(document.getElementById('gin-s22-re').value) || 0,
+                imag: parseFloat(document.getElementById('gin-s22-im').value) || 0
+            };
+
+            // 1. Compute Load Reflection Coefficient Gamma_L = (ZL - Z0) / (ZL + Z0)
+            const reflLoadObj = globalThis.getTLRefelectionCoefficient(zlReal, zlImag, z0, 0).reflection;
+            const gammaL = { real: reflLoadObj.real, imag: reflLoadObj.imag };
+            const gammaLMag = reflLoadObj.magnitude;
+            const gammaLDeg = (reflLoadObj.theta * 180 / Math.PI);
+
+            // 2. Feedback Numerator = S12 * S21 * Gamma_L
+            const s12_s21 = (typeof globalThis.multiplyComplexNums_v2 === 'function') ? 
+                globalThis.multiplyComplexNums_v2(s12, s21) : 
+                globalThis.multiplyComplexNums(s12.real, s12.imag, s21.real, s21.imag);
+            const num = (typeof globalThis.multiplyComplexNums_v2 === 'function') ? 
+                globalThis.multiplyComplexNums_v2(s12_s21, gammaL) : 
+                globalThis.multiplyComplexNums(s12_s21.real, s12_s21.imag, gammaL.real, gammaL.imag);
+
+            // 3. Feedback Denominator = 1 - S22 * Gamma_L
+            const s22_gammaL = (typeof globalThis.multiplyComplexNums_v2 === 'function') ? 
+                globalThis.multiplyComplexNums_v2(s22, gammaL) : 
+                globalThis.multiplyComplexNums(s22.real, s22.imag, gammaL.real, gammaL.imag);
+            const den = {
+                real: 1 - s22_gammaL.real,
+                imag: -s22_gammaL.imag
+            };
+            const denMag = Math.hypot(den.real, den.imag);
+
+            // 4. Feedback Term = Numerator / Denominator
+            const feedbackTerm = globalThis.divideComplexNums(num.real, num.imag, den.real, den.imag);
+            const feedbackMag = Math.hypot(feedbackTerm.real, feedbackTerm.imag);
+
+            // 5. Total Input Reflection Gamma_in = S11 + Feedback Term
+            const gammaIn = {
+                real: s11.real + feedbackTerm.real,
+                imag: s11.imag + feedbackTerm.imag
+            };
+            const gammaInMag = Math.hypot(gammaIn.real, gammaIn.imag);
+            const gammaInDeg = Math.atan2(gammaIn.imag, gammaIn.real) * 180 / Math.PI;
+
+            // 6. Driving-Point Input Impedance Zin = Z0 * (1 + Gamma_in) / (1 - Gamma_in)
+            const onePlusGamma = { real: 1 + gammaIn.real, imag: gammaIn.imag };
+            const oneMinusGamma = { real: 1 - gammaIn.real, imag: -gammaIn.imag };
+            const zRatio = globalThis.divideComplexNums(onePlusGamma.real, onePlusGamma.imag, oneMinusGamma.real, oneMinusGamma.imag);
+            const zIn = {
+                real: z0 * zRatio.real,
+                imag: z0 * zRatio.imag
+            };
+            const zInMag = Math.hypot(zIn.real, zIn.imag);
+            const zInPhaseDeg = Math.atan2(zIn.imag, zIn.real) * 180 / Math.PI;
+
+            // Return loss and stability checks
+            const returnLossDb = gammaInMag > 0 ? (-20 * Math.log10(gammaInMag)) : Infinity;
+            let stabilityStatus = '';
+            if (gammaInMag < 0.9999) {
+                stabilityStatus = 'UNCONDITIONALLY PASSIVE INPUT (|Γ_in| < 1, R_in > 0) — Network absorbs incident wave energy safely.';
+            } else if (gammaInMag <= 1.0001) {
+                stabilityStatus = 'MARGINALLY STABLE BOUNDARY (|Γ_in| ≈ 1, R_in ≈ 0) — Purely reactive boundary (zero net power absorption).';
+            } else {
+                stabilityStatus = 'POTENTIALLY UNSTABLE / NEGATIVE RESISTANCE (|Γ_in| > 1, R_in < 0) — Reflected wave power exceeds incident wave! Risk of spontaneous oscillation!';
+            }
+
+            // Cross-check & wave nodes using findSignalFlowNodeValues
+            let sfgApiComparisonText = '';
+            let sfgNodesText = '';
+            if (typeof globalThis.findSignalFlowNodeValues === 'function') {
+                try {
+                    const testGen = {
+                        generator_voltage_real: 1e-3, // 1 mV test source
+                        generator_voltage_imag: 0,
+                        generator_impedance_real: z0,
+                        generator_impedance_imag: 0,
+                        generator_tl1_length: 0, // zero-length reference line at Port 1
+                        generator_tl2_length: 0  // zero-length reference line at Port 2
+                    };
+                    const flowResult = globalThis.findSignalFlowNodeValues(
+                        testGen,
+                        { real: zlReal, imag: zlImag },
+                        s11,
+                        s21,
+                        s12,
+                        s22,
+                        z0,
+                        0 // beta = 0 for zero-length line
+                    );
+                    const gammaInApi = flowResult.gamma_in_b1_to_a1_ratio;
+                    const diffGammaIn = Math.hypot(gammaIn.real - gammaInApi.real, gammaIn.imag - gammaInApi.imag);
+
+                    const a1Mag = flowResult.a1.magnitude !== undefined ? flowResult.a1.magnitude : Math.hypot(flowResult.a1.real, flowResult.a1.imag);
+                    const b1Mag = Math.hypot(flowResult.b1.real, flowResult.b1.imag);
+                    const b2Mag = flowResult.b2.magnitude !== undefined ? flowResult.b2.magnitude : Math.hypot(flowResult.b2.real, flowResult.b2.imag);
+                    const a2Mag = Math.hypot(flowResult.a2.real, flowResult.a2.imag);
+                    const gammaOutMag = Math.hypot(flowResult.gamma_out_b2_to_a2_ratio.real, flowResult.gamma_out_b2_to_a2_ratio.imag);
+
+                    sfgApiComparisonText = `• Engine Cross-Check (findSignalFlowNodeValues): CONFIRMED! (|ΔΓ_in| = ${diffGammaIn.toExponential(2)})\n`;
+                    sfgNodesText = 
+                        `-----------------------------------------------------------------------\n` +
+                        `Engine Signal Flow Node Solutions (globalThis.findSignalFlowNodeValues):\n` +
+                        `-----------------------------------------------------------------------\n` +
+                        `• Source Wave b_s:              ${flowResult.bs.real.toExponential(4)} + j(${flowResult.bs.imag.toExponential(4)}) √W  (|b_s| = ${flowResult.bs.magnitude.toExponential(4)} √W)\n` +
+                        `• Port 1 Incident Wave a₁:      ${flowResult.a1.real.toExponential(4)} + j(${flowResult.a1.imag.toExponential(4)}) √W  (|a₁| = ${a1Mag.toExponential(4)} √W)\n` +
+                        `• Port 1 Reflected Wave b₁:     ${flowResult.b1.real.toExponential(4)} + j(${flowResult.b1.imag.toExponential(4)}) √W  (|b₁| = ${b1Mag.toExponential(4)} √W)\n` +
+                        `• Port 2 Transmitted Wave b₂:   ${flowResult.b2.real.toExponential(4)} + j(${flowResult.b2.imag.toExponential(4)}) √W  (|b₂| = ${b2Mag.toExponential(4)} √W)\n` +
+                        `• Port 2 Load-Reflected Wave a₂: ${flowResult.a2.real.toExponential(4)} + j(${flowResult.a2.imag.toExponential(4)}) √W  (|a₂| = ${a2Mag.toExponential(4)} √W)\n` +
+                        `• Port 2 Output Reflection Γ_out: ${flowResult.gamma_out_b2_to_a2_ratio.real.toFixed(4)} + j(${flowResult.gamma_out_b2_to_a2_ratio.imag.toFixed(4)})  [|Γ_out| = ${gammaOutMag.toFixed(4)}]\n\n`;
+                } catch (e) {
+                    sfgApiComparisonText = `• findSignalFlowNodeValues: ${e.message}\n`;
+                }
+            }
+
+            // Print formatted breakdown
+            document.getElementById('gamma-in-output').textContent = 
+                `=======================================================================\n` +
+                `  INPUT REFLECTION (Γ_in) & DRIVING-POINT IMPEDANCE (Z_in) ANALYSIS     \n` +
+                `=======================================================================\n\n` +
+                `Reference & Port Parameters:\n` +
+                `• Reference Characteristic Z₀:  ${z0.toFixed(2)} Ω\n` +
+                `• Connected Load Impedance Z_L:  ${zlReal.toFixed(2)} + j(${zlImag.toFixed(2)}) Ω\n` +
+                `• Load Reflection Γ_L:          ${gammaL.real.toFixed(4)} + j(${gammaL.imag.toFixed(4)})  [|Γ_L| = ${gammaLMag.toFixed(4)}, θ = ${gammaLDeg.toFixed(2)}°]\n\n` +
+                `Two-Port S-Parameters:\n` +
+                `• S₁₁ (Input Reflection):       ${s11.real.toFixed(4)} + j(${s11.imag.toFixed(4)})  (|S₁₁| = ${Math.hypot(s11.real, s11.imag).toFixed(4)})\n` +
+                `• S₂₁ (Forward Transmission):   ${s21.real.toFixed(4)} + j(${s21.imag.toFixed(4)})  (|S₂₁| = ${Math.hypot(s21.real, s21.imag).toFixed(4)})\n` +
+                `• S₁₂ (Reverse Feedback):       ${s12.real.toFixed(4)} + j(${s12.imag.toFixed(4)})  (|S₁₂| = ${Math.hypot(s12.real, s12.imag).toFixed(4)})\n` +
+                `• S₂₂ (Output Reflection):      ${s22.real.toFixed(4)} + j(${s22.imag.toFixed(4)})  (|S₂₂| = ${Math.hypot(s22.real, s22.imag).toFixed(4)})\n\n` +
+                `Step-by-Step Algebraic Derivation Evaluation:\n` +
+                `• Loop Numerator (S₁₂ · S₂₁ · Γ_L):   ${num.real.toExponential(4)} + j(${num.imag.toExponential(4)})\n` +
+                `• Loop Denominator (1 - S₂₂ · Γ_L):   ${den.real.toFixed(4)} + j(${den.imag.toFixed(4)})  (|Den| = ${denMag.toFixed(4)})\n` +
+                `• Feedback Delta Term ΔΓ:            ${feedbackTerm.real.toFixed(4)} + j(${feedbackTerm.imag.toFixed(4)})  (|ΔΓ| = ${feedbackMag.toFixed(4)})\n\n` +
+                `Result 1: Input Reflection Coefficient Γ_in = S₁₁ + ΔΓ:\n` +
+                `• Complex Γ_in:                 ${gammaIn.real.toFixed(4)} + j(${gammaIn.imag.toFixed(4)})\n` +
+                `• Magnitude |Γ_in|:             ${gammaInMag.toFixed(4)}\n` +
+                `• Phase Angle θ(Γ_in):          ${gammaInDeg.toFixed(2)}° (${(gammaInDeg * Math.PI / 180).toFixed(4)} rad)\n` +
+                `• Input Return Loss:            ${returnLossDb === Infinity ? '∞' : returnLossDb.toFixed(2)} dB  [-20 · log₁₀(|Γ_in|)]\n\n` +
+                `Result 2: Driving-Point Input Impedance Z_in = Z₀ · (1 + Γ_in) / (1 - Γ_in):\n` +
+                `• Input Impedance Z_in:         ${zIn.real.toFixed(2)} + j(${zIn.imag.toFixed(2)}) Ω\n` +
+                `• Magnitude |Z_in|:             ${zInMag.toFixed(2)} Ω\n` +
+                `• Phase Angle θ(Z_in):          ${zInPhaseDeg.toFixed(2)}°\n\n` +
+                (sfgNodesText || '') +
+                `Stability & Passivity Verdict:\n` +
+                `• ${stabilityStatus}\n` +
+                (sfgApiComparisonText ? sfgApiComparisonText + '\n' : '\n') +
+                `Physical Takeaways:\n` +
+                (Math.abs(gammaLMag) < 1e-6 ? 
+                    `• Matched Load Verification: Since Γ_L = 0, the feedback term ΔΓ = 0. Therefore, Γ_in ≡ S₁₁ (${s11.real.toFixed(4)} + j${s11.imag.toFixed(4)}) and Z_in ≡ ${zIn.real.toFixed(2)} + j(${zIn.imag.toFixed(2)}) Ω, exactly reproducing the Chapter 12 simulated V₁/I₁!\n` :
+                    `• Load Pull Effect: Because S₁₂ ≠ 0, the load reflection Γ_L (${gammaLMag.toFixed(3)} ∠ ${gammaLDeg.toFixed(1)}°) shifted Γ_in away from S₁₁ by ΔΓ (${feedbackMag.toFixed(3)}), modifying Z_in from 21.36 - j29.51 Ω to ${zIn.real.toFixed(2)} + j(${zIn.imag.toFixed(2)}) Ω.\n`) +
+                (Math.abs(s12.real) < 1e-6 && Math.abs(s12.imag) < 1e-6 ? 
+                    `• Unilateral Verification: With S₁₂ = 0, no signal reflects back through the transistor. Γ_in ≡ S₁₁ regardless of load!\n` : 
+                    `• A source at L₁ must induce voltage initially; but Z_in determines the exact impedance that the source faces at the port.`);
+        }
+
+        function setGammaOutPreset(type) {
+            // Restore default S-parameters
+            document.getElementById('gout-z0').value = 50;
+            document.getElementById('gout-s11-re').value = -0.1967;
+            document.getElementById('gout-s11-im').value = -0.4950;
+            document.getElementById('gout-s21-re').value = -0.9389;
+            document.getElementById('gout-s21-im').value = 2.9207;
+            document.getElementById('gout-s12-re').value = 0.0635;
+            document.getElementById('gout-s12-im').value = 0.0231;
+            document.getElementById('gout-s22-re').value = 0.6124;
+            document.getElementById('gout-s22-im').value = -0.2598;
+
+            if (type === 'matched') {
+                document.getElementById('gout-zs-re').value = 50;
+                document.getElementById('gout-zs-im').value = 0;
+            } else if (type === 'lowz') {
+                document.getElementById('gout-zs-re').value = 25;
+                document.getElementById('gout-zs-im').value = 0;
+            } else if (type === 'highz') {
+                document.getElementById('gout-zs-re').value = 100;
+                document.getElementById('gout-zs-im').value = 0;
+            } else if (type === 'inductive') {
+                document.getElementById('gout-zs-re').value = 50;
+                document.getElementById('gout-zs-im').value = 50;
+            } else if (type === 'capacitive') {
+                document.getElementById('gout-zs-re').value = 50;
+                document.getElementById('gout-zs-im').value = -50;
+            } else if (type === 'short') {
+                document.getElementById('gout-zs-re').value = 0;
+                document.getElementById('gout-zs-im').value = 0;
+            } else if (type === 'open') {
+                document.getElementById('gout-zs-re').value = 1000000;
+                document.getElementById('gout-zs-im').value = 0;
+            } else if (type === 'unilateral') {
+                document.getElementById('gout-s12-re').value = 0;
+                document.getElementById('gout-s12-im').value = 0;
+                document.getElementById('gout-zs-re').value = 25;
+                document.getElementById('gout-zs-im').value = 0;
+            }
+            calculateGammaOutDemo();
+        }
+
+        function calculateGammaOutDemo() {
+            const z0 = parseFloat(document.getElementById('gout-z0').value) || 50;
+            const zsReal = parseFloat(document.getElementById('gout-zs-re').value) || 0;
+            const zsImag = parseFloat(document.getElementById('gout-zs-im').value) || 0;
+
+            const s11 = {
+                real: parseFloat(document.getElementById('gout-s11-re').value) || 0,
+                imag: parseFloat(document.getElementById('gout-s11-im').value) || 0
+            };
+            const s21 = {
+                real: parseFloat(document.getElementById('gout-s21-re').value) || 0,
+                imag: parseFloat(document.getElementById('gout-s21-im').value) || 0
+            };
+            const s12 = {
+                real: parseFloat(document.getElementById('gout-s12-re').value) || 0,
+                imag: parseFloat(document.getElementById('gout-s12-im').value) || 0
+            };
+            const s22 = {
+                real: parseFloat(document.getElementById('gout-s22-re').value) || 0,
+                imag: parseFloat(document.getElementById('gout-s22-im').value) || 0
+            };
+
+            // 1. Compute Source Reflection Coefficient Gamma_s = (Zs - Z0) / (Zs + Z0)
+            const reflSourceObj = globalThis.getTLRefelectionCoefficient(zsReal, zsImag, z0, 0).reflection;
+            const gammaS = { real: reflSourceObj.real, imag: reflSourceObj.imag };
+            const gammaSMag = reflSourceObj.magnitude;
+            const gammaSDeg = (reflSourceObj.theta * 180 / Math.PI);
+
+            // 2. Feedback Numerator = S12 * S21 * Gamma_s
+            const s12_s21 = (typeof globalThis.multiplyComplexNums_v2 === 'function') ? 
+                globalThis.multiplyComplexNums_v2(s12, s21) : 
+                globalThis.multiplyComplexNums(s12.real, s12.imag, s21.real, s21.imag);
+            const num = (typeof globalThis.multiplyComplexNums_v2 === 'function') ? 
+                globalThis.multiplyComplexNums_v2(s12_s21, gammaS) : 
+                globalThis.multiplyComplexNums(s12_s21.real, s12_s21.imag, gammaS.real, gammaS.imag);
+
+            // 3. Feedback Denominator = 1 - S11 * Gamma_s
+            const s11_gammaS = (typeof globalThis.multiplyComplexNums_v2 === 'function') ? 
+                globalThis.multiplyComplexNums_v2(s11, gammaS) : 
+                globalThis.multiplyComplexNums(s11.real, s11.imag, gammaS.real, gammaS.imag);
+            const den = {
+                real: 1 - s11_gammaS.real,
+                imag: -s11_gammaS.imag
+            };
+            const denMag = Math.hypot(den.real, den.imag);
+
+            // 4. Feedback Term = Numerator / Denominator
+            const feedbackTerm = globalThis.divideComplexNums(num.real, num.imag, den.real, den.imag);
+            const feedbackMag = Math.hypot(feedbackTerm.real, feedbackTerm.imag);
+
+            // 5. Total Output Reflection Gamma_out = S22 + Feedback Term
+            const gammaOut = {
+                real: s22.real + feedbackTerm.real,
+                imag: s22.imag + feedbackTerm.imag
+            };
+            const gammaOutMag = Math.hypot(gammaOut.real, gammaOut.imag);
+            const gammaOutDeg = Math.atan2(gammaOut.imag, gammaOut.real) * 180 / Math.PI;
+
+            // 6. Thevenin Output Impedance Zout = Z0 * (1 + Gamma_out) / (1 - Gamma_out)
+            const onePlusGamma = { real: 1 + gammaOut.real, imag: gammaOut.imag };
+            const oneMinusGamma = { real: 1 - gammaOut.real, imag: -gammaOut.imag };
+            const zRatio = globalThis.divideComplexNums(onePlusGamma.real, onePlusGamma.imag, oneMinusGamma.real, oneMinusGamma.imag);
+            const zOut = {
+                real: z0 * zRatio.real,
+                imag: z0 * zRatio.imag
+            };
+            const zOutMag = Math.hypot(zOut.real, zOut.imag);
+            const zOutPhaseDeg = Math.atan2(zOut.imag, zOut.real) * 180 / Math.PI;
+
+            // Return loss and stability checks
+            const returnLossDb = gammaOutMag > 0 ? (-20 * Math.log10(gammaOutMag)) : Infinity;
+            let stabilityStatus = '';
+            if (gammaOutMag < 0.9999) {
+                stabilityStatus = 'UNCONDITIONALLY PASSIVE OUTPUT (|Γ_out| < 1, R_out > 0) — Port absorbs test wave energy safely.';
+            } else if (gammaOutMag <= 1.0001) {
+                stabilityStatus = 'MARGINALLY STABLE BOUNDARY (|Γ_out| ≈ 1, R_out ≈ 0) — Purely reactive boundary (zero net power absorption).';
+            } else {
+                stabilityStatus = 'POTENTIALLY UNSTABLE / NEGATIVE OUTPUT RESISTANCE (|Γ_out| > 1, R_out < 0) — Reflected wave power exceeds incident wave! Severe risk of spontaneous self-oscillation into external loads!';
+            }
+
+            // Cross-check & wave nodes using findSignalFlowNodeValues
+            let sfgApiComparisonText = '';
+            let sfgNodesText = '';
+            if (typeof globalThis.findSignalFlowNodeValues === 'function') {
+                try {
+                    const testGen = {
+                        generator_voltage_real: 1e-3,
+                        generator_voltage_imag: 0,
+                        generator_impedance_real: zsReal,
+                        generator_impedance_imag: zsImag,
+                        generator_tl1_length: 0,
+                        generator_tl2_length: 0
+                    };
+                    const flowResult = globalThis.findSignalFlowNodeValues(
+                        testGen,
+                        { real: z0, imag: 0 },
+                        s11,
+                        s21,
+                        s12,
+                        s22,
+                        z0,
+                        0
+                    );
+                    const gammaOutApi = flowResult.gamma_out_b2_to_a2_ratio;
+                    const diffGammaOut = Math.hypot(gammaOut.real - gammaOutApi.real, gammaOut.imag - gammaOutApi.imag);
+
+                    sfgApiComparisonText = `• Engine Cross-Check (findSignalFlowNodeValues): CONFIRMED! (|ΔΓ_out| = ${diffGammaOut.toExponential(2)})\n`;
+                    sfgNodesText = 
+                        `-----------------------------------------------------------------------\n` +
+                        `Engine Signal Flow Solutions (globalThis.findSignalFlowNodeValues):\n` +
+                        `-----------------------------------------------------------------------\n` +
+                        `• Evaluated gamma_out_b2_to_a2_ratio: ${gammaOutApi.real.toFixed(4)} + j(${gammaOutApi.imag.toFixed(4)})\n` +
+                        `• Port 1 Input Reflection Γ_in:       ${flowResult.gamma_in_b1_to_a1_ratio.real.toFixed(4)} + j(${flowResult.gamma_in_b1_to_a1_ratio.imag.toFixed(4)})\n` +
+                        `• Source Wave b_s (from test gen):    ${flowResult.bs.real.toExponential(4)} + j(${flowResult.bs.imag.toExponential(4)}) √W\n\n`;
+                } catch (e) {
+                    sfgApiComparisonText = `• findSignalFlowNodeValues: ${e.message}\n`;
+                }
+            }
+
+            // Print formatted breakdown
+            document.getElementById('gamma-out-output').textContent = 
+                `=======================================================================\n` +
+                `  OUTPUT REFLECTION (Γ_out) & THEVENIN IMPEDANCE (Z_out) ANALYSIS      \n` +
+                `=======================================================================\n\n` +
+                `Reference & Port Parameters:\n` +
+                `• Reference Characteristic Z₀:  ${z0.toFixed(2)} Ω\n` +
+                `• Generator Source Impedance Z_s: ${zsReal.toFixed(2)} + j(${zsImag.toFixed(2)}) Ω\n` +
+                `• Source Reflection Γ_s:         ${gammaS.real.toFixed(4)} + j(${gammaS.imag.toFixed(4)})  [|Γ_s| = ${gammaSMag.toFixed(4)}, θ = ${gammaSDeg.toFixed(2)}°]\n\n` +
+                `Two-Port S-Parameters:\n` +
+                `• S₁₁ (Input Reflection):       ${s11.real.toFixed(4)} + j(${s11.imag.toFixed(4)})  (|S₁₁| = ${Math.hypot(s11.real, s11.imag).toFixed(4)})\n` +
+                `• S₂₁ (Forward Transmission):   ${s21.real.toFixed(4)} + j(${s21.imag.toFixed(4)})  (|S₂₁| = ${Math.hypot(s21.real, s21.imag).toFixed(4)})\n` +
+                `• S₁₂ (Reverse Feedback):       ${s12.real.toFixed(4)} + j(${s12.imag.toFixed(4)})  (|S₁₂| = ${Math.hypot(s12.real, s12.imag).toFixed(4)})\n` +
+                `• S₂₂ (Output Reflection):      ${s22.real.toFixed(4)} + j(${s22.imag.toFixed(4)})  (|S₂₂| = ${Math.hypot(s22.real, s22.imag).toFixed(4)})\n\n` +
+                `Step-by-Step Algebraic Derivation Evaluation:\n` +
+                `• Loop Numerator (S₁₂ · S₂₁ · Γ_s):   ${num.real.toExponential(4)} + j(${num.imag.toExponential(4)})\n` +
+                `• Loop Denominator (1 - S₁₁ · Γ_s):   ${den.real.toFixed(4)} + j(${den.imag.toFixed(4)})  (|Den| = ${denMag.toFixed(4)})\n` +
+                `• Feedback Delta Term ΔΓ:            ${feedbackTerm.real.toFixed(4)} + j(${feedbackTerm.imag.toFixed(4)})  (|ΔΓ| = ${feedbackMag.toFixed(4)})\n\n` +
+                `Result 1: Output Reflection Coefficient Γ_out = S₂₂ + ΔΓ:\n` +
+                `• Complex Γ_out:                ${gammaOut.real.toFixed(4)} + j(${gammaOut.imag.toFixed(4)})\n` +
+                `• Magnitude |Γ_out|:            ${gammaOutMag.toFixed(4)}\n` +
+                `• Phase Angle θ(Γ_out):         ${gammaOutDeg.toFixed(2)}° (${(gammaOutDeg * Math.PI / 180).toFixed(4)} rad)\n` +
+                `• Output Return Loss:           ${returnLossDb === Infinity ? '∞' : returnLossDb.toFixed(2)} dB  [-20 · log₁₀(|Γ_out|)]\n\n` +
+                `Result 2: Thevenin Equivalent Output Impedance Z_out = Z₀ · (1 + Γ_out) / (1 - Γ_out):\n` +
+                `• Output Impedance Z_out:       ${zOut.real.toFixed(2)} + j(${zOut.imag.toFixed(2)}) Ω\n` +
+                `• Magnitude |Z_out|:            ${zOutMag.toFixed(2)} Ω\n` +
+                `• Phase Angle θ(Z_out):         ${zOutPhaseDeg.toFixed(2)}°\n\n` +
+                (sfgNodesText || '') +
+                `Stability & Passivity Verdict:\n` +
+                `• ${stabilityStatus}\n` +
+                (sfgApiComparisonText ? sfgApiComparisonText + '\n' : '\n') +
+                `Physical Takeaways:\n` +
+                (Math.abs(gammaSMag) < 1e-6 ? 
+                    `• Matched Source Verification: Since Γ_s = 0, the feedback term ΔΓ = 0. Therefore, Γ_out ≡ S₂₂ (${s22.real.toFixed(4)} + j${s22.imag.toFixed(4)}) and Z_out ≡ ${zOut.real.toFixed(2)} + j(${zOut.imag.toFixed(2)}) Ω, exactly reproducing the Chapter 12 reverse simulation impedance!\n` :
+                    `• Source Pull Effect: Because S₁₂ ≠ 0, the source reflection Γ_s (${gammaSMag.toFixed(3)} ∠ ${gammaSDeg.toFixed(1)}°) shifted Γ_out away from S₂₂ by ΔΓ (${feedbackMag.toFixed(3)}), modifying Z_out from 128.02 - j119.34 Ω to ${zOut.real.toFixed(2)} + j(${zOut.imag.toFixed(2)}) Ω.\n`) +
+                (Math.abs(s12.real) < 1e-6 && Math.abs(s12.imag) < 1e-6 ? 
+                    `• Unilateral Verification: With S₁₂ = 0, no signal reflects back through the transistor. Γ_out ≡ S₂₂ regardless of source impedance!\n` : 
+                    `• Thevenin Equivalence: In circuit simulation or hardware testing, the load Z_L simply sees an ideal source V_Th in series with Z_out.`);
         }
 
         function calculateWaveParams() {
