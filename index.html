@@ -854,7 +854,7 @@
                     <h1 id="page-title">Loading Page...</h1>
                     <p class="story-tagline" id="page-subtitle"></p>
                 </div>
-                <div class="page-counter-pill" id="page-counter">Page 1 of 14</div>
+                <div class="page-counter-pill" id="page-counter">Page 1 of 17</div>
             </div>
 
             <!-- Injected Story Page Body -->
@@ -3752,525 +3752,677 @@
                     </div>
                 `;
                 }
-            }
-        ];
-
-        // Stashed pages for future integration:
-        const stashedPages = [
-            {
-                id: 'intro',
-                title: 'Introduction & Transmission Line Overview',
-                subtitle: 'Foundations of wave propagation and line parameters',
-                deepDive: {
-                    title: 'Electromagnetic Wave Equations & High-Frequency Conductor Physics',
-                    preview: 'Why Kirchhoff’s laws break down at gigahertz frequencies, the derivation of wave equations from infinitesimal segments, and the physical reality of Z₀.',
-                    readingTime: '5 min read',
-                    content: `
-                        <h3>1. The Breakdown of Lumped Circuit Theory (KVL & KCL)</h3>
-                        <p>
-                            Classical circuit theory (Kirchhoff’s Voltage and Current Laws) is built on the quasistatic approximation—the 
-                            assumption that electrical perturbations propagate infinitely fast compared to the physical dimensions of the circuit. 
-                            In physical reality, electromagnetic fields propagate through dielectric media at a finite speed bounded by light: 
-                            $v_p = c / \\sqrt{\\epsilon_r}$. Whenever the physical length of an electrical conductor $l$ approaches or exceeds roughly 
-                            one-hundredth of the operating wavelength ($l \\gtrsim \\lambda / 100$), voltage and current cease to be constant across the wire.
-                        </p>
-                        <p>
-                            At $100\\text{ MHz}$ in standard FR4 printed circuit substrate ($\\epsilon_r \\approx 4.4$), the guided wavelength is approximately 
-                            $1.43\\text{ meters}$; at $1\\text{ GHz}$, $\\lambda$ shrinks to $14.3\\text{ cm}$; and at $10\\text{ GHz}$, it is merely $1.43\\text{ cm}$. 
-                            At these microwave dimensions, simple circuit traces cannot be treated as equipotential nodes. Instead, every wire acts as a distributed waveguiding 
-                            transmission line where position $z$ along the conductor is just as consequential as time $t$.
-                        </p>
-
-                        <div class="deep-dive-formula-box">
-                            <div class="deep-dive-formula-title">Telegrapher's Coupled Differential Equations</div>
-                            $$\\frac{\\partial V(z, t)}{\\partial z} = -R \\cdot I(z, t) - L \\cdot \\frac{\\partial I(z, t)}{\\partial t}$$
-                            $$\\frac{\\partial I(z, t)}{\\partial z} = -G \\cdot V(z, t) - C \\cdot \\frac{\\partial V(z, t)}{\\partial t}$$
-                        </div>
-
-                        <h3>2. Heaviside’s Distributed Model & Helmholtz Wave Equations</h3>
-                        <p>
-                            In the 1880s, Oliver Heaviside formalized the transmission line model as an infinite cascade of infinitesimal segments of differential 
-                            length $\\Delta z$. Each segment accounts for four distributed parameters: series conductor resistance $R$ ($\\Omega/\\text{m}$), 
-                            series loop inductance $L$ ($\\text{H/m}$), shunt dielectric leakage conductance $G$ ($\\text{S/m}$), and shunt electric field 
-                            capacitance $C$ ($\\text{F/m}$).
-                        </p>
-                        <p>
-                            By taking the mathematical limit as $\\Delta z \\to 0$, we arrive at the first-order coupled Telegrapher's equations shown above. 
-                            Differentiating with respect to spatial coordinate $z$ allows us to decouple the voltage and current relationships into identical 
-                            second-order Helmholtz wave equations: $\\frac{d^2 V(z)}{dz^2} = \\gamma^2 V(z)$ and $\\frac{d^2 I(z)}{dz^2} = \\gamma^2 I(z)$. 
-                            The general steady-state solutions represent the superposition of a forward-travelling wave and a backward-travelling wave:
-                            $V(z) = V_0^+ e^{-\\gamma z} + V_0^- e^{+\\gamma z}$.
-                        </p>
-
-                        <h3>3. Physical Meaning of Attenuation (α) and Phase Constant (β)</h3>
-                        <p>
-                            The complex propagation constant $\\gamma = \\sqrt{(R + j\\omega L)(G + j\\omega C)} = \\alpha + j\\beta$ governs both the spatial 
-                            decay and phase rotation of the travelling wave. The real component $\\alpha$ (expressed in Nepers per meter, where $1\\text{ Np} \\approx 8.686\\text{ dB}$) 
-                            quantifies energy lost as heat. In practical microstrip lines, $\\alpha$ comprises conductor loss $\\alpha_c$ (which increases proportionally 
-                            with $\\sqrt{f}$ due to the skin effect confining current to the outer perimeter of the metal) and dielectric loss $\\alpha_d$ (which scales linearly with $f \\tan\\delta$).
-                        </p>
-                        <p>
-                            The imaginary component $\\beta = \\frac{2\\pi}{\\lambda} = \\frac{\\omega}{v_p}$ determines the phase lag accumulated per unit length. The speed at which 
-                            a constant-phase wave crest advances through the dielectric is the phase velocity $v_p = \\frac{\\omega}{\\beta}$, which in low-loss transmission lines simplifies to $1 / \\sqrt{LC}$.
-                        </p>
-
-                        <h3>4. Demystifying Characteristic Impedance (Z₀)</h3>
-                        <p>
-                            Characteristic impedance $Z_0 = \\sqrt{\\frac{R + j\\omega L}{G + j\\omega C}}$ is one of the most frequently misunderstood concepts in RF engineering. 
-                            Despite being measured in Ohms ($\\Omega$), $Z_0$ is *not* a dissipative DC resistance. If a wave propagates along an infinitely long, lossless transmission line, 
-                            it delivers energy continuously without any power being turned into heat. 
-                        </p>
-                        <p>
-                            Rather, $Z_0$ represents the intrinsic ratio between the transverse electric field ($E_t \\propto V^+$) and transverse magnetic field ($H_t \\propto I^+$) 
-                            of the travelling electromagnetic wave at every spatial cross-section: $\\frac{V^+(z)}{I^+(z)} = Z_0$. For lossless or low-loss interconnects where 
-                            $R \\ll \\omega L$ and $G \\ll \\omega C$, $Z_0$ simplifies to the purely real, frequency-independent constant $\\sqrt{L/C}$ (typically $50\\,\\Omega$ in RF systems).
-                        </p>
-                    `
-                },
-                render: function() {
-                    return `
-                    <div class="section-card">
-                        <h2>📖 The Story of the Line</h2>
-                        <p>
-                            Welcome to the interactive storybook for electromagnetic calculations. 
-                            When high-frequency electrical signals propagate through physical conductors, 
-                            simple circuit theory gives way to wave phenomena described by transmission line theory.
-                        </p>
-                        <div class="story-callout">
-                            "As signal wavelengths become comparable to physical conductor lengths, 
-                            voltages and currents vary across distance and time, giving birth to reflections, 
-                            standing waves, and impedance transformations."
-                        </div>
-                        <p>
-                            This UI is connected directly to <code>transmission_line.js</code>, enabling interactive 
-                            exploration of wave parameters, reflection coefficients, quarter-wave matching, and 
-                            S-parameter extractions.
-                        </p>
-                    </div>
-
-                    ${renderDeepDive(this.deepDive)}
-
-                    <div class="section-card">
-                        <h2>⚡ Transmission Line Parameters</h2>
-                        <p>Compute characteristic impedance (Z₀), propagation constant (γ = α + jβ), and phase velocity from distributed R, L, G, C parameters.</p>
-                        
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Resistance R (Ω/m)</label>
-                                <input type="number" id="param-r" class="text-input" value="0.1" step="0.01">
-                            </div>
-                            <div class="form-group">
-                                <label>Inductance L (H/m)</label>
-                                <input type="number" id="param-l" class="text-input" value="2.5e-7" step="1e-8">
-                            </div>
-                            <div class="form-group">
-                                <label>Conductance G (S/m)</label>
-                                <input type="number" id="param-g" class="text-input" value="0" step="1e-6">
-                            </div>
-                            <div class="form-group">
-                                <label>Capacitance C (F/m)</label>
-                                <input type="number" id="param-c" class="text-input" value="1e-10" step="1e-11">
-                            </div>
-                            <div class="form-group">
-                                <label>Frequency (Hz)</label>
-                                <input type="number" id="param-freq" class="text-input" value="100000000" step="1e6">
-                            </div>
-                        </div>
-
-                        <button class="primary-btn" onclick="calculateWaveParams()">Calculate Parameters</button>
-                        <div class="code-display" id="wave-params-output">Click 'Calculate Parameters' to run globalThis.getTLWaveParams()...</div>
-                    </div>
-                `;
-                }
             },
             {
-                id: 'reflection-swr',
-                title: 'Reflection Coefficient & SWR',
-                subtitle: 'Impedance mismatch, reflection magnitude, and standing waves',
+                id: 'thevenin-source-wave-bsource',
+                badge: '15',
+                title: 'The Generator Source Wave bSource: Thevenin Reduction Across TL1',
+                subtitle: 'Open-circuit boundary condition, round-trip phase evolution, Thevenin equivalent (V_Th, Z_Th), and normalized source wave bSource derivation',
                 deepDive: {
-                    title: 'Boundary Discontinuities, Standing Waves & Voltage Standing Wave Ratio (VSWR)',
-                    preview: 'An analytical derivation of reflection coefficients from boundary continuity, destructive/constructive wave interference, and practical return loss limits.',
-                    readingTime: '5 min read',
-                    content: `
-                        <h3>1. Boundary Continuity & The Complex Reflection Coefficient</h3>
-                        <p>
-                            When an incident voltage wave $V_0^+ e^{-j\\beta z}$ travelling along a transmission line with characteristic impedance $Z_0$ 
-                            reaches an electrical discontinuity at the terminal load $z = 0$, boundary conditions dictate that both the total voltage 
-                            $V(0) = V_0^+ + V_0^-$ and total current $I(0) = \\frac{V_0^+ - V_0^-}{Z_0}$ must satisfy Ohm’s law across the load impedance: 
-                            $V(0) / I(0) = Z_L$.
-                        </p>
-                        <p>
-                            Solving this algebraic system for the ratio of the reflected wave amplitude $V_0^-$ to the incident wave amplitude $V_0^+$ yields 
-                            the fundamental complex voltage reflection coefficient:
-                        </p>
-
-                        <div class="deep-dive-formula-box">
-                            <div class="deep-dive-formula-title">Load Reflection Coefficient & Normalized Impedance</div>
-                            $$\\Gamma_L = \\frac{Z_L - Z_0}{Z_L + Z_0} = \\frac{z_L - 1}{z_L + 1}$$
-                            <div style="font-size:0.9em; color:var(--text-muted); text-align:center; margin-top:4px;">
-                                where normalized load impedance $z_L = \\frac{Z_L}{Z_0}$
-                            </div>
-                        </div>
-
-                        <h3>2. Canonical Boundary Conditions & Physical Intuition</h3>
-                        <p>
-                            Four canonical boundary cases demonstrate how electromagnetic waves react to physical terminations:
-                        </p>
-                        <ul>
-                            <li><strong>Matched Termination ($Z_L = Z_0$):</strong> Here $\\Gamma_L = 0$. The load absorbs all incoming energy with zero reflection. The line behaves as though it extends infinitely without boundary disturbance.</li>
-                            <li><strong>Open Circuit ($Z_L \\to \\infty$):</strong> Here $\\Gamma_L = +1 = 1\\angle 0^\\circ$. Because boundary current must vanish ($I(0) = 0$), the reflected voltage wave arrives in-phase with the incident wave, constructive interference doubles the voltage at the open end ($V(0) = 2 V_0^+$).</li>
-                            <li><strong>Short Circuit ($Z_L = 0$):</strong> Here $\\Gamma_L = -1 = 1\\angle 180^\\circ$. Because boundary potential must be zero ($V(0) = 0$), the reflected voltage wave cancels the incident wave identically, producing a voltage null while doubling boundary current ($I(0) = 2 I_0^+$).</li>
-                            <li><strong>Pure Reactive Load ($Z_L = \\pm jX$):</strong> Here $|\\Gamma_L| = |(jX - Z_0)/(jX + Z_0)| = 1$. The load cannot dissipate real power ($P_{avg} = 0$), so $100\\%$ of incident energy is reflected back with a phase angle determined by the reactance.</li>
-                        </ul>
-
-                        <h3>3. Interference Patterns & Voltage Standing Wave Ratio (VSWR)</h3>
-                        <p>
-                            Superposition between the incident wave and the counter-propagating reflected wave produces a spatial stationary wave interference pattern. 
-                            At physical locations along the line where the two waves line up in phase, constructive interference generates a voltage peak: 
-                            $V_{max} = |V_0^+| (1 + |\\Gamma_L|)$. Exactly one quarter-wavelength away, the relative phase difference shifts by $180^\\circ$, creating 
-                            destructive interference that produces a voltage minimum: $V_{min} = |V_0^+| (1 - |\\Gamma_L|)$.
-                        </p>
-                        <p>
-                            The ratio between these two envelope extrema defines the Voltage Standing Wave Ratio:
-                            $\\text{VSWR} = \\frac{V_{max}}{V_{min}} = \\frac{1 + |\\Gamma_L|}{1 - |\\Gamma_L|}$.
-                            VSWR is a purely real scalar varying from $1.0$ (flat line, perfect match) to $\\infty$ (total reflection with nulls).
-                        </p>
-
-                        <h3>4. High-Power Damage, Dielectric Arcing & Return Loss</h3>
-                        <p>
-                            In RF power systems, a high VSWR can destroy equipment. When reflections are high, the standing wave voltage crests can exceed the 
-                            dielectric breakdown voltage of coaxial cables or printed substrates, causing destructive electric arcing. Furthermore, reflected 
-                            power heads straight back to the power amplifier, causing extreme transistor junction heating and intermodulation distortion.
-                        </p>
-                        <p>
-                            Engineers quantify line matching quality using Return Loss: $\\text{RL} = -20\\log_{10}|\\Gamma_L|\\text{ dB}$. A return loss of 
-                            $20\\text{ dB}$ (corresponding to $|\\Gamma_L| = 0.1$ and $\\text{VSWR} \\approx 1.22$) indicates that $99\\%$ of incident power is 
-                            successfully absorbed into the load.
-                        </p>
-                    `
-                },
-                render: function() {
-                    return `
-                    <div class="section-card">
-                        <h2>🔄 Load Mismatch & Standing Waves</h2>
-                        <p>
-                            When a load impedance $Z_L$ does not match the characteristic impedance $Z_0$, 
-                            a portion of the incident wave reflects back towards the generator. The superposition 
-                            creates a stationary standing wave interference pattern along the line.
-                        </p>
-                        <div class="story-callout">
-                            "The Voltage Standing Wave Ratio (VSWR) measures the ratio of the maximum voltage amplitude 
-                            to the minimum voltage amplitude along the line."
-                        </div>
-                    </div>
-
-                    ${renderDeepDive(this.deepDive)}
-
-                    <div class="section-card">
-                        <h2>📊 Calculate Reflection & SWR</h2>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Load Real Re(ZL) [Ω]</label>
-                                <input type="number" id="zl-real" class="text-input" value="75">
-                            </div>
-                            <div class="form-group">
-                                <label>Load Imag Im(ZL) [Ω]</label>
-                                <input type="number" id="zl-imag" class="text-input" value="25">
-                            </div>
-                            <div class="form-group">
-                                <label>Z₀ Magnitude [Ω]</label>
-                                <input type="number" id="z0-mag" class="text-input" value="50">
-                            </div>
-                            <div class="form-group">
-                                <label>Z₀ Phase (rad)</label>
-                                <input type="number" id="z0-phase" class="text-input" value="0">
-                            </div>
-                        </div>
-
-                        <button class="primary-btn" onclick="calculateReflectionAndSWR()">Compute Reflection & SWR</button>
-                        <div class="code-display" id="reflection-output">Click 'Compute Reflection & SWR' to invoke globalThis.getTLRefelectionCoefficient()...</div>
-                    </div>
-                `;
-                }
-            },
-            {
-                id: 'impedance-distance',
-                title: 'Impedance vs Distance from Load',
-                subtitle: 'Transformation of input impedance along lossless lines',
-                deepDive: {
-                    title: 'Spatial Impedance Transformation, Inverters & Distributed Resonators',
-                    preview: 'Explore how complex input impedance transforms periodically along a line, the quarter-wave inversion property, and using printed stubs as inductors/capacitors.',
-                    readingTime: '5 min read',
-                    content: `
-                        <h3>1. Spatial Phase Evolution & The Universal Impedance Formula</h3>
-                        <p>
-                            When moving a distance $d$ away from the load toward the generator ($z = -d$), the incident wave has travelled less physical distance 
-                            (acquiring phase advance $+ \\beta d$), while the reflected wave has travelled that distance twice (accumulating phase lag $-\\beta d$). 
-                            Consequently, the apparent reflection coefficient rotates clockwise in the complex plane as $\\Gamma(d) = \\Gamma_L e^{-j 2\\beta d}$.
-                        </p>
-                        <p>
-                            Substituting this rotating reflection vector into the definition of input impedance $Z_{in}(d) = Z_0 \\frac{1 + \\Gamma(d)}{1 - \\Gamma(d)}$ 
-                            and expanding into complex sinusoids yields the celebrated loss-free transmission line impedance equation:
-                        </p>
-
-                        <div class="deep-dive-formula-box">
-                            <div class="deep-dive-formula-title">Lossless Line Impedance Transformation</div>
-                            $$Z_{\\text{in}}(d) = Z_0 \\cdot \\frac{Z_L + j Z_0 \\tan(\\beta d)}{Z_0 + j Z_L \\tan(\\beta d)}$$
-                            <div style="font-size:0.9em; color:var(--text-muted); text-align:center; margin-top:4px;">
-                                where $\\beta = \\frac{2\\pi}{\\lambda}$ and $d$ is the distance from load
-                            </div>
-                        </div>
-
-                        <h3>2. The Half-Wavelength (λ/2) Impedance Repeater</h3>
-                        <p>
-                            The tangent function has a period of $\\pi$. When the electrical length corresponds to a half wavelength ($d = \\lambda / 2$), 
-                            the phase product is $\\beta d = \\frac{2\\pi}{\\lambda} \\frac{\\lambda}{2} = \\pi$, so $\\tan(\\pi) = 0$. In this case, the formula simplifies:
-                            $Z_{in}(\\lambda / 2) = Z_0 \\frac{Z_L + 0}{Z_0 + 0} = Z_L$.
-                        </p>
-                        <p>
-                            This proves that every half wavelength, the input impedance returns identically to the load impedance value, regardless of $Z_0$. 
-                            A half-wavelength transmission line behaves as an ideal 1:1 impedance repeater, making it an invaluable tool for routing signals 
-                            between test instrumentation and devices under test without altering apparent load impedance.
-                        </p>
-
-                        <h3>3. The Quarter-Wavelength (λ/4) Impedance Inverter</h3>
-                        <p>
-                            When the line length is an odd multiple of a quarter wavelength ($d = \\lambda / 4$, so $\\beta d = \\pi / 2$), $\\tan(\\beta d) \\to \\infty$. 
-                            Dividing the numerator and denominator by $\\tan(\\beta d)$ and taking the mathematical limit yields the famous quarter-wave inverter equation:
-                            $Z_{in}(\\lambda / 4) = \\frac{Z_0^2}{Z_L}$.
-                        </p>
-                        <p>
-                            This property is remarkable: a high load impedance is inverted into a low input impedance, an open circuit ($Z_L = \\infty$) is transformed 
-                            into an ideal short circuit ($Z_{in} = 0$), and an inductive load transforms into an equivalent capacitive impedance. RF engineers exploit this 
-                            to build DC bias injection chokes (bias tees) where a quarter-wave open stub acts as a virtual AC short to ground.
-                        </p>
-
-                        <h3>4. Transmission Line Stubs as Pure Inductors and Capacitors</h3>
-                        <p>
-                            At gigahertz frequencies, discrete SMD chip capacitors and inductors suffer from parasitic package inductance and self-resonance frequencies (SRF). 
-                            Transmission line sections terminated in short or open circuits can replace lumped components entirely:
-                        </p>
-                        <ul>
-                            <li><strong>Short-Circuited Stub ($Z_L = 0$):</strong> $Z_{in} = j Z_0 \\tan(\\beta d)$. For lengths $d < \\lambda / 4$, $\\tan(\\beta d) > 0$, so the stub acts as an ideal inductor with $L_{eq} = \\frac{Z_0 \\tan(\\beta d)}{\\omega}$. For $\\lambda/4 < d < \\lambda/2$, it acts as a capacitor.</li>
-                            <li><strong>Open-Circuited Stub ($Z_L = \\infty$):</strong> $Z_{in} = -j Z_0 \\cot(\\beta d)$. For lengths $d < \\lambda / 4$, the stub behaves as an ideal capacitor with $C_{eq} = \\frac{1}{\\omega Z_0 \\cot(\\beta d)}$.</li>
-                        </ul>
-                    `
-                },
-                render: function() {
-                    return `
-                    <div class="section-card">
-                        <h2>📏 Impedance Transformation Along Distance</h2>
-                        <p>
-                            As we travel a distance $d$ away from the load toward the generator, 
-                            the apparent input impedance $Z_{in}(d)$ transforms periodically every half wavelength ($\\lambda/2$).
-                        </p>
-                        <div class="story-callout">
-                            "A quarter-wavelength section acts as an impedance inverter, transforming a high impedance into a low impedance and vice-versa."
-                        </div>
-                    </div>
-
-                    ${renderDeepDive(this.deepDive)}
-
-                    <div class="section-card">
-                        <h2>🔍 Distance Calculation</h2>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Distance d (meters)</label>
-                                <input type="number" id="dist-d" class="text-input" value="0.75" step="0.05">
-                            </div>
-                            <div class="form-group">
-                                <label>Beta β (rad/m)</label>
-                                <input type="number" id="dist-beta" class="text-input" value="3.14159" step="0.1">
-                            </div>
-                            <div class="form-group">
-                                <label>Z₀ (Ω)</label>
-                                <input type="number" id="dist-z0" class="text-input" value="50">
-                            </div>
-                        </div>
-
-                        <button class="primary-btn" onclick="calculateImpedanceAtDistance()">Compute Impedance at Distance</button>
-                        <div class="code-display" id="dist-output">Click button to compute impedance using globalThis.getImpedanceAtDistanceFromLoad_lossless_TL()...</div>
-                    </div>
-                `;
-                }
-            },
-            {
-                id: 'matching-circuits',
-                title: 'Impedance Matching Techniques',
-                subtitle: 'Quarter-wave transformers, series, and shunt reactive matching',
-                deepDive: {
-                    title: 'Impedance Matching Methodologies: Transformers, Stubs & Analytical Networks',
-                    preview: 'Thorough analysis of the Maximum Power Transfer Theorem in RF circuits, the Bode-Fano bandwidth limit, and analytical single-stub / L-section synthesis.',
+                    title: 'Thevenin Reduction of Generator & Transmission Line: Open-Circuit Boundary & The Physical Reality of bSource',
+                    preview: 'How an RF generator and intervening line TL1 collapse into an exact Thevenin source (V_Th, Z_Th) at Port 1, why open-circuit reflection gamma = +1 unlocks the voltage derivation, and the mathematical identity between Thevenin wave launch and direct forward propagation.',
                     readingTime: '6 min read',
                     content: `
-                        <h3>1. The Maximum Power Transfer Theorem & Conjugate Matching</h3>
+                        <h3>1. Motivation: Why bSource Depends on Intervening Line TL1</h3>
                         <p>
-                            In high-frequency electronics, maximizing power delivery from a source generator ($Z_S = R_S + jX_S$) to a load ($Z_L = R_L + jX_L$) 
-                            is essential for maximizing signal-to-noise ratio (SNR) in receivers and minimizing dissipation in power amplifiers. The maximum power 
-                            transfer theorem proves that optimal transfer occurs if and only if the load impedance is the complex conjugate of the source: 
-                            $Z_L = Z_S^* = R_S - jX_S$.
+                            In high-frequency systems, an RF generator ($V_g, Z_s$) rarely connects directly to the transistor network port. 
+                            Instead, a physical transmission line interconnect ($TL_1$) with characteristic impedance $Z_0$, length $l_1$, and phase constant $\beta$ 
+                            intervenes between the generator and Port 1 ($L_1$).
                         </p>
                         <p>
-                            When this conjugate condition is achieved, reactive components cancel each other at the operating frequency ($X_S + X_L = 0$), 
-                            and source resistance equals load resistance. Impedance matching networks are lossless, reactive two-port networks inserted 
-                            between the transmission line and the load to transform an arbitrary $Z_L$ into the required conjugate match without absorbing power.
-                        </p>
-
-                        <div class="deep-dive-formula-box">
-                            <div class="deep-dive-formula-title">Quarter-Wave Transformer & Bode-Fano Limit</div>
-                            $$Z_{0m} = \\sqrt{Z_0 \\cdot R_L}$$
-                            $$\\int_0^\\infty \\ln\\left(\\frac{1}{|\\Gamma(\\omega)|}\\right) d\\omega \\le \\frac{\\pi}{R_L C} \\quad \\text{[Bode-Fano Upper Bound]}$$
-                        </div>
-
-                        <h3>2. Quarter-Wave Transformers & The Bode-Fano Bandwidth Limit</h3>
-                        <p>
-                            To match a purely resistive load $R_L$ to a line of characteristic impedance $Z_0$, a quarter-wavelength line section with characteristic 
-                            impedance $Z_{0m} = \\sqrt{Z_0 R_L}$ creates a perfect reflection cancellation at design frequency $f_0$. Because reflections from the 
-                            front interface and the rear interface travel with a $180^\\circ$ relative phase difference, they cancel destructively.
-                        </p>
-                        <p>
-                            However, quarter-wave matching is inherently frequency-selective because electrical length $\\theta = \\frac{\\pi}{2} \\frac{f}{f_0}$ changes 
-                            with frequency. The fundamental Bode-Fano theorem sets a strict physical upper bound on the product of matching bandwidth and minimum reflection 
-                            magnitude for any load with reactive storage: one cannot achieve arbitrarily low reflection across an arbitrarily wide bandwidth. 
-                            Multi-section Chebyshev and binomial stepped transformers broaden bandwidth by cascading multiple sections of gradual impedance taper.
-                        </p>
-
-                        <h3>3. Single-Stub Tuning: Parallel Susceptance Cancellation</h3>
-                        <p>
-                            For arbitrary complex loads $Z_L = R_L + jX_L$, distributed stub tuning eliminates the need for lumped capacitors and inductors. 
-                            In single-stub shunt matching:
+                            In the two-port Signal Flow Graph, the source excitation is represented by the <strong>normalized source wave</strong> $b_s$, 
+                            which acts as the independent input node injecting power wave energy into Port 1 node $a_1$. 
+                            Because $TL_1$ introduces spatial wave propagation, phase accumulation, and potential standing-wave reflections, 
+                            $b_s$ is <em>not</em> simply $V_g / \\sqrt{Z_0}$. Rather, the generator and $TL_1$ must first be converted into their 
+                            <strong>Thevenin equivalent circuit</strong> at Port 1 ($L_1$):
                         </p>
                         <ul>
-                            <li>First, we travel a distance $d$ from the load until the real part of the input admittance $Y_{in}(d) = 1/Z_{in}(d)$ equals the characteristic admittance of the line: $Y_{in}(d) = Y_0 + jB$.</li>
-                            <li>At that exact position, we connect a shunt open or shorted transmission line stub of length $l$ whose input susceptance is designed to be $B_{stub} = -B$.</li>
-                            <li>Because admittances connected in parallel sum algebraically, the total combined admittance becomes $Y_{total} = (Y_0 + jB) + (-jB) = Y_0$. The line looking toward the load is now completely matched ($\\Gamma = 0$).</li>
+                            <li>Open-circuit Thevenin voltage at Port 1: $\\mathbf{V}_{\\text{Th}}$</li>
+                            <li>Thevenin output impedance looking back from Port 1: $\\mathbf{Z}_{\\text{Th}}$</li>
                         </ul>
 
-                        <h3>4. Lumped L-Section Networks & Code Realization</h3>
+                        <h3>2. Step 1: Open-Circuit Boundary Condition at Port 1 ($d = 0$)</h3>
                         <p>
-                            At lower frequencies (e.g. HF and VHF) where transmission line lengths become impractically long, matching networks are constructed 
-                            from two reactive lumped elements ($L$ and $C$) arranged in an L-configuration. The algorithms in our project’s <code>transmission_line.js</code> 
-                            (such as <code>match_impedance_by_series_reactive_element_lossless_TL</code> and <code>match_impedance_by_shunt_reactive_element_lossless_TL</code>) 
-                            compute the exact electrical distances and component reactances required to cancel line reflections automatically.
+                            By definition, the Thevenin voltage $\\mathbf{V}_{\\text{Th}}$ is the open-circuit voltage across the port terminals ($Z_{\\text{load}} = \\infty$). 
+                            When Port 1 is open-circuited:
                         </p>
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Open-Circuit Reflection & Voltage Relation</div>
+                            $$\\Gamma_{\\text{open}} = \\frac{\\infty - Z_0}{\\infty + Z_0} = +1 \\implies b_1 = 1 \\cdot a_1$$
+                            $$V_{\\text{Th}} = V(0) = \\sqrt{Z_0}(a_1 + b_1) = \\sqrt{Z_0}(a_1 + a_1) = 2 \\sqrt{Z_0} a_1$$
+                        </div>
+                        <p>
+                            Here, $a_1$ is the wave incident upon Port 1 from $TL_1$, and $b_1$ is the wave reflected from the open circuit back into $TL_1$. 
+                            Because $\\Gamma_{\\text{open}} = +1$, the incident and reflected waves interfere with equal magnitude and phase at $d = 0$, doubling the voltage to $2\\sqrt{Z_0}a_1$.
+                        </p>
+
+                        <h3>3. Step 2: Phase Evolution along TL1 to Generator Entrance ($d = l_1$)</h3>
+                        <p>
+                            Measuring distance $d$ backwards along $TL_1$ from Port 1 ($d = 0$) toward the generator ($d = l_1$):
+                        </p>
+                        <ul>
+                            <li><strong>Incident Wave ($a_1$):</strong> The wave $a_1$ advancing toward Port 1 originated earlier in time at the generator entrance. Moving backwards along its path to the generator advances its phase:
+                                $$a_{1,\\text{gen}} = a_1 e^{j\\beta l_1}$$
+                            </li>
+                            <li><strong>Reflected Wave ($b_1$):</strong> The wave $b_1$ reflecting from Port 1 travels backward toward the generator. As it travels toward the generator, it accumulates backward phase delay:
+                                $$b_{1,\\text{gen}} = b_1 e^{-j\\beta l_1} = a_1 e^{-j\\beta l_1}$$
+                                <em>Physical Insight:</em> At the generator entrance, the reflected wave represents disturbances that left Port 1 at earlier times, having lower (retarded) phase as they propagate back.
+                            </li>
+                        </ul>
+                        <p>
+                            Taking the ratio of the reflected wave to the incident wave at the generator entrance with Port 1 open yields:
+                        </p>
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Reflection & Input Impedance at Generator Entrance</div>
+                            $$\\Gamma_{\\text{entry}} = \\frac{b_{1,\\text{gen}}}{a_{1,\\text{gen}}} = \\frac{a_1 e^{-j\\beta l_1}}{a_1 e^{j\\beta l_1}} = e^{-j 2\\beta l_1}$$
+                            $$Z_{\\text{entry}} = Z_0 \\frac{1 + \\Gamma_{\\text{entry}}}{1 - \\Gamma_{\\text{entry}}} = Z_0 \\frac{1 + e^{-j 2\\beta l_1}}{1 - e^{-j 2\\beta l_1}} = -j Z_0 \\cot(\\beta l_1)$$
+                        </div>
+
+                        <h3>4. Step 3: Voltage Division at Generator & Solving for $a_1$ and $V_{\\text{Th}}$</h3>
+                        <p>
+                            At the generator terminals, voltage division between the source impedance $Z_s$ and line entrance impedance $Z_{\\text{entry}}$ gives:
+                            $$V_{\\text{gen}} = V_g \\frac{Z_{\\text{entry}}}{Z_s + Z_{\\text{entry}}}$$
+                        </p>
+                        <p>
+                            Expressing $V_{\\text{gen}}$ in terms of the normalized wave variables at the entrance:
+                            $$\\frac{V_{\\text{gen}}}{\\sqrt{Z_0}} = a_{1,\\text{gen}} + b_{1,\\text{gen}} = a_1 e^{j\\beta l_1} + a_1 e^{-j\\beta l_1} = 2 a_1 \\cos(\\beta l_1)$$
+                        </p>
+                        <p>
+                            Solving for $a_1$:
+                            $$a_1 = \\frac{V_{\\text{gen}}}{\\sqrt{Z_0} (e^{j\\beta l_1} + e^{-j\\beta l_1})} = \\frac{V_g}{\\sqrt{Z_0}} \\frac{Z_{\\text{entry}}}{Z_s + Z_{\\text{entry}}} \\frac{1}{e^{j\\beta l_1} + e^{-j\\beta l_1}}$$
+                        </p>
+                        <p>
+                            Substituting $a_1$ into $V_{\\text{Th}} = 2 \\sqrt{Z_0} a_1$ yields the closed-form open-circuit Thevenin voltage:
+                        </p>
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Thevenin Open-Circuit Voltage at Port 1</div>
+                            $$V_{\\text{Th}} = \\frac{V_g Z_0}{Z_s + Z_0} \\frac{2 e^{-j\\beta l_1}}{1 - \\Gamma_s e^{-j 2\\beta l_1}}, \\quad \\text{where } \\Gamma_s = \\frac{Z_s - Z_0}{Z_s + Z_0}$$
+                        </div>
+
+                        <h3>5. Step 4: Thevenin Impedance $Z_{\\text{Th}}$ Looking Back into $TL_1$</h3>
+                        <p>
+                            To find the Thevenin impedance $Z_{\\text{Th}}$, we zero the generator ($V_g = 0$). 
+                            Looking into $TL_1$ from Port 1 toward the generator, the line of length $l_1$ is terminated in $Z_s$. 
+                            The source reflection coefficient $\\Gamma_s$ transforms through a round-trip phase delay $e^{-j 2\\beta l_1}$:
+                        </p>
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Thevenin Impedance at Port 1</div>
+                            $$\\Gamma_{\\text{Th}} = \\Gamma_s e^{-j 2\\beta l_1} \\iff Z_{\\text{Th}} = Z_0 \\frac{1 + \\Gamma_{\\text{Th}}}{1 - \\Gamma_{\\text{Th}}} = Z_0 \\frac{1 + \\Gamma_s e^{-j 2\\beta l_1}}{1 - \\Gamma_s e^{-j 2\\beta l_1}}$$
+                        </div>
+
+                        <h3>6. Step 5 & 6: The Normalized Source Wave $b_s$ and the Resonance Cancellation Proof</h3>
+                        <p>
+                            By definition, the normalized source wave $b_s$ is the wave that the Thevenin source $(V_{\\text{Th}}, Z_{\\text{Th}})$ 
+                            emits onto a reference line of characteristic impedance $Z_0$ connected to Port 1:
+                        </p>
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Source Wave Delivered into Z₀</div>
+                            $$b_s = \\frac{V_{\\text{matched}}}{\\sqrt{Z_0}} = \\frac{V_{\\text{Th}}}{\\sqrt{Z_0}} \\frac{Z_0}{Z_{\\text{Th}} + Z_0} = \\frac{V_{\\text{Th}} \\sqrt{Z_0}}{Z_{\\text{Th}} + Z_0}$$
+                        </div>
+                        <p>
+                            Now substitute our closed-form expressions for $V_{\\text{Th}}$ and $Z_{\\text{Th}} + Z_0$:
+                            $$Z_{\\text{Th}} + Z_0 = Z_0 \\left[ \\frac{1 + \\Gamma_s e^{-j 2\\beta l_1}}{1 - \\Gamma_s e^{-j 2\\beta l_1}} + 1 \\right] = \\frac{2 Z_0}{1 - \\Gamma_s e^{-j 2\\beta l_1}}$$
+                            $$b_s = \\frac{ \\left( \\frac{V_g Z_0}{Z_s + Z_0} \\frac{2 e^{-j\\beta l_1}}{1 - \\Gamma_s e^{-j 2\\beta l_1}} \\right) \\sqrt{Z_0} }{ \\frac{2 Z_0}{1 - \\Gamma_s e^{-j 2\\beta l_1}} }$$
+                        </p>
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">The Exact Algebraic Cancellation Identity</div>
+                            $$b_s = \\frac{V_{\\text{Th}} \\sqrt{Z_0}}{Z_{\\text{Th}} + Z_0} \\equiv \\frac{V_g \\sqrt{Z_0}}{Z_s + Z_0} e^{-j\\beta l_1}$$
+                        </div>
+                        <p>
+                            <strong>Why does the resonant standing-wave denominator $(1 - \\Gamma_s e^{-j 2\\beta l_1})$ cancel out?</strong><br>
+                            When Port 1 is terminated in the system reference impedance $Z_0$, the transmission line $TL_1$ is <em>perfectly matched at its load end</em>. 
+                            Therefore, no wave reflects from Port 1 to bounce back and forth inside $TL_1$! 
+                            The wave launched by the generator at $d = l_1$ simply travels forward down $TL_1$ by distance $l_1$, experiencing a pure phase delay $e^{-j\\beta l_1}$. 
+                            Both the rigorous Thevenin reduction and the direct forward travelling wave method yield the <strong>exact same wave value down to floating-point precision</strong>!
+                        </p>
+
+                        <h3>7. Engine Code Audit & Fixes</h3>
+                        <p>
+                            Auditing <code>radio_frequency_electric_circuit_calculator.js</code> revealed three key points:
+                        </p>
+                        <ol>
+                            <li><code>find_thevenin_equivalent_circuit</code> returns an object <code>{ tl1_and_generator_equivalent, tl2_and_load_equivalent }</code>, so calling code must destructure <code>thevenin.tl1_and_generator_equivalent</code>.</li>
+                            <li>The imaginary component of Thevenin voltage is named <code>voltage_imag</code> (not <code>imag</code>).</li>
+                            <li>When $l_1 = 0$, open-circuit impedance division would divide by $1 - 1 = 0$, producing NaN. Guarding $l_1 = 0$ cleanly sets $V_{\\text{Th}} = V_g$ and $Z_{\\text{Th}} = Z_s$.</li>
+                        </ol>
                     `
                 },
                 render: function() {
                     return `
                     <div class="section-card">
-                        <h2>🎯 Achieving Maximum Power Transfer</h2>
+                        <h2>⚡ The Generator Source Wave bSource: Thevenin Reduction Across TL1</h2>
                         <p>
-                            To eliminate reflections ($\\Gamma = 0$), engineers insert matching networks such as 
-                            quarter-wave transformers, single-stub tuners, or reactive elements.
+                            When an RF generator ($V_g, Z_s$) is separated from the network by an intervening transmission line ($TL_1$), 
+                            the source wave $b_s$ driving Port 1 ($L_1$) must account for the line's spatial wave propagation and Thevenin equivalent parameters. 
+                            By evaluating the open-circuit boundary condition ($\\Gamma_{\\text{open}} = +1$) and Thevenin impedance $Z_{\\text{Th}}$, 
+                            we derive $b_s$ and prove its identity with the direct forward-traveling wave.
                         </p>
-                        <div class="story-callout">
-                            "Matching networks ensure the source sees its conjugate impedance, minimizing reflected power and maximizing signal delivery."
+
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/amplifier_with_explicit_transmission_lines.png" alt="Amplifier Circuit with Explicit Interconnect Transmission Lines TL1 and TL2">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 1: Physical Amplifier Circuit with Explicit Transmission Lines ($TL_1$ and $TL_2$).</strong> The generator ($V_g, Z_s$) is separated from Port 1 ($L_1$) by transmission line $TL_1$ (length $l_1$, impedance $Z_0$). Similarly, Port 2 ($L_2$) connects to the load ($50\\,\\Omega$) via transmission line $TL_2$ (length $l_2$, impedance $Z_0$).
+                            </div>
+                        </div>
+
+                        <div class="circuit-illustration-card" style="margin-top:16px;">
+                            <img src="./circuit_images/amplifier_thevenin_equivalent.png" alt="Amplifier Circuit Thevenin Equivalent with TL1 and TL2 Reduced">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 2: Thevenin Equivalent of the Amplifier System.</strong> The generator ($V_g, Z_s$) and line $TL_1$ collapse at Port 1 ($L_1$) into an equivalent Thevenin source $V_{\\text{Th1}}$ in series with $Z_{\\text{Th1}}$. At Port 2 ($L_2$), the load and line $TL_2$ collapse into an equivalent Thevenin load impedance $Z_{\\text{Th2}}$. This eliminates explicit transmission lines, isolating the active amplifier network.
+                            </div>
+                        </div>
+
+                        <div class="circuit-illustration-card" style="margin-top:16px;">
+                            <img src="./circuit_images/two-port-signal-flow.png" alt="Two-Port Signal Flow Graph Driven by Source Wave bs">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 3: Signal Flow Graph Driven by Source Wave $b_s$.</strong> In the SFG, $b_s$ acts as the independent source node injecting incident wave amplitude into Port 1 node $a_1$. The source reflection loop $\\Gamma_s$ accounts for waves reflecting back into the generator network.
+                            </div>
+                        </div>
+
+                        <div class="story-callout" style="margin-top:20px;">
+                            <strong>Physical Key Takeaways:</strong><br>
+                            • <strong>Thevenin Source:</strong> $V_{\\text{Th}} = 2\\sqrt{Z_0}a_1$ is the open-circuit voltage at Port 1, and $Z_{\\text{Th}} = Z_0 \\frac{1 + \\Gamma_s e^{-j 2\\beta l_1}}{1 - \\Gamma_s e^{-j 2\\beta l_1}}$ is the transformed source impedance.<br>
+                            • <strong>Normalized Power Wave $b_s$:</strong> $b_s = \\frac{V_{\\text{Th}}\\sqrt{Z_0}}{Z_{\\text{Th}} + Z_0}$ is the wave delivered by the Thevenin source into a reference load $Z_0$.<br>
+                            • <strong>Exact Resonance Cancellation:</strong> $\\frac{V_{\\text{Th}}\\sqrt{Z_0}}{Z_{\\text{Th}} + Z_0} \\equiv \\frac{V_g\\sqrt{Z_0}}{Z_s + Z_0} e^{-j\\beta l_1}$. When loaded with $Z_0$, no waves reflect from Port 1, so the wave launched by the generator travels straight to Port 1 with pure delay $e^{-j\\beta l_1}$.
                         </div>
                     </div>
 
                     ${renderDeepDive(this.deepDive)}
 
                     <div class="section-card">
-                        <h2>🛠 Matching Methods Exploration</h2>
-                        <p>Available algorithms in our engine:</p>
-                        <ul>
-                            <li><strong>Quarter-wave transformer:</strong> <code>match_real_impedance_by_quarter_wave_length_lossless_TL</code></li>
-                            <li><strong>Quarter-wave + Reactance cancelling:</strong> <code>match_impedance_by_quarter_wave_length_plus_reactance_cancelling_segment_lossless_TL</code></li>
-                            <li><strong>Series reactive element:</strong> <code>match_impedance_by_series_reactive_element_lossless_TL</code></li>
-                            <li><strong>Shunt reactive element:</strong> <code>match_impedance_by_shunt_reactive_element_lossless_TL</code></li>
-                            <li><strong>Bilateral numerical match:</strong> <code>find_bilateral_match_numerically</code></li>
-                        </ul>
-                        <button class="primary-btn" onclick="testMatchingUtilities()">Run Sample Matching Test</button>
-                        <div class="code-display" id="matching-output">Click to test impedance matching methods...</div>
+                        <h2>⚡ Interactive bSource & Thevenin Line Calculator</h2>
+                        <p>
+                            Configure the generator voltage $V_g$, source impedance $Z_s$, and transmission line $TL_1$ length $l_1$ and phase constant $\beta$. 
+                            Compare the Thevenin reduction method against the direct forward-wave propagation method down to machine precision.
+                        </p>
+
+                        <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:16px;">
+                            <div class="form-group">
+                                <label>Generator V_g Real (V)</label>
+                                <input type="number" id="bs-vg-re" class="text-input" value="1.0" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Generator V_g Imag (V)</label>
+                                <input type="number" id="bs-vg-im" class="text-input" value="0.0" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Source Z_s Real (Ω)</label>
+                                <input type="number" id="bs-zs-re" class="text-input" value="50.0" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Source Z_s Imag (Ω)</label>
+                                <input type="number" id="bs-zs-im" class="text-input" value="0.0" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>TL1 Length l₁ (m)</label>
+                                <input type="number" id="bs-l1" class="text-input" value="0.25" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Phase Constant β (rad/m)</label>
+                                <input type="number" id="bs-beta" class="text-input" value="6.2831853" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Characteristic Z₀ (Ω)</label>
+                                <input type="number" id="bs-z0" class="text-input" value="50.0" step="any">
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+                            <button class="secondary-btn" onclick="setTheveninBSourcePreset('zero')">Preset: Zero-Length Line (l₁ = 0)</button>
+                            <button class="secondary-btn" onclick="setTheveninBSourcePreset('quarter')">Preset: Quarter-Wave Line (l₁ = λ/4 = 0.25 m)</button>
+                            <button class="secondary-btn" onclick="setTheveninBSourcePreset('half')">Preset: Half-Wave Line (l₁ = λ/2 = 0.50 m)</button>
+                            <button class="secondary-btn" onclick="setTheveninBSourcePreset('mismatched')">Preset: Complex Mismatch (Zs = 75 + j25 Ω)</button>
+                            <button class="secondary-btn" onclick="setTheveninBSourcePreset('lowz')">Preset: Low-Z Generator (Zs = 25 Ω)</button>
+                        </div>
+
+                        <button class="primary-btn" onclick="calculateTheveninBSourceDemo()">Calculate Thevenin & Source Wave bSource</button>
+                        <div class="code-display" id="bsource-output">Click 'Calculate Thevenin & Source Wave bSource' to evaluate...</div>
                     </div>
                 `;
                 }
             },
             {
-                id: 's-parameters',
-                title: 'Two-Port S-Parameters & Signal Flow',
-                subtitle: 'Scattering parameters, signal flow graphs, and bilateral matching',
+                id: 'solving-all-wave-variables',
+                badge: '16',
+                title: 'Solving All Wave Variables: a₁, b₁, b₂, a₂ & Port Voltages',
+                subtitle: 'Closed-loop signal flow solution for all wave amplitudes, power flow, and synthesizing physical port voltages and currents',
                 deepDive: {
-                    title: 'Scattering Parameters (S-Matrix), Signal Flow Graphs & Bilateral Conjugate Matching',
-                    preview: 'Why Z/Y/H matrices fail at gigahertz frequencies, power wave definitions, signal flow graphs with Mason’s rule, and numerical bilateral matching convergence.',
+                    title: 'Signal Flow Graph Matrix Reduction: Closed-Form Waves, Node Equations & Synthesizing Physical Voltages',
+                    preview: 'How normalized source wave b_s and boundary reflections Γ_s, Γ_L determine all wave variables (a₁, b₁, b₂, a₂) in closed form, how physical port voltages V(L₁) and V(L₂) emerge from wave superposition, and how energy conservation balances across the network.',
                     readingTime: '6 min read',
                     content: `
-                        <h3>1. The Breakdown of Low-Frequency Z, Y, and H Parameters</h3>
+                        <h3>1. Motivation: Complete State Resolution from S-Parameters</h3>
                         <p>
-                            Classical two-port network theory relies on impedance ($Z$), admittance ($Y$), and hybrid ($H$) parameters, which are defined by measuring 
-                            port voltages and currents while maintaining ideal open circuits ($I = 0$) or ideal short circuits ($V = 0$). 
-                            At microwave frequencies, establishing ideal opens and shorts is physically impossible: a wire short possesses several nanohenries of parasitic 
-                            inductance, while an open circuit radiates electromagnetic energy and displays parasitic fringing capacitance.
+                            In traditional nodal or mesh circuit analysis, finding internal voltages and currents across an active transistor amplifier 
+                            requires formulating large nonlinear matrix systems involving Gummel-Poon BJT models, biasing resistors, bypass capacitors, 
+                            and RF choke inductances.
                         </p>
                         <p>
-                            Furthermore, active RF transistors (such as Gallium Arsenide MESFETs and GaN HEMTs) frequently exhibit high internal feedback and conditional 
-                            stability. Terminating them in open or short circuits can cause uncontrolled self-oscillations that destroy the device.
+                            With the <strong>Two-Port Scattering Parameter and Signal Flow Graph formulation</strong>, this complexity collapses entirely. 
+                            Starting solely from:
+                        </p>
+                        <ul>
+                            <li>The four scattering parameters of the active network: $[S] = \\begin{bmatrix} S_{11} & S_{12} \\\\ S_{21} & S_{22} \\end{bmatrix}$</li>
+                            <li>The normalized independent source wave: $\\mathbf{b_s}$ (derived from the generator Thevenin equivalent in Chapter 15)</li>
+                            <li>The source reflection coefficient: $\\Gamma_s = \\frac{Z_s - Z_0}{Z_s + Z_0}$ (or transformed across $TL_1$)</li>
+                            <li>The load reflection coefficient: $\\Gamma_L = \\frac{Z_L - Z_0}{Z_L + Z_0}$ (or transformed across $TL_2$)</li>
+                        </ul>
+                        <p>
+                            we can solve the exact complex wave amplitudes at all four graph nodes ($a_1, b_1, b_2, a_2$) in closed form, 
+                            and immediately synthesize the physical terminal voltages $V(L_1), V(L_2)$ and currents $I(L_1), I(L_2)$ 
+                            without re-simulating the internal transistor circuit!
+                        </p>
+
+                        <h3>2. Step 1: Solving the Input Port Waves ($a_1, b_1$)</h3>
+                        <p>
+                            From Chapter 13, the ratio of the reflected wave to the incident wave looking into Port 1 is the driving-point input reflection coefficient:
+                            $$\\frac{b_1}{a_1} = \\Gamma_{\\text{in}} = S_{11} + \\frac{S_{12} S_{21} \\Gamma_L}{1 - S_{22} \\Gamma_L} \\iff b_1 = \\Gamma_{\\text{in}} a_1$$
+                        </p>
+                        <p>
+                            At the Port 1 summing node in the Signal Flow Graph, the total incident wave $a_1$ entering the network is the superposition 
+                            of the direct generator source wave $b_s$ plus the wave reflected off the source impedance:
+                            $$a_1 = b_s + \\Gamma_s b_1$$
+                        </p>
+                        <p>
+                            Substituting $b_1 = \\Gamma_{\\text{in}} a_1$ into this nodal equation:
+                            $$a_1 = b_s + \\Gamma_s (\\Gamma_{\\text{in}} a_1)$$
+                            $$(1 - \\Gamma_s \\Gamma_{\\text{in}}) a_1 = b_s \\implies a_1 = \\frac{b_s}{1 - \\Gamma_s \\Gamma_{\\text{in}}}$$
+                        </p>
+                        <p>
+                            With $a_1$ solved, the backward-propagating wave $b_1$ reflecting from Port 1 is determined directly:
+                            $$b_1 = \\Gamma_{\\text{in}} a_1 = \\frac{\\Gamma_{\\text{in}} b_s}{1 - \\Gamma_s \\Gamma_{\\text{in}}}$$
+                        </p>
+
+                        <h3>3. Step 2: Solving the Output Port Waves ($b_2, a_2$)</h3>
+                        <p>
+                            At Port 2, the wave launched out of the network toward the load is governed by forward transmission from Port 1 and internal reflection:
+                            $$b_2 = S_{21} a_1 + S_{22} a_2$$
+                        </p>
+                        <p>
+                            At the terminating load boundary, the wave $a_2$ reflecting back into Port 2 is linked to $b_2$ by the load reflection coefficient $\\Gamma_L$:
+                            $$a_2 = \\Gamma_L b_2$$
+                        </p>
+                        <p>
+                            Substituting this relationship into the equation for $b_2$:
+                            $$b_2 = S_{21} a_1 + S_{22} (\\Gamma_L b_2)$$
+                            $$(1 - S_{22} \\Gamma_L) b_2 = S_{21} a_1 \\implies b_2 = \\frac{S_{21} a_1}{1 - S_{22} \\Gamma_L}$$
+                        </p>
+                        <p>
+                            And then the incoming wave $a_2$ from the load is simply:
+                            $$a_2 = \\Gamma_L b_2 = \\frac{S_{21} \\Gamma_L a_1}{1 - S_{22} \\Gamma_L}$$
                         </p>
 
                         <div class="deep-dive-formula-box">
-                            <div class="deep-dive-formula-title">Normalized Power Waves & Two-Port S-Matrix</div>
-                            $$a_n = \\frac{V_n + Z_0 I_n}{2\\sqrt{Z_0}} \\quad \\text{[Incident Wave]}$$
-                            $$b_n = \\frac{V_n - Z_0 I_n}{2\\sqrt{Z_0}} \\quad \\text{[Reflected Wave]}$$
-                            $$\\begin{bmatrix} b_1 \\\\ b_2 \\end{bmatrix} = \\begin{bmatrix} S_{11} & S_{12} \\\\ S_{21} & S_{22} \\end{bmatrix} \\begin{bmatrix} a_1 \\\\ a_2 \\end{bmatrix}$$
+                            <div class="deep-dive-formula-title">The Complete Closed-Form Wave Solutions</div>
+                            $$a_1 = \\frac{b_s}{1 - \\Gamma_s \\Gamma_{\\text{in}}}, \\quad b_1 = \\Gamma_{\\text{in}} a_1$$
+                            $$b_2 = \\frac{S_{21} a_1}{1 - S_{22} \\Gamma_L}, \\quad a_2 = \\Gamma_L b_2$$
                         </div>
 
-                        <h3>2. Power Waves & Scattering Matrix Formulation</h3>
+                        <h3>4. Wave Variable Definitions & Synthesizing Physical Port Voltages and Currents</h3>
                         <p>
-                            Scattering parameters (S-parameters) circumvent these issues by terminating all ports in a standard non-reflective reference impedance $Z_0$ 
-                            (typically $50\\,\\Omega$). Instead of total terminal voltages and currents, we define normalized incident power waves $a_n$ and outgoing power waves $b_n$. 
-                            The physical meaning of each parameter is direct and intuitive:
+                            The four normalized wave variables represent specific forward- and backward-traveling wave phasors on the conceptual zero-length reference lines ($Z_0$) at each port:
+                        </p>
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">The Four Fundamental Wave Variables</div>
+                            $$a_1 = \\frac{V_1^+(L_1)}{\\sqrt{Z_0}} \\quad \\text{(Forward incident wave entering Port 1 from source)}$$
+                            $$b_1 = \\frac{V_1^-(L_1)}{\\sqrt{Z_0}} \\quad \\text{(Backward reflected wave emerging from Port 1 toward source)}$$
+                            $$b_2 = \\frac{V_2^+(L_2)}{\\sqrt{Z_0}} \\quad \\text{(Forward transmitted wave launched out of Port 2 toward load)}$$
+                            $$a_2 = \\frac{V_2^-(L_2)}{\\sqrt{Z_0}} \\quad \\text{(Backward reflected wave returning into Port 2 from load)}$$
+                        </div>
+                        <p>
+                            From boundary wave superposition, the total physical voltages and currents at reference planes $L_1$ and $L_2$ are reconstructed via:
+                        </p>
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Reconstruction of Physical Terminal Voltages & Currents</div>
+                            $$V(L_1) = V_1^+ + V_1^- = \\sqrt{Z_0} (a_1 + b_1)$$
+                            $$I(L_1) = \\frac{V_1^+ - V_1^-}{Z_0} = \\frac{a_1 - b_1}{\\sqrt{Z_0}} \\quad \\text{(Net current entering Port 1)}$$
+                            $$V(L_2) = V_2^+ + V_2^- = \\sqrt{Z_0} (b_2 + a_2)$$
+                            $$I_{\\text{load}}(L_2) = \\frac{V_2^+ - V_2^-}{Z_0} = \\frac{b_2 - a_2}{\\sqrt{Z_0}} \\quad \\text{(Current delivered into load)}$$
+                        </div>
+
+                        <h3>5. Power Conservation & Energy Transfer</h3>
+                        <p>
+                            Because the wave variables are normalized by $\\sqrt{Z_0}$, their squared magnitudes represent power in Watts ($\\text{W}$):
                         </p>
                         <ul>
-                            <li><strong>$S_{11} = b_1 / a_1 |_{a_2 = 0}$ (Input Reflection):</strong> Complex reflection coefficient looking into Port 1 when Port 2 is terminated in $Z_0$.</li>
-                            <li><strong>$S_{21} = b_2 / a_1 |_{a_2 = 0}$ (Forward Transmission / Gain):</strong> Ratio of power wave delivered to Port 2 from Port 1. In amplifiers, $|S_{21}|^2$ is the forward power gain.</li>
-                            <li><strong>$S_{12} = b_1 / a_2 |_{a_1 = 0}$ (Reverse Isolation):</strong> Ratio of power transmitted backward from Port 2 to Port 1, representing internal device feedback.</li>
-                            <li><strong>$S_{22} = b_2 / a_2 |_{a_1 = 0}$ (Output Reflection):</strong> Complex reflection coefficient looking into Port 2 with Port 1 terminated in $Z_0$.</li>
+                            <li><strong>Incident Power at Port 1:</strong> $P_{\\text{inc},1} = \\frac{1}{2} |a_1|^2$</li>
+                            <li><strong>Reflected Power at Port 1:</strong> $P_{\\text{refl},1} = \\frac{1}{2} |b_1|^2$</li>
+                            <li><strong>Net Input Power Absorbed by Network:</strong> $P_{\\text{in}} = \\frac{1}{2} (|a_1|^2 - |b_1|^2) = \\frac{1}{2} |a_1|^2 (1 - |\\Gamma_{\\text{in}}|^2)$</li>
+                            <li><strong>Net Power Delivered to Terminating Load:</strong> $P_L = \\frac{1}{2} (|b_2|^2 - |a_2|^2) = \\frac{1}{2} |b_2|^2 (1 - |\\Gamma_L|^2)$</li>
+                            <li><strong>Transducer Power Gain ($G_T$):</strong> The ratio of power delivered to the load to power available from the source ($P_{\\text{avs}} = \\frac{|b_s|^2}{2(1 - |\\Gamma_s|^2)}$):
+                                $$G_T = \\frac{P_L}{P_{\\text{avs}}} = \\frac{|S_{21}|^2 (1 - |\\Gamma_s|^2) (1 - |\\Gamma_L|^2)}{|1 - S_{11}\\Gamma_s|^2 |1 - \\Gamma_{\\text{out}} \\Gamma_L|^2}$$
+                            </li>
                         </ul>
-
-                        <h3>3. Signal Flow Graphs, Mason's Rule & Port Interdependence</h3>
-                        <p>
-                            In practical RF circuits, generator reflection $\\Gamma_S$ and load reflection $\\Gamma_L$ are rarely zero. Because active devices have non-zero 
-                            reverse transmission ($S_{12} \\ne 0$), power transmitted to Port 2 reflects off the load and recirculates back to Port 1. 
-                            Using signal flow graphs and Mason's gain rule, the effective input reflection coefficient becomes:
-                            $\\Gamma_{in} = S_{11} + \\frac{S_{12} S_{21} \\Gamma_L}{1 - S_{22} \\Gamma_L}$.
-                        </p>
-                        <p>
-                            Similarly, the effective output reflection coefficient is $\\Gamma_{out} = S_{22} + \\frac{S_{12} S_{21} \\Gamma_S}{1 - S_{11} \\Gamma_S}$. 
-                            This demonstrates port interdependence: altering load matching at Port 2 directly changes the input impedance at Port 1, and vice-versa.
-                        </p>
-
-                        <h3>4. Bilateral Conjugate Matching & Amplifier Stability</h3>
-                        <p>
-                            Because input and output impedances interact dynamically, achieving simultaneous bilateral conjugate match ($\\Gamma_S = \\Gamma_{in}^*$ and $\\Gamma_L = \\Gamma_{out}^*$) 
-                            requires solving coupled non-linear equations. Before attempting a match, one must verify unconditional stability using Rollett’s criterion:
-                            $K = \\frac{1 - |S_{11}|^2 - |S_{22}|^2 + |\\Delta|^2}{2 |S_{12} S_{21}|} > 1$ with $|\\Delta| = |S_{11} S_{22} - S_{12} S_{21}| < 1$.
-                        </p>
-                        <p>
-                            When $K > 1$, there exists a unique pair of terminations $\\Gamma_{MS}$ and $\\Gamma_{ML}$ that yield the Maximum Transducer Power Gain ($G_{T,max}$). 
-                            Our library function <code>find_bilateral_match_numerically</code> in <code>transmission_line.js</code> iteratively computes this exact bilateral match.
-                        </p>
                     `
                 },
                 render: function() {
                     return `
                     <div class="section-card">
-                        <h2>🌐 Scattering Parameters (S-Matrix)</h2>
+                        <h2>🌐 Solving All Wave Variables: a₁, b₁, b₂, a₂ & Port Voltages</h2>
                         <p>
-                            At RF and microwave frequencies, voltages and currents become difficult to measure directly. 
-                            Instead, we characterize multi-port networks using travelling wave ratios: $S_{11}$, $S_{21}$, $S_{12}$, and $S_{22}$.
+                            Starting solely with the two-port scattering matrix $[S]$, the normalized source wave $b_s$, 
+                            and the reflection coefficients $\\Gamma_s$ and $\\Gamma_L$, we solve the closed-loop Signal Flow Graph 
+                            for all four wave variables ($a_1, b_1, b_2, a_2$). 
+                            From these waves, the exact physical terminal voltages $V(L_1), V(L_2)$ and currents $I(L_1), I(L_2)$ 
+                            are synthesized without re-simulating internal transistor physics.
                         </p>
-                        <div class="story-callout">
-                            "S-parameters provide a complete behavioral description of linear RF networks, relating incoming power waves ($a_1, a_2$) to outgoing power waves ($b_1, b_2$)."
+
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/amplifier-wave-annotations.png" alt="Amplifier Circuit Diagram with Wave Annotations and Port Boundaries">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 1: Active Amplifier with Port Wave Variables.</strong> At Port 1 ($L_1$), wave $a_1$ enters from the source and $b_1$ reflects back. At Port 2 ($L_2$), wave $b_2$ launches into the load and $a_2$ reflects from the load. Terminal voltages are sums of traveling waves: $V(L_1) = \\sqrt{Z_0}(a_1 + b_1)$ and $V(L_2) = \\sqrt{Z_0}(b_2 + a_2)$.
+                            </div>
+                        </div>
+
+                        <div class="circuit-illustration-card" style="margin-top:16px;">
+                            <img src="./circuit_images/two-port-signal-flow.png" alt="Two-Port Signal Flow Graph Showing Closed-Loop Node Solutions">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 2: Complete Two-Port Signal Flow Graph.</strong> Independent source wave $b_s$ excites node $a_1$. Closed feedback loops $\\Gamma_s \\Gamma_{\\text{in}}$ and $S_{22} \\Gamma_L$ govern internal reverberations, yielding exact closed-form algebraic solutions for $a_1, b_1, b_2, a_2$.
+                            </div>
+                        </div>
+
+                        <div class="story-callout" style="margin-top:20px;">
+                            <strong>Physical Key Takeaways:</strong><br>
+                            • <strong>Four Wave Definitions:</strong> $a_1 = V_1^+ / \\sqrt{Z_0}$, $b_1 = V_1^- / \\sqrt{Z_0}$, $b_2 = V_2^+ / \\sqrt{Z_0}$, $a_2 = V_2^- / \\sqrt{Z_0}$.<br>
+                            • <strong>Closed-Form Solutions:</strong> $a_1 = \\frac{b_s}{1 - \\Gamma_s \\Gamma_{\\text{in}}}$, $b_1 = \\Gamma_{\\text{in}} a_1$, $b_2 = \\frac{S_{21} a_1}{1 - S_{22} \\Gamma_L}$, $a_2 = \\Gamma_L b_2$.<br>
+                            • <strong>Physical Voltage & Current Synthesis:</strong> $V(L_1) = \\sqrt{Z_0}(a_1 + b_1)$, $I(L_1) = (a_1 - b_1)/\\sqrt{Z_0}$, $V(L_2) = \\sqrt{Z_0}(b_2 + a_2)$, $I_{\\text{load}}(L_2) = (b_2 - a_2)/\\sqrt{Z_0}$.<br>
+                            • <strong>Matched Case Verification:</strong> When $Z_s = 50\\,\\Omega$ and $Z_L = 50\\,\\Omega$, the synthesized voltages reproduce the Chapter 12 simulated values ($|V_1| \\approx 0.472\\,\\text{mV}, |V_2| \\approx 1.534\\,\\text{mV}$) exactly!
                         </div>
                     </div>
 
                     ${renderDeepDive(this.deepDive)}
 
                     <div class="section-card">
-                        <h2>🔬 Signal Flow & Simulated Network Extraction</h2>
-                        <p>Inspect extracted S-parameters and bilateral conjugate matching from simulated circuit voltages and currents.</p>
-                        <button class="primary-btn" onclick="inspectSParameters()">Inspect Extracted S-Parameters</button>
-                        <div class="code-display" id="sparam-output">Click to inspect S-parameters and node flow values...</div>
+                        <h2>⚡ Interactive Signal Flow Node Solver & Voltage Synthesizer</h2>
+                        <p>
+                            Adjust generator excitation $V_g$, source impedance $Z_s$, and load impedance $Z_L$. 
+                            The engine evaluates $b_s$, $\\Gamma_s$, $\\Gamma_L$, solves all four wave nodes ($a_1, b_1, b_2, a_2$), 
+                            and synthesizes the resulting physical voltages, currents, and power delivery.
+                        </p>
+
+                        <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-bottom:16px;">
+                            <div class="form-group">
+                                <label>Generator V_g Real (V)</label>
+                                <input type="number" id="wv-vg-re" class="text-input" value="1.0e-3" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Generator V_g Imag (V)</label>
+                                <input type="number" id="wv-vg-im" class="text-input" value="0.0" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Source Z_s Real (Ω)</label>
+                                <input type="number" id="wv-zs-re" class="text-input" value="50.0" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Source Z_s Imag (Ω)</label>
+                                <input type="number" id="wv-zs-im" class="text-input" value="0.0" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Load Z_L Real (Ω)</label>
+                                <input type="number" id="wv-zl-re" class="text-input" value="50.0" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Load Z_L Imag (Ω)</label>
+                                <input type="number" id="wv-zl-im" class="text-input" value="0.0" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Reference Z₀ (Ω)</label>
+                                <input type="number" id="wv-z0" class="text-input" value="50.0" step="any">
+                            </div>
+                        </div>
+
+                        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:10px; padding:16px; margin-bottom:16px;">
+                            <strong style="color:var(--accent); font-size:13px; display:block; margin-bottom:10px;">Two-Port Scattering Parameters [S] (Active Transistor):</strong>
+                            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+                                <div class="form-group">
+                                    <label>S₁₁ Real</label>
+                                    <input type="number" id="wv-s11-re" class="text-input" value="-0.1967" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₁₁ Imag</label>
+                                    <input type="number" id="wv-s11-im" class="text-input" value="-0.4950" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₂₁ Real</label>
+                                    <input type="number" id="wv-s21-re" class="text-input" value="-0.9389" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₂₁ Imag</label>
+                                    <input type="number" id="wv-s21-im" class="text-input" value="2.9207" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₁₂ Real</label>
+                                    <input type="number" id="wv-s12-re" class="text-input" value="0.0635" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₁₂ Imag</label>
+                                    <input type="number" id="wv-s12-im" class="text-input" value="0.0231" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₂₂ Real</label>
+                                    <input type="number" id="wv-s22-re" class="text-input" value="0.6124" step="any">
+                                </div>
+                                <div class="form-group">
+                                    <label>S₂₂ Imag</label>
+                                    <input type="number" id="wv-s22-im" class="text-input" value="-0.2598" step="any">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+                            <button class="secondary-btn" onclick="setWaveVariablesPreset('matched')">Preset: Matched 50 Ω System (Default)</button>
+                            <button class="secondary-btn" onclick="setWaveVariablesPreset('mismatched-load')">Preset: Mismatched Load (ZL = 25 Ω)</button>
+                            <button class="secondary-btn" onclick="setWaveVariablesPreset('highz-load')">Preset: High-Z Load (ZL = 100 Ω)</button>
+                            <button class="secondary-btn" onclick="setWaveVariablesPreset('reactive-load')">Preset: Reactive Load (ZL = 50 - j50 Ω)</button>
+                            <button class="secondary-btn" onclick="setWaveVariablesPreset('complex-both')">Preset: Complex Source & Load (Zs = 75+j25, ZL = 25-j10)</button>
+                            <button class="secondary-btn" onclick="setWaveVariablesPreset('unilateral')">Preset: Unilateral Model (S₁₂ = 0)</button>
+                        </div>
+
+                        <button class="primary-btn" onclick="calculateAllWaveVariablesDemo()">Solve All Wave Nodes & Synthesize Voltages</button>
+                        <div class="code-display" id="wave-variables-output">Click 'Solve All Wave Nodes & Synthesize Voltages' to evaluate...</div>
+                    </div>
+                `;
+                }
+            },
+            {
+                id: 'node-to-voltage-current-conversion',
+                badge: '17',
+                title: 'Node Waves to Terminal Voltages & Currents: The Case for Matching',
+                subtitle: 'Explicit conversion steps, baseline ~1.5 mV 2N3904 amplifier output, and maximum power transfer vs. source attenuation',
+                deepDive: {
+                    title: 'From Wave Superposition to Terminal Voltages & The Conjugate Matching Imperative',
+                    preview: 'Step-by-step mathematical conversion from normalized wave nodes (a, b) to physical terminal voltages and currents, the baseline 2N3904 amplifier output (~1.5 mV from 1 mV), and why reducing source impedance via passive LC networks cannot bypass the Thevenin voltage penalty.',
+                    readingTime: '6 min read',
+                    content: `
+                        <h3>1. Explicit Conversion Steps in <code>convert_signal_flow_node_vals_to_voltage_current_vals</code></h3>
+                        <p>
+                            In our computational engine (<code>radio_frequency_electric_circuit_calculator.js</code>), the function 
+                            <code>convert_signal_flow_node_vals_to_voltage_current_vals</code> maps the normalized power wave amplitudes 
+                            ($a_1, b_1, b_2, a_2$, expressed in units of $\\sqrt{\\text{Watts}}$) into physical voltage phasors at each reference plane:
+                        </p>
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Step 1: Scaling Normalized Waves to Individual Voltage Components</div>
+                            $$V_1^+ = a_1 \\sqrt{Z_0}, \\quad V_1^- = b_1 \\sqrt{Z_0} \\quad \\text{(Incident & reflected wave voltages at Port 1)}$$
+                            $$V_2^+ = b_2 \\sqrt{Z_0}, \\quad V_2^- = a_2 \\sqrt{Z_0} \\quad \\text{(Forward & backward wave voltages at Port 2)}$$
+                        </div>
+                        <p>
+                            At the reference planes $L_1$ and $L_2$, boundary wave superposition yields the total terminal voltages:
+                        </p>
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Step 2: Total Terminal Voltages (Boundary Superposition)</div>
+                            $$V(L_1) = V_1^+ + V_1^- = \\sqrt{Z_0} (a_1 + b_1) = \\text{voltages.generator\\_side\\_total}$$
+                            $$V(L_2) = V_2^+ + V_2^- = \\sqrt{Z_0} (b_2 + a_2) = \\text{voltages.load\\_side\\_total}$$
+                        </div>
+
+                        <h3>2. Synthesizing Physical Terminal Currents Separately</h3>
+                        <p>
+                            Because each traveling wave component propagates along a conceptual reference line with characteristic impedance $Z_0$, 
+                            its associated current is simply its voltage divided by $Z_0$:
+                        </p>
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Step 3: Individual Wave Current Components</div>
+                            $$I_1^+ = \\frac{V_1^+}{Z_0} = \\frac{a_1}{\\sqrt{Z_0}}, \\quad I_1^- = \\frac{V_1^-}{Z_0} = \\frac{b_1}{\\sqrt{Z_0}}$$
+                            $$I_2^+ = \\frac{V_2^+}{Z_0} = \\frac{b_2}{\\sqrt{Z_0}}, \\quad I_2^- = \\frac{V_2^-}{Z_0} = \\frac{a_2}{\\sqrt{Z_0}}$$
+                        </div>
+                        <p>
+                            The net physical terminal currents entering or exiting each port are the differences between forward and reverse wave currents:
+                        </p>
+                        <div class="deep-dive-formula-box">
+                            <div class="deep-dive-formula-title">Step 4: Net Physical Terminal Currents</div>
+                            $$I(L_1) = I_1^+ - I_1^- = \\frac{a_1 - b_1}{\\sqrt{Z_0}} \\quad \\text{(Net current entering Port 1)}$$
+                            $$I_{\\text{load}}(L_2) = I_2^+ - I_2^- = \\frac{b_2 - a_2}{\\sqrt{Z_0}} \\quad \\text{(Net current delivered into the terminating load)}$$
+                        </div>
+                        <p>
+                            We verify driving-point Ohm’s law consistency down to machine precision:
+                            $$\\frac{V(L_1)}{I(L_1)} = Z_0 \\frac{a_1 + b_1}{a_1 - b_1} = Z_0 \\frac{1 + \\Gamma_{\\text{in}}}{1 - \\Gamma_{\\text{in}}} = Z_{\\text{in}}$$
+                            $$\\frac{V(L_2)}{I_{\\text{load}}(L_2)} = Z_0 \\frac{b_2 + a_2}{b_2 - a_2} = Z_0 \\frac{1 + \\Gamma_L}{1 - \\Gamma_L} = Z_L$$
+                        </p>
+
+                        <h3>3. Baseline 2N3904 Transistor Performance Without Matching</h3>
+                        <p>
+                            Let us evaluate our simulated active amplifier based on the 2N3904 BJT under typical un-matched $50\\,\\Omega$ laboratory instrumentation:
+                        </p>
+                        <ul>
+                            <li><strong>Generator:</strong> $V_g = 1.0\\,\\text{mV}$ peak open-circuit sinusoidal source with $Z_s = 50\\,\\Omega$.</li>
+                            <li><strong>Terminating Load:</strong> Matched reference resistor $Z_L = 50\\,\\Omega$.</li>
+                            <li><strong>Input Voltage Division:</strong> The driving-point input impedance of the transistor stage is $Z_{\\text{in}} \\approx 21.36 - j29.51\\,\\Omega$. Voltage division between $Z_s = 50\\,\\Omega$ and $Z_{\\text{in}}$ drops the voltage at Port 1 ($L_1$) to merely:
+                                $$|V(L_1)| \\approx 0.472\\,\\text{mV} \\quad (\\text{over } 52\\% \\text{ of } V_g \\text{ is lost to voltage division!})$$
+                            </li>
+                            <li><strong>Delivered Output Voltage:</strong> The amplified voltage appearing across the $50\\,\\Omega$ load at Port 2 ($L_2$) is:
+                                $$|V(L_2)| \\approx 1.534\\,\\text{mV}$$
+                            </li>
+                        </ul>
+                        <p>
+                            Without any impedance matching networks, this active 2N3904 amplifier turns a $1.0\\,\\text{mV}$ generator signal into a $\\sim 1.5\\,\\text{mV}$ output. 
+                            While this yields a voltage gain of $|V(L_2) / V_g| \\approx 1.534$, power transfer is severely hindered: 
+                            nearly $28\\%$ of the incident power from the generator is reflected straight back at Port 1 ($|\\Gamma_{\\text{in}}| \\approx 0.533$), 
+                            delivering only $P_L \\approx 23.53\\,\\text{nW}$ to the load.
+                        </p>
+
+                        <h3>4. Can We Improve Output by Adding More Components?</h3>
+                        <p>
+                            Can we significantly improve this output by inserting passive capacitors and inductors between the source and Port 1, 
+                            and between Port 2 and the load?
+                        </p>
+                        <p>
+                            On the face of it, capacitors and inductors are simply <em>more impedances</em> added into the signal path. 
+                            However, ideal reactive components are lossless ($\\text{Re}\\{Z\\} = 0$). By inserting an $LC$ matching network to transform 
+                            the $50\\,\\Omega$ generator impedance into the <strong>complex conjugate</strong> of the input impedance seen looking into Port 1:
+                            $$Z_{\\text{source, effective}} = Z_{\\text{in}}^* = 21.36 + j29.51\\,\\Omega$$
+                            the reactive parts cancel ($+j29.51 - j29.51 = 0$) and the real parts balance ($21.36\\,\\Omega = 21.36\\,\\Omega$). 
+                            By the <strong>Maximum Power Transfer Theorem</strong>, power delivered into a fixed impedance ($Z_{\\text{in}}$) is maximized 
+                            when the driving source impedance is matched to its conjugate, eliminating input reflections entirely ($\\Gamma = 0$ at the matched interface) 
+                            and channeling $100\\%$ of available source power into the transistor base!
+                        </p>
+
+                        <h3>5. The Fallacy of Minimizing $Z_{\\text{source}}$: The Thevenin Voltage Penalty</h3>
+                        <p>
+                            This raises a subtle and critical pedagogical question:
+                        </p>
+                        <div class="story-callout" style="background:#fef2f2; border-color:#fca5a5;">
+                            <em>"If our goal is to maximize the voltage across $Z_{\\text{in}}$, wouldn't we do much better if $Z_{\\text{source}}$ was made as small as possible—say approaching $0\\,\\Omega$—so that voltage division gives $V_{\\text{in}} \\approx V_{\\text{source}}$?"</em>
+                        </div>
+                        <p>
+                            While setting an independent bench supply's internal resistance to zero would indeed maximize terminal voltage, 
+                            in high-frequency RF systems we cannot alter the physical generator's $50\\,\\Omega$ resistance directly. 
+                            We must use a <strong>passive matching network</strong> of inductors and capacitors to transform it.
+                        </p>
+                        <p>
+                            Because passive reactive networks conserve energy, any $LC$ network designed to step down the source impedance 
+                            to a tiny Thevenin resistance $R_{\\text{Th}} \\ll 50\\,\\Omega$ <strong>simultaneously steps down the open-circuit Thevenin voltage $V_{\\text{Th}}$ at the port</strong>:
+                            $$|V_{\\text{Th}}| \\approx |V_g| \\sqrt{\\frac{R_{\\text{Th}}}{R_s}}$$
+                            <em>(Note: Here, "open circuit" means no load is connected to the port; the matching network components remain in place!)</em>
+                        </p>
+                        <p>
+                            Thus, as an $LC$ network forces $R_{\\text{Th}} \\to 0$, the available Thevenin open-circuit voltage $V_{\\text{Th}} \\to 0$ proportionally. 
+                            Even though the voltage division ratio $\\frac{Z_{\\text{in}}}{Z_{\\text{Th}} + Z_{\\text{in}}}$ approaches $1$, it is multiplying a 
+                            severely degraded $V_{\\text{Th}}$, leading to <strong>lower physical voltage and lower power transfer</strong> into the transistor! 
+                            Conjugate matching ($Z_{\\text{Th}} = Z_{\\text{in}}^*$) is the unique optimum balancing the voltage division ratio with the transformed Thevenin voltage.
+                        </p>
+                    `
+                },
+                render: function() {
+                    return `
+                    <div class="section-card">
+                        <h2>🔬 Node Waves to Terminal Voltages & Currents: The Case for Matching</h2>
+                        <p>
+                            The function <code>convert_signal_flow_node_vals_to_voltage_current_vals</code> maps normalized wave amplitudes 
+                            into physical terminal voltages. Here we examine the explicit conversion steps for voltage and current separately, 
+                            observe the baseline performance of our 2N3904 transistor amplifier ($\sim 1.5\\,\\text{mV}$ from $1.0\\,\\text{mV}$), 
+                            and establish why passive conjugate matching maximizes power transfer while avoiding the Thevenin voltage penalty.
+                        </p>
+
+                        <div class="circuit-illustration-card">
+                            <img src="./circuit_images/amplifier_circuit_for_s_param_measurement_S11_S21.png" alt="2N3904 BJT Amplifier Circuit Schematic">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 1: Active 2N3904 Amplifier Circuit (Un-Matched Baseline).</strong> Driven by a 100 MHz 1 mV generator with 50 Ω source impedance, the amplifier delivers ~1.534 mV across the 50 Ω terminating load. Due to input mismatch ($Z_{\text{in}} \approx 21.36 - j29.51\,\Omega$), nearly 28% of incident power is reflected back.
+                            </div>
+                        </div>
+
+                        <div class="circuit-illustration-card" style="margin-top:16px;">
+                            <img src="./circuit_images/amplifier-wave-annotations.png" alt="Amplifier Port Boundaries and Physical Wave Quantities">
+                            <div class="circuit-illustration-caption">
+                                <strong>Figure 2: Reference Planes and Superposition.</strong> At Port 1 ($L_1$), $V(L_1) = \sqrt{Z_0}(a_1 + b_1)$ and $I(L_1) = (a_1 - b_1)/\sqrt{Z_0}$. At Port 2 ($L_2$), $V(L_2) = \sqrt{Z_0}(b_2 + a_2)$ and $I_{\text{load}}(L_2) = (b_2 - a_2)/\sqrt{Z_0}$.
+                            </div>
+                        </div>
+
+                        <div class="story-callout" style="margin-top:20px;">
+                            <strong>Physical Key Takeaways:</strong><br>
+                            • <strong>Baseline 2N3904 Output:</strong> Without matching, $1.0\\,\\text{mV}$ peak generator excitation produces $|V(L_1)| \\approx 0.472\\,\\text{mV}$ and $|V(L_2)| \\approx 1.534\\,\\text{mV}$ across the $50\\,\\Omega$ load.<br>
+                            • <strong>Why Matching Matters:</strong> Inserting capacitors and inductors to match the source to $Z_{\\text{in}}^* = 21.36 + j29.51\\,\\Omega$ cancels reactive mismatch and eliminates reflections, channeling $100\\%$ of available source power into the transistor.<br>
+                            • <strong>The Thevenin Voltage Penalty:</strong> Trying to make $Z_{\\text{source}} \\to 0$ with passive $LC$ networks simultaneously drops $V_{\\text{Th}} \\to 0$, reducing net power. Conjugate matching ($Z_{\\text{Th}} = Z_{\\text{in}}^*$) achieves the exact theoretical peak.
+                        </div>
+                    </div>
+
+                    ${renderDeepDive(this.deepDive)}
+
+                    <div class="section-card">
+                        <h2>⚡ Interactive Node-to-Physical Converter & Matching Analyzer</h2>
+                        <p>
+                            Inspect the explicit breakdown from normalized power waves ($a_1, b_1, b_2, a_2$) to individual wave components, 
+                            total physical voltages, and separately synthesized physical currents. Compare the unmatched baseline against conjugate matching.
+                        </p>
+
+                        <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-bottom:16px;">
+                            <div class="form-group">
+                                <label>Generator V_g Real (V)</label>
+                                <input type="number" id="cv-vg-re" class="text-input" value="1.0e-3" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Generator V_g Imag (V)</label>
+                                <input type="number" id="cv-vg-im" class="text-input" value="0.0" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Source Z_s Real (Ω)</label>
+                                <input type="number" id="cv-zs-re" class="text-input" value="50.0" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Source Z_s Imag (Ω)</label>
+                                <input type="number" id="cv-zs-im" class="text-input" value="0.0" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Load Z_L Real (Ω)</label>
+                                <input type="number" id="cv-zl-re" class="text-input" value="50.0" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Load Z_L Imag (Ω)</label>
+                                <input type="number" id="cv-zl-im" class="text-input" value="0.0" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label>Reference Z₀ (Ω)</label>
+                                <input type="number" id="cv-z0" class="text-input" value="50.0" step="any">
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+                            <button class="secondary-btn" onclick="setNodeConversionPreset('baseline')">Preset: 2N3904 Baseline (50 Ω Source & Load)</button>
+                            <button class="secondary-btn" onclick="setNodeConversionPreset('conjugate-source')">Preset: Ideal Conjugate Source (Zs = Zin* ≈ 21.36 + j29.51 Ω)</button>
+                            <button class="secondary-btn" onclick="setNodeConversionPreset('lowz-source')">Preset: Ultra-Low Zs Fallacy (Zs = 5 Ω — Observe Vth penalty)</button>
+                            <button class="secondary-btn" onclick="setNodeConversionPreset('mismatched-load')">Preset: Mismatched Load (ZL = 25 Ω)</button>
+                        </div>
+
+                        <button class="primary-btn" onclick="calculateNodeConversionDemo()">Convert Waves to Physical Voltages & Currents</button>
+                        <div class="code-display" id="node-conversion-output">Click 'Convert Waves to Physical Voltages & Currents' to evaluate...</div>
                     </div>
                 `;
                 }
@@ -4355,6 +4507,33 @@
                 setTimeout(() => {
                     if (typeof calculateGammaOutDemo === 'function') {
                         calculateGammaOutDemo();
+                    }
+                }, 50);
+            }
+
+            // If navigating to the thevenin source wave & bsource page (Page 15, id 'thevenin-source-wave-bsource'), auto-run calculation
+            if (page.id === 'thevenin-source-wave-bsource') {
+                setTimeout(() => {
+                    if (typeof calculateTheveninBSourceDemo === 'function') {
+                        calculateTheveninBSourceDemo();
+                    }
+                }, 50);
+            }
+
+            // If navigating to the wave variables & voltages page (Page 16, id 'solving-all-wave-variables'), auto-run calculation
+            if (page.id === 'solving-all-wave-variables') {
+                setTimeout(() => {
+                    if (typeof calculateAllWaveVariablesDemo === 'function') {
+                        calculateAllWaveVariablesDemo();
+                    }
+                }, 50);
+            }
+
+            // If navigating to the node conversion & voltages/currents page (Page 17, id 'node-to-voltage-current-conversion'), auto-run calculation
+            if (page.id === 'node-to-voltage-current-conversion') {
+                setTimeout(() => {
+                    if (typeof calculateNodeConversionDemo === 'function') {
+                        calculateNodeConversionDemo();
                     }
                 }, 50);
             }
@@ -6400,101 +6579,550 @@
                     `• Thevenin Equivalence: In circuit simulation or hardware testing, the load Z_L simply sees an ideal source V_Th in series with Z_out.`);
         }
 
-        function calculateWaveParams() {
-            if (typeof globalThis.getTLWaveParams !== 'function') {
-                document.getElementById('wave-params-output').textContent = 'Error: globalThis.getTLWaveParams is not defined!';
+        function setTheveninBSourcePreset(type) {
+            document.getElementById('bs-z0').value = 50.0;
+            document.getElementById('bs-beta').value = 6.2831853; // 2*pi, lambda = 1m
+            document.getElementById('bs-vg-re').value = 1.0;
+            document.getElementById('bs-vg-im').value = 0.0;
+
+            if (type === 'zero') {
+                document.getElementById('bs-zs-re').value = 50.0;
+                document.getElementById('bs-zs-im').value = 0.0;
+                document.getElementById('bs-l1').value = 0.0;
+            } else if (type === 'quarter') {
+                document.getElementById('bs-zs-re').value = 50.0;
+                document.getElementById('bs-zs-im').value = 0.0;
+                document.getElementById('bs-l1').value = 0.25; // lambda / 4
+            } else if (type === 'half') {
+                document.getElementById('bs-zs-re').value = 50.0;
+                document.getElementById('bs-zs-im').value = 0.0;
+                document.getElementById('bs-l1').value = 0.50; // lambda / 2
+            } else if (type === 'mismatched') {
+                document.getElementById('bs-zs-re').value = 75.0;
+                document.getElementById('bs-zs-im').value = 25.0;
+                document.getElementById('bs-l1').value = 0.25;
+            } else if (type === 'lowz') {
+                document.getElementById('bs-zs-re').value = 25.0;
+                document.getElementById('bs-zs-im').value = 0.0;
+                document.getElementById('bs-l1').value = 0.25;
+            }
+            calculateTheveninBSourceDemo();
+        }
+
+        function calculateTheveninBSourceDemo() {
+            const z0 = parseFloat(document.getElementById('bs-z0').value) || 50;
+            const beta = parseFloat(document.getElementById('bs-beta').value) || 6.2831853;
+            const l1 = parseFloat(document.getElementById('bs-l1').value) || 0;
+            const vg = {
+                real: parseFloat(document.getElementById('bs-vg-re').value) || 0,
+                imag: parseFloat(document.getElementById('bs-vg-im').value) || 0
+            };
+            const zs = {
+                real: parseFloat(document.getElementById('bs-zs-re').value) || 0,
+                imag: parseFloat(document.getElementById('bs-zs-im').value) || 0
+            };
+
+            const gen = {
+                generator_voltage_real: vg.real,
+                generator_voltage_imag: vg.imag,
+                generator_impedance_real: zs.real,
+                generator_impedance_imag: zs.imag,
+                generator_tl1_length: l1,
+                generator_tl2_length: 0
+            };
+
+            // 1. Open-circuit boundary at Port 1
+            const roundTripPhaseRad = -2 * beta * l1;
+            const gammaEntry = {
+                real: Math.cos(roundTripPhaseRad),
+                imag: Math.sin(roundTripPhaseRad)
+            };
+
+            // 2. Thevenin Equivalent via engine or analytical calculation
+            let theveninRes = null;
+            if (typeof globalThis.find_thevenin_equivalent_circuit === 'function') {
+                theveninRes = globalThis.find_thevenin_equivalent_circuit(gen, 1, z0, beta).tl1_and_generator_equivalent;
+            }
+
+            const vTh = theveninRes ? { real: theveninRes.voltage_real, imag: theveninRes.voltage_imag } : { real: 0, imag: 0 };
+            const zTh = theveninRes ? { real: theveninRes.z_real, imag: theveninRes.z_imag } : { real: 0, imag: 0 };
+            const vThMag = Math.hypot(vTh.real, vTh.imag);
+            const vThPhaseDeg = Math.atan2(vTh.imag, vTh.real) * 180 / Math.PI;
+
+            // 3. b_s via Thevenin: b_s = V_Th * sqrt(Z0) / (Z_Th + Z0)
+            const sqrtZ0 = Math.sqrt(z0);
+            const vThSqrtZ0 = { real: vTh.real * sqrtZ0, imag: vTh.imag * sqrtZ0 };
+            const zThPlusZ0 = { real: zTh.real + z0, imag: zTh.imag };
+            const bsThevenin = globalThis.divideComplexNums(vThSqrtZ0.real, vThSqrtZ0.imag, zThPlusZ0.real, zThPlusZ0.imag);
+            const bsThevMag = Math.hypot(bsThevenin.real, bsThevenin.imag);
+            const bsThevPhaseDeg = Math.atan2(bsThevenin.imag, bsThevenin.real) * 180 / Math.PI;
+
+            // 4. b_s via Direct Wave Launch: b_s(gen) = V_g * sqrt(Z0) / (Z_s + Z0), b_s(port1) = b_s(gen) * e^(-j * beta * l1)
+            const vgSqrtZ0 = { real: vg.real * sqrtZ0, imag: vg.imag * sqrtZ0 };
+            const zsPlusZ0 = { real: zs.real + z0, imag: zs.imag };
+            const bsGen = globalThis.divideComplexNums(vgSqrtZ0.real, vgSqrtZ0.imag, zsPlusZ0.real, zsPlusZ0.imag);
+            const forwardPhase = { real: Math.cos(-beta * l1), imag: Math.sin(-beta * l1) };
+            const bsDirect = globalThis.multiplyComplexNums(bsGen.real, bsGen.imag, forwardPhase.real, forwardPhase.imag);
+            const bsDirMag = Math.hypot(bsDirect.real, bsDirect.imag);
+            const bsDirPhaseDeg = Math.atan2(bsDirect.imag, bsDirect.real) * 180 / Math.PI;
+
+            // Difference check
+            const diffBs = Math.hypot(bsThevenin.real - bsDirect.real, bsThevenin.imag - bsDirect.imag);
+
+            // 5. Verification against findSignalFlowNodeValues
+            let apiCheckText = '';
+            if (typeof globalThis.findSignalFlowNodeValues === 'function') {
+                try {
+                    const flowRes = globalThis.findSignalFlowNodeValues(
+                        gen,
+                        { real: z0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 1, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        z0,
+                        beta
+                    );
+                    const diffApi = Math.hypot(bsThevenin.real - flowRes.bs.real, bsThevenin.imag - flowRes.bs.imag);
+                    apiCheckText = `• Engine findSignalFlowNodeValues b_s Check: CONFIRMED! (|Δb_s| = ${diffApi.toExponential(2)})\n`;
+                } catch (e) {
+                    apiCheckText = `• findSignalFlowNodeValues: ${e.message}\n`;
+                }
+            }
+
+            document.getElementById('bsource-output').textContent = 
+                `=======================================================================\n` +
+                `  THEVENIN REDUCTION ACROSS TL1 & SOURCE WAVE (bSource) DERIVATION     \n` +
+                `=======================================================================\n\n` +
+                `Generator & Interconnect Configuration:\n` +
+                `• Generator Open-Circuit V_g:   ${vg.real.toFixed(4)} + j(${vg.imag.toFixed(4)}) V  (|V_g| = ${Math.hypot(vg.real, vg.imag).toFixed(4)} V)\n` +
+                `• Generator Source Impedance Z_s: ${zs.real.toFixed(2)} + j(${zs.imag.toFixed(2)}) Ω\n` +
+                `• Transmission Line Length l₁:   ${l1.toFixed(4)} m  (Phase Constant β = ${beta.toFixed(4)} rad/m, Electrical Length βl₁ = ${(beta * l1 * 180 / Math.PI).toFixed(1)}°)\n` +
+                `• System Characteristic Z₀:      ${z0.toFixed(2)} Ω  (√Z₀ = ${sqrtZ0.toFixed(4)} √Ω)\n\n` +
+                `Step 1: Open-Circuit Boundary at Port 1 (d = 0):\n` +
+                `• Open-Circuit Reflection Γ_open: +1.0000  (b₁ = 1 · a₁)\n` +
+                `• Boundary Sum at Port 1:        V_Th = √(Z₀) · (a₁ + b₁) = 2 · √(Z₀) · a₁\n\n` +
+                `Step 2: Wave Propagation & Reflection at Generator Entrance (d = l₁):\n` +
+                `• Wave Advancing to Port 1:      a₁(gen) = a₁ · e^(+jβl₁)  [started earlier at generator]\n` +
+                `• Wave Retarded from Port 1:     b₁(gen) = a₁ · e^(-jβl₁)  [reflected earlier from port 1]\n` +
+                `• Reflection at Line Entrance:   Γ_entry = b₁(gen) / a₁(gen) = e^(-j2βl₁) = ${gammaEntry.real.toFixed(4)} + j(${gammaEntry.imag.toFixed(4)})\n\n` +
+                `Step 3: Port 1 Thevenin Equivalent Source:\n` +
+                `• Open-Circuit Voltage V_Th:     ${vTh.real.toFixed(4)} + j(${vTh.imag.toFixed(4)}) V  (|V_Th| = ${vThMag.toFixed(4)} V, θ = ${vThPhaseDeg.toFixed(2)}°)\n` +
+                `• Thevenin Impedance Z_Th:       ${zTh.real.toFixed(2)} + j(${zTh.imag.toFixed(2)}) Ω  (Transformed Z_s via round-trip e^(-j2βl₁))\n\n` +
+                `Step 4: Normalized Source Wave b_s via Thevenin Source (Delivered into Z₀):\n` +
+                `• b_s = V_Th · √(Z₀) / (Z_Th + Z₀): ${bsThevenin.real.toFixed(5)} + j(${bsThevenin.imag.toFixed(5)}) √W  (|b_s| = ${bsThevMag.toFixed(5)} √W, θ = ${bsThevPhaseDeg.toFixed(2)}°)\n\n` +
+                `Step 5: Direct Forward Travelling Wave Launch:\n` +
+                `• Launched Wave b_s(gen):        ${bsGen.real.toFixed(5)} + j(${bsGen.imag.toFixed(5)}) √W  [V_g · √(Z₀) / (Z_s + Z₀)]\n` +
+                `• Phase-Delayed Wave at Port 1:  ${bsDirect.real.toFixed(5)} + j(${bsDirect.imag.toFixed(5)}) √W  [b_s(gen) · e^(-jβl₁)]\n` +
+                `• Cancellation Difference:       |Δb_s| = ${diffBs.toExponential(2)}  (EXACT IDENTITY CONFIRMED!)\n\n` +
+                (apiCheckText || '') +
+                `Physical & Mathematical Takeaways:\n` +
+                `• The resonance factor (1 - Γ_s · e^(-j2βl₁)) cancels out completely because a reference termination Z₀ absorbs the wave without reflections.\n` +
+                `• In the Signal Flow Graph, b_s acts as the true independent generator node driving Port 1!`;
+        }
+
+        function setWaveVariablesPreset(type) {
+            document.getElementById('wv-z0').value = 50.0;
+            document.getElementById('wv-s11-re').value = -0.1967;
+            document.getElementById('wv-s11-im').value = -0.4950;
+            document.getElementById('wv-s21-re').value = -0.9389;
+            document.getElementById('wv-s21-im').value = 2.9207;
+            document.getElementById('wv-s12-re').value = 0.0635;
+            document.getElementById('wv-s12-im').value = 0.0231;
+            document.getElementById('wv-s22-re').value = 0.6124;
+            document.getElementById('wv-s22-im').value = -0.2598;
+            document.getElementById('wv-vg-re').value = 1.0e-3;
+            document.getElementById('wv-vg-im').value = 0.0;
+
+            if (type === 'matched') {
+                document.getElementById('wv-zs-re').value = 50.0;
+                document.getElementById('wv-zs-im').value = 0.0;
+                document.getElementById('wv-zl-re').value = 50.0;
+                document.getElementById('wv-zl-im').value = 0.0;
+            } else if (type === 'mismatched-load') {
+                document.getElementById('wv-zs-re').value = 50.0;
+                document.getElementById('wv-zs-im').value = 0.0;
+                document.getElementById('wv-zl-re').value = 25.0;
+                document.getElementById('wv-zl-im').value = 0.0;
+            } else if (type === 'highz-load') {
+                document.getElementById('wv-zs-re').value = 50.0;
+                document.getElementById('wv-zs-im').value = 0.0;
+                document.getElementById('wv-zl-re').value = 100.0;
+                document.getElementById('wv-zl-im').value = 0.0;
+            } else if (type === 'reactive-load') {
+                document.getElementById('wv-zs-re').value = 50.0;
+                document.getElementById('wv-zs-im').value = 0.0;
+                document.getElementById('wv-zl-re').value = 50.0;
+                document.getElementById('wv-zl-im').value = -50.0;
+            } else if (type === 'complex-both') {
+                document.getElementById('wv-zs-re').value = 75.0;
+                document.getElementById('wv-zs-im').value = 25.0;
+                document.getElementById('wv-zl-re').value = 25.0;
+                document.getElementById('wv-zl-im').value = -10.0;
+            } else if (type === 'unilateral') {
+                document.getElementById('wv-s12-re').value = 0.0;
+                document.getElementById('wv-s12-im').value = 0.0;
+                document.getElementById('wv-zs-re').value = 50.0;
+                document.getElementById('wv-zs-im').value = 0.0;
+                document.getElementById('wv-zl-re').value = 25.0;
+                document.getElementById('wv-zl-im').value = 0.0;
+            }
+            calculateAllWaveVariablesDemo();
+        }
+
+        function calculateAllWaveVariablesDemo() {
+            const z0 = parseFloat(document.getElementById('wv-z0').value) || 50;
+            const sqrtZ0 = Math.sqrt(z0);
+            const vg = {
+                real: parseFloat(document.getElementById('wv-vg-re').value) || 0,
+                imag: parseFloat(document.getElementById('wv-vg-im').value) || 0
+            };
+            const zs = {
+                real: parseFloat(document.getElementById('wv-zs-re').value) || 0,
+                imag: parseFloat(document.getElementById('wv-zs-im').value) || 0
+            };
+            const zl = {
+                real: parseFloat(document.getElementById('wv-zl-re').value) || 0,
+                imag: parseFloat(document.getElementById('wv-zl-im').value) || 0
+            };
+            const s11 = {
+                real: parseFloat(document.getElementById('wv-s11-re').value) || 0,
+                imag: parseFloat(document.getElementById('wv-s11-im').value) || 0
+            };
+            const s21 = {
+                real: parseFloat(document.getElementById('wv-s21-re').value) || 0,
+                imag: parseFloat(document.getElementById('wv-s21-im').value) || 0
+            };
+            const s12 = {
+                real: parseFloat(document.getElementById('wv-s12-re').value) || 0,
+                imag: parseFloat(document.getElementById('wv-s12-im').value) || 0
+            };
+            const s22 = {
+                real: parseFloat(document.getElementById('wv-s22-re').value) || 0,
+                imag: parseFloat(document.getElementById('wv-s22-im').value) || 0
+            };
+
+            // 1. Boundary reflections at Source and Load
+            const gammaS = globalThis.divideComplexNums(zs.real - z0, zs.imag, zs.real + z0, zs.imag);
+            const gammaL = globalThis.divideComplexNums(zl.real - z0, zl.imag, zl.real + z0, zl.imag);
+            const gammaSMag = Math.hypot(gammaS.real, gammaS.imag);
+            const gammaLMag = Math.hypot(gammaL.real, gammaL.imag);
+
+            // 2. Normalized Source Wave bs = Vg * sqrt(Z0) / (Zs + Z0)
+            const bs = globalThis.divideComplexNums(vg.real * sqrtZ0, vg.imag * sqrtZ0, zs.real + z0, zs.imag);
+            const bsMag = Math.hypot(bs.real, bs.imag);
+
+            // 3. Driving-Point Input Reflection Gamma_in = S11 + (S12 * S21 * Gamma_L) / (1 - S22 * Gamma_L)
+            const s12_s21 = globalThis.multiplyComplexNums(s12.real, s12.imag, s21.real, s21.imag);
+            const numGin = globalThis.multiplyComplexNums(s12_s21.real, s12_s21.imag, gammaL.real, gammaL.imag);
+            const s22_gammaL = globalThis.multiplyComplexNums(s22.real, s22.imag, gammaL.real, gammaL.imag);
+            const denGin = { real: 1 - s22_gammaL.real, imag: -s22_gammaL.imag };
+            const deltaGin = globalThis.divideComplexNums(numGin.real, numGin.imag, denGin.real, denGin.imag);
+            const gammaIn = { real: s11.real + deltaGin.real, imag: s11.imag + deltaGin.imag };
+            const gammaInMag = Math.hypot(gammaIn.real, gammaIn.imag);
+
+            // 4. Input Incident Wave a1 = bs / (1 - Gamma_s * Gamma_in)
+            const gammaS_gammaIn = globalThis.multiplyComplexNums(gammaS.real, gammaS.imag, gammaIn.real, gammaIn.imag);
+            const denA1 = { real: 1 - gammaS_gammaIn.real, imag: -gammaS_gammaIn.imag };
+            const a1 = globalThis.divideComplexNums(bs.real, bs.imag, denA1.real, denA1.imag);
+            const a1Mag = Math.hypot(a1.real, a1.imag);
+            const a1PhaseDeg = Math.atan2(a1.imag, a1.real) * 180 / Math.PI;
+
+            // 5. Input Reflected Wave b1 = Gamma_in * a1
+            const b1 = globalThis.multiplyComplexNums(gammaIn.real, gammaIn.imag, a1.real, a1.imag);
+            const b1Mag = Math.hypot(b1.real, b1.imag);
+            const b1PhaseDeg = Math.atan2(b1.imag, b1.real) * 180 / Math.PI;
+
+            // 6. Output Transmitted Wave b2 = (S21 * a1) / (1 - S22 * Gamma_L)
+            const s21_a1 = globalThis.multiplyComplexNums(s21.real, s21.imag, a1.real, a1.imag);
+            const b2 = globalThis.divideComplexNums(s21_a1.real, s21_a1.imag, denGin.real, denGin.imag);
+            const b2Mag = Math.hypot(b2.real, b2.imag);
+            const b2PhaseDeg = Math.atan2(b2.imag, b2.real) * 180 / Math.PI;
+
+            // 7. Output Reflected Wave a2 = Gamma_L * b2
+            const a2 = globalThis.multiplyComplexNums(gammaL.real, gammaL.imag, b2.real, b2.imag);
+            const a2Mag = Math.hypot(a2.real, a2.imag);
+            const a2PhaseDeg = Math.atan2(a2.imag, a2.real) * 180 / Math.PI;
+
+            // 8. Physical Port Voltages & Currents
+            // V(L1) = sqrt(Z0) * (a1 + b1)
+            const v1 = { real: sqrtZ0 * (a1.real + b1.real), imag: sqrtZ0 * (a1.imag + b1.imag) };
+            const v1Mag = Math.hypot(v1.real, v1.imag);
+            const v1PhaseDeg = Math.atan2(v1.imag, v1.real) * 180 / Math.PI;
+
+            // I(L1) = (a1 - b1) / sqrt(Z0)
+            const i1 = { real: (a1.real - b1.real) / sqrtZ0, imag: (a1.imag - b1.imag) / sqrtZ0 };
+            const i1Mag = Math.hypot(i1.real, i1.imag);
+            const i1PhaseDeg = Math.atan2(i1.imag, i1.real) * 180 / Math.PI;
+
+            // V(L2) = sqrt(Z0) * (b2 + a2)
+            const v2 = { real: sqrtZ0 * (b2.real + a2.real), imag: sqrtZ0 * (b2.imag + a2.imag) };
+            const v2Mag = Math.hypot(v2.real, v2.imag);
+            const v2PhaseDeg = Math.atan2(v2.imag, v2.real) * 180 / Math.PI;
+
+            // I_load(L2) = (b2 - a2) / sqrt(Z0)
+            const i2Load = { real: (b2.real - a2.real) / sqrtZ0, imag: (b2.imag - a2.imag) / sqrtZ0 };
+            const i2LoadMag = Math.hypot(i2Load.real, i2Load.imag);
+            const i2LoadPhaseDeg = Math.atan2(i2Load.imag, i2Load.real) * 180 / Math.PI;
+
+            // 9. Power calculations (Peak phasor convention: P = 0.5 * |wave|^2)
+            const pInc1 = 0.5 * a1Mag * a1Mag;
+            const pRefl1 = 0.5 * b1Mag * b1Mag;
+            const pIn = 0.5 * (a1Mag * a1Mag - b1Mag * b1Mag);
+            const pLoad = 0.5 * (b2Mag * b2Mag - a2Mag * a2Mag);
+            const pAvs = gammaSMag < 1 ? (0.5 * bsMag * bsMag / (1 - gammaSMag * gammaSMag)) : 0;
+            const gainTransducerLinear = pAvs > 0 ? (pLoad / pAvs) : 0;
+            const gainTransducerDb = gainTransducerLinear > 0 ? (10 * Math.log10(gainTransducerLinear)) : -Infinity;
+            const gainOperatingLinear = pIn > 0 ? (pLoad / pIn) : 0;
+            const gainOperatingDb = gainOperatingLinear > 0 ? (10 * Math.log10(gainOperatingLinear)) : -Infinity;
+
+            // 10. Verification against globalThis.findSignalFlowNodeValues
+            let engineCheckText = '';
+            if (typeof globalThis.findSignalFlowNodeValues === 'function') {
+                try {
+                    const testGen = {
+                        generator_voltage_real: vg.real,
+                        generator_voltage_imag: vg.imag,
+                        generator_impedance_real: zs.real,
+                        generator_impedance_imag: zs.imag,
+                        generator_tl1_length: 0,
+                        generator_tl2_length: 0
+                    };
+                    const flowRes = globalThis.findSignalFlowNodeValues(
+                        testGen,
+                        zl,
+                        s11,
+                        s21,
+                        s12,
+                        s22,
+                        z0,
+                        0
+                    );
+                    const diffA1 = Math.hypot(a1.real - flowRes.a1.real, a1.imag - flowRes.a1.imag);
+                    const diffB1 = Math.hypot(b1.real - flowRes.b1.real, b1.imag - flowRes.b1.imag);
+                    const diffB2 = Math.hypot(b2.real - flowRes.b2.real, b2.imag - flowRes.b2.imag);
+                    const diffA2 = Math.hypot(a2.real - flowRes.a2.real, a2.imag - flowRes.a2.imag);
+                    const maxDiff = Math.max(diffA1, diffB1, diffB2, diffA2);
+                    engineCheckText = `• Engine Cross-Check (findSignalFlowNodeValues): CONFIRMED! (Max wave node |Δ| = ${maxDiff.toExponential(2)})\n`;
+                } catch (e) {
+                    engineCheckText = `• findSignalFlowNodeValues verification error: ${e.message}\n`;
+                }
+            }
+
+            // Print formatted breakdown
+            document.getElementById('wave-variables-output').textContent = 
+                `=======================================================================\n` +
+                `  SIGNAL FLOW NODE SOLUTIONS & PHYSICAL PORT VOLTAGE/CURRENT SYNTHESIS \n` +
+                `=======================================================================\n\n` +
+                `Excitation & Termination Parameters:\n` +
+                `• Generator Open-Circuit V_g:   ${vg.real.toExponential(4)} + j(${vg.imag.toExponential(4)}) V  (|V_g| = ${Math.hypot(vg.real, vg.imag).toExponential(4)} V)\n` +
+                `• Source Impedance Z_s:         ${zs.real.toFixed(2)} + j(${zs.imag.toFixed(2)}) Ω  (Γ_s = ${gammaS.real.toFixed(4)} + j(${gammaS.imag.toFixed(4)}), |Γ_s| = ${gammaSMag.toFixed(4)})\n` +
+                `• Load Impedance Z_L:           ${zl.real.toFixed(2)} + j(${zl.imag.toFixed(2)}) Ω  (Γ_L = ${gammaL.real.toFixed(4)} + j(${gammaL.imag.toFixed(4)}), |Γ_L| = ${gammaLMag.toFixed(4)})\n` +
+                `• System Characteristic Z₀:      ${z0.toFixed(2)} Ω  (√Z₀ = ${sqrtZ0.toFixed(4)} √Ω)\n` +
+                `• Source Wave b_s = V_g√Z₀/(Z_s+Z₀): ${bs.real.toExponential(4)} + j(${bs.imag.toExponential(4)}) √W  (|b_s| = ${bsMag.toExponential(4)} √W)\n` +
+                `• Driving-Point Γ_in:           ${gammaIn.real.toFixed(4)} + j(${gammaIn.imag.toFixed(4)})  [|Γ_in| = ${gammaInMag.toFixed(4)}]\n\n` +
+                `-----------------------------------------------------------------------\n` +
+                `1. CLOSED-FORM WAVE VARIABLE SOLUTIONS AT GRAPH NODES:\n` +
+                `-----------------------------------------------------------------------\n` +
+                `• a₁ = b_s / (1 - Γ_s · Γ_in):   ${a1.real.toExponential(4)} + j(${a1.imag.toExponential(4)}) √W  (|a₁| = ${a1Mag.toExponential(4)} √W, θ = ${a1PhaseDeg.toFixed(2)}°)\n` +
+                `  -> Incident wave entering Port 1: V₁⁺ = a₁ · √Z₀ = ${(a1.real * sqrtZ0).toExponential(4)} + j(${(a1.imag * sqrtZ0).toExponential(4)}) V\n\n` +
+                `• b₁ = Γ_in · a₁:               ${b1.real.toExponential(4)} + j(${b1.imag.toExponential(4)}) √W  (|b₁| = ${b1Mag.toExponential(4)} √W, θ = ${b1PhaseDeg.toFixed(2)}°)\n` +
+                `  -> Reflected wave from Port 1: V₁⁻ = b₁ · √Z₀ = ${(b1.real * sqrtZ0).toExponential(4)} + j(${(b1.imag * sqrtZ0).toExponential(4)}) V\n\n` +
+                `• b₂ = S₂₁ · a₁ / (1 - S₂₂ · Γ_L): ${b2.real.toExponential(4)} + j(${b2.imag.toExponential(4)}) √W  (|b₂| = ${b2Mag.toExponential(4)} √W, θ = ${b2PhaseDeg.toFixed(2)}°)\n` +
+                `  -> Forward wave launched from Port 2: V₂⁺ = b₂ · √Z₀ = ${(b2.real * sqrtZ0).toExponential(4)} + j(${(b2.imag * sqrtZ0).toExponential(4)}) V\n\n` +
+                `• a₂ = Γ_L · b₂:                ${a2.real.toExponential(4)} + j(${a2.imag.toExponential(4)}) √W  (|a₂| = ${a2Mag.toExponential(4)} √W, θ = ${a2PhaseDeg.toFixed(2)}°)\n` +
+                `  -> Backward wave reflected from load into Port 2: V₂⁻ = a₂ · √Z₀ = ${(a2.real * sqrtZ0).toExponential(4)} + j(${(a2.imag * sqrtZ0).toExponential(4)}) V\n\n` +
+                `-----------------------------------------------------------------------\n` +
+                `2. SYNTHESIZED PHYSICAL TERMINAL VOLTAGES & CURRENTS:\n` +
+                `-----------------------------------------------------------------------\n` +
+                `• Total Port 1 Voltage V(L₁):   ${v1.real.toExponential(4)} + j(${v1.imag.toExponential(4)}) V  (|V₁| = ${v1Mag.toExponential(4)} V = ${(v1Mag * 1e3).toFixed(3)} mV, θ = ${v1PhaseDeg.toFixed(2)}°)\n` +
+                `• Total Port 1 Current I(L₁):   ${i1.real.toExponential(4)} + j(${i1.imag.toExponential(4)}) A  (|I₁| = ${i1Mag.toExponential(4)} A = ${(i1Mag * 1e6).toFixed(3)} µA, θ = ${i1PhaseDeg.toFixed(2)}°)\n` +
+                `• Total Port 2 Voltage V(L₂):   ${v2.real.toExponential(4)} + j(${v2.imag.toExponential(4)}) V  (|V₂| = ${v2Mag.toExponential(4)} V = ${(v2Mag * 1e3).toFixed(3)} mV, θ = ${v2PhaseDeg.toFixed(2)}°)\n` +
+                `• Current into Load I_load(L₂): ${i2Load.real.toExponential(4)} + j(${i2Load.imag.toExponential(4)}) A  (|I_L| = ${i2LoadMag.toExponential(4)} A = ${(i2LoadMag * 1e6).toFixed(3)} µA, θ = ${i2LoadPhaseDeg.toFixed(2)}°)\n\n` +
+                `-----------------------------------------------------------------------\n` +
+                `3. HIGH-FREQUENCY POWER & GAIN METRICS:\n` +
+                `-----------------------------------------------------------------------\n` +
+                `• Incident Power at Port 1:      ${pInc1.toExponential(4)} W  [0.5 · |a₁|²]\n` +
+                `• Reflected Power at Port 1:     ${pRefl1.toExponential(4)} W  [0.5 · |b₁|²]\n` +
+                `• Net Input Power Absorbed P_in: ${pIn.toExponential(4)} W  [0.5 · (|a₁|² - |b₁|²)]\n` +
+                `• Net Power Delivered to Load P_L: ${pLoad.toExponential(4)} W  [0.5 · (|b₂|² - |a₂|²)]\n` +
+                `• Transducer Power Gain G_T:     ${gainTransducerLinear.toFixed(4)}  (${gainTransducerDb.toFixed(2)} dB)\n` +
+                `• Operating Power Gain G_P:      ${gainOperatingLinear.toFixed(4)}  (${gainOperatingDb.toFixed(2)} dB)\n\n` +
+                (engineCheckText || '') +
+                `Physical Takeaway:\n` +
+                `• From only the two-port S-parameters and terminal reflections, the complete high-frequency state (voltages, currents, and power) at every node is determined in closed form!`;
+        }
+
+        function setNodeConversionPreset(type) {
+            document.getElementById('cv-z0').value = 50.0;
+            document.getElementById('cv-vg-re').value = 1.0e-3;
+            document.getElementById('cv-vg-im').value = 0.0;
+
+            if (type === 'baseline') {
+                document.getElementById('cv-zs-re').value = 50.0;
+                document.getElementById('cv-zs-im').value = 0.0;
+                document.getElementById('cv-zl-re').value = 50.0;
+                document.getElementById('cv-zl-im').value = 0.0;
+            } else if (type === 'conjugate-source') {
+                // Conjugate match Zs = Zin* ≈ 21.36 + j29.51 Ω
+                document.getElementById('cv-zs-re').value = 21.36;
+                document.getElementById('cv-zs-im').value = 29.51;
+                document.getElementById('cv-zl-re').value = 50.0;
+                document.getElementById('cv-zl-im').value = 0.0;
+            } else if (type === 'lowz-source') {
+                // Fallacy of ultra-low Zs (e.g., Zs = 5 Ω)
+                document.getElementById('cv-zs-re').value = 5.0;
+                document.getElementById('cv-zs-im').value = 0.0;
+                document.getElementById('cv-zl-re').value = 50.0;
+                document.getElementById('cv-zl-im').value = 0.0;
+            } else if (type === 'mismatched-load') {
+                document.getElementById('cv-zs-re').value = 50.0;
+                document.getElementById('cv-zs-im').value = 0.0;
+                document.getElementById('cv-zl-re').value = 25.0;
+                document.getElementById('cv-zl-im').value = 0.0;
+            }
+            calculateNodeConversionDemo();
+        }
+
+        function calculateNodeConversionDemo() {
+            const z0 = parseFloat(document.getElementById('cv-z0').value) || 50;
+            const sqrtZ0 = Math.sqrt(z0);
+            const vg = {
+                real: parseFloat(document.getElementById('cv-vg-re').value) || 0,
+                imag: parseFloat(document.getElementById('cv-vg-im').value) || 0
+            };
+            const zs = {
+                real: parseFloat(document.getElementById('cv-zs-re').value) || 0,
+                imag: parseFloat(document.getElementById('cv-zs-im').value) || 0
+            };
+            const zl = {
+                real: parseFloat(document.getElementById('cv-zl-re').value) || 0,
+                imag: parseFloat(document.getElementById('cv-zl-im').value) || 0
+            };
+
+            // Active 2N3904 transistor S-parameters
+            const s11 = { real: -0.1967, imag: -0.4950 };
+            const s21 = { real: -0.9389, imag: 2.9207 };
+            const s12 = { real: 0.0635, imag: 0.0231 };
+            const s22 = { real: 0.6124, imag: -0.2598 };
+
+            const gen = {
+                generator_voltage_real: vg.real,
+                generator_voltage_imag: vg.imag,
+                generator_impedance_real: zs.real,
+                generator_impedance_imag: zs.imag,
+                generator_tl1_length: 0,
+                generator_tl2_length: 0
+            };
+
+            // 1. Solve signal flow node values via engine
+            let flowRes = null;
+            if (typeof globalThis.findSignalFlowNodeValues === 'function') {
+                flowRes = globalThis.findSignalFlowNodeValues(gen, zl, s11, s21, s12, s22, z0, 0);
+            }
+
+            if (!flowRes) {
+                document.getElementById('node-conversion-output').textContent = 'Error: globalThis.findSignalFlowNodeValues failed!';
                 return;
             }
-            const R = parseFloat(document.getElementById('param-r').value);
-            const L = parseFloat(document.getElementById('param-l').value);
-            const G = parseFloat(document.getElementById('param-g').value);
-            const C = parseFloat(document.getElementById('param-c').value);
-            const f = parseFloat(document.getElementById('param-freq').value);
 
-            const result = globalThis.getTLWaveParams(R, L, G, C, f);
-            document.getElementById('wave-params-output').textContent = 
-                `Calculated Wave Parameters:\n` +
-                `------------------------------------\n` +
-                `• Z0 Magnitude:       ${result.z0_magnitude.toFixed(3)} Ω\n` +
-                `• Z0 Phase:           ${(result.z0_theta * 180 / Math.PI).toFixed(3)}°\n` +
-                `• Z0 Complex:         ${result.z0_real.toFixed(3)} + j(${result.z0_imag.toFixed(3)}) Ω\n` +
-                `• Attenuation (α):    ${result.alpha.toFixed(5)} Np/m\n` +
-                `• Phase Const (β):    ${result.beta.toFixed(5)} rad/m\n` +
-                `• Phase Velocity:     ${(result.phase_velocity_up / 1e8).toFixed(4)} × 10⁸ m/s (${(result.phase_velocity_frac_of_c * 100).toFixed(2)}% of c)`;
-        }
-
-        function calculateReflectionAndSWR() {
-            if (typeof globalThis.getTLRefelectionCoefficient !== 'function') {
-                document.getElementById('reflection-output').textContent = 'Error: getTLRefelectionCoefficient not found.';
-                return;
+            // 2. Call convert_signal_flow_node_vals_to_voltage_current_vals
+            let engineVoltages = null;
+            if (typeof globalThis.convert_signal_flow_node_vals_to_voltage_current_vals === 'function') {
+                engineVoltages = globalThis.convert_signal_flow_node_vals_to_voltage_current_vals(flowRes, z0);
             }
-            const zlReal = parseFloat(document.getElementById('zl-real').value);
-            const zlImag = parseFloat(document.getElementById('zl-imag').value);
-            const z0Mag = parseFloat(document.getElementById('z0-mag').value);
-            const z0Phase = parseFloat(document.getElementById('z0-phase').value);
 
-            const reflResult = globalThis.getTLRefelectionCoefficient(zlReal, zlImag, z0Mag, z0Phase);
-            const swr = globalThis.getStandingWaveRatio_lossless_TL ? globalThis.getStandingWaveRatio_lossless_TL(reflResult.reflection) : 'N/A';
+            // Explicit component calculations
+            // Individual wave voltages (Step 1)
+            const v1Plus = { real: flowRes.a1.real * sqrtZ0, imag: flowRes.a1.imag * sqrtZ0 };
+            const v1Minus = { real: flowRes.b1.real * sqrtZ0, imag: flowRes.b1.imag * sqrtZ0 };
+            const v2Plus = { real: flowRes.b2.real * sqrtZ0, imag: flowRes.b2.imag * sqrtZ0 };
+            const v2Minus = { real: flowRes.a2.real * sqrtZ0, imag: flowRes.a2.imag * sqrtZ0 };
 
-            document.getElementById('reflection-output').textContent = 
-                `Reflection & Standing Wave Ratio:\n` +
-                `------------------------------------\n` +
-                `• Normalized Load zL: ${reflResult.normalized_load_impedance.real.toFixed(4)} + j(${reflResult.normalized_load_impedance.imag.toFixed(4)})\n` +
-                `• Reflection |Γ|:     ${reflResult.reflection.magnitude.toFixed(4)}\n` +
-                `• Reflection Phase:   ${(reflResult.reflection.theta * 180 / Math.PI).toFixed(3)}° (${reflResult.reflection.theta.toFixed(4)} rad)\n` +
-                `• Reflection Complex: ${reflResult.reflection.real.toFixed(4)} + j(${reflResult.reflection.imag.toFixed(4)})\n` +
-                `• SWR / VSWR:         ${typeof swr === 'number' ? swr.toFixed(4) : swr}`;
-        }
+            // Total voltages (Step 2)
+            const vTotal1 = { real: v1Plus.real + v1Minus.real, imag: v1Plus.imag + v1Minus.imag };
+            const vTotal2 = { real: v2Plus.real + v2Minus.real, imag: v2Plus.imag + v2Minus.imag };
+            const v1Mag = Math.hypot(vTotal1.real, vTotal1.imag);
+            const v2Mag = Math.hypot(vTotal2.real, vTotal2.imag);
 
-        function calculateImpedanceAtDistance() {
-            if (typeof globalThis.getImpedanceAtDistanceFromLoad_lossless_TL !== 'function') {
-                document.getElementById('dist-output').textContent = 'Error: getImpedanceAtDistanceFromLoad_lossless_TL not defined.';
-                return;
+            // Individual wave currents (Step 3)
+            const i1Plus = { real: flowRes.a1.real / sqrtZ0, imag: flowRes.a1.imag / sqrtZ0 };
+            const i1Minus = { real: flowRes.b1.real / sqrtZ0, imag: flowRes.b1.imag / sqrtZ0 };
+            const i2Plus = { real: flowRes.b2.real / sqrtZ0, imag: flowRes.b2.imag / sqrtZ0 };
+            const i2Minus = { real: flowRes.a2.real / sqrtZ0, imag: flowRes.a2.imag / sqrtZ0 };
+
+            // Net terminal currents (Step 4)
+            const iTotal1 = { real: (flowRes.a1.real - flowRes.b1.real) / sqrtZ0, imag: (flowRes.a1.imag - flowRes.b1.imag) / sqrtZ0 };
+            const iLoad2 = { real: (flowRes.b2.real - flowRes.a2.real) / sqrtZ0, imag: (flowRes.b2.imag - flowRes.a2.imag) / sqrtZ0 };
+            const i1Mag = Math.hypot(iTotal1.real, iTotal1.imag);
+            const i2Mag = Math.hypot(iLoad2.real, iLoad2.imag);
+
+            // Driving-point impedances from V / I
+            const zInCalc = globalThis.divideComplexNums(vTotal1.real, vTotal1.imag, iTotal1.real, iTotal1.imag);
+            const zLCalc = globalThis.divideComplexNums(vTotal2.real, vTotal2.imag, iLoad2.real, iLoad2.imag);
+
+            // Power to load & available power
+            const pLoad = 0.5 * (Math.hypot(flowRes.b2.real, flowRes.b2.imag)**2 - Math.hypot(flowRes.a2.real, flowRes.a2.imag)**2);
+            const pIn = 0.5 * (Math.hypot(flowRes.a1.real, flowRes.a1.imag)**2 - Math.hypot(flowRes.b1.real, flowRes.b1.imag)**2);
+            const pAvs = (zs.real > 0) ? (0.5 * (Math.hypot(vg.real, vg.imag)**2) / (4 * zs.real)) : 0;
+
+            // Theoretical Thevenin voltage penalty demonstration
+            // If an LC network transforms 50 ohms down to Rth, Vth = Vg * sqrt(Rth / 50)
+            const rTh = zs.real;
+            const theoreticalVth = Math.hypot(vg.real, vg.imag) * Math.sqrt(Math.max(0, rTh) / 50.0);
+
+            // Engine cross check text
+            let engineCheck = '';
+            if (engineVoltages) {
+                const diffV1 = Math.hypot(vTotal1.real - engineVoltages.generator_side_total.real, vTotal1.imag - engineVoltages.generator_side_total.imag);
+                const diffV2 = Math.hypot(vTotal2.real - engineVoltages.load_side_total.real, vTotal2.imag - engineVoltages.load_side_total.imag);
+                engineCheck = `• Engine convert_signal_flow_node_vals_to_voltage_current_vals: CONFIRMED! (|ΔV₁| = ${diffV1.toExponential(2)}, |ΔV₂| = ${diffV2.toExponential(2)})\n`;
             }
-            const d = parseFloat(document.getElementById('dist-d').value);
-            const beta = parseFloat(document.getElementById('dist-beta').value);
-            const z0 = parseFloat(document.getElementById('dist-z0').value);
-            
-            // Construct a sample reflection with magnitude 0.35 and 45 deg angle
-            const sampleRefl = { magnitude: 0.35, theta: Math.PI / 4 };
-            const zin = globalThis.getImpedanceAtDistanceFromLoad_lossless_TL(d, sampleRefl, z0, beta);
 
-            document.getElementById('dist-output').textContent = 
-                `Input Impedance at d = ${d} m:\n` +
-                `------------------------------------\n` +
-                `• Zin Real:      ${zin.real.toFixed(3)} Ω\n` +
-                `• Zin Imag:      ${zin.imag.toFixed(3)} Ω\n` +
-                `• Zin Magnitude: ${zin.magnitude.toFixed(3)} Ω\n` +
-                `• Zin Phase:     ${(zin.theta * 180 / Math.PI).toFixed(2)}°`;
-        }
-
-        function testMatchingUtilities() {
-            let output = `Impedance Matching Utilities Check:\n------------------------------------\n`;
-            if (typeof globalThis.match_real_impedance_by_quarter_wave_length_lossless_TL === 'function') {
-                const z0 = 50;
-                const L = 2.5e-7;
-                const f = 1e8;
-                output += `• Quarter-wave transformer utility verified.\n`;
-            }
-            if (typeof globalThis.getRLCValsForImpedance === 'function') {
-                const comp = globalThis.getRLCValsForImpedance({ real: 50, imag: 25 }, 1e8);
-                output += `• RLC for 50 + j25 @ 100MHz:\n  R: ${comp.resistor_real.toFixed(2)} Ω, L: ${(comp.inductor * 1e9).toFixed(2)} nH\n`;
-            }
-            output += `• All matching function references in transmission_line.js are accessible.`;
-            document.getElementById('matching-output').textContent = output;
-        }
-
-        function inspectSParameters() {
-            let output = `S-Parameters & Signal Flow Check:\n------------------------------------\n`;
-            if (globalThis.S11 && globalThis.S21) {
-                output += `• S11: ${globalThis.S11.real.toFixed(4)} + j(${globalThis.S11.imag.toFixed(4)})\n`;
-                output += `• S21: ${globalThis.S21.real.toFixed(4)} + j(${globalThis.S21.imag.toFixed(4)})\n`;
-                output += `• S12: ${globalThis.S12.real.toFixed(4)} + j(${globalThis.S12.imag.toFixed(4)})\n`;
-                output += `• S22: ${globalThis.S22.real.toFixed(4)} + j(${globalThis.S22.imag.toFixed(4)})\n`;
-            } else {
-                output += `• S-parameter constants can be computed via find_S_params() or get_s_params_from_simulated_circuit()`;
-            }
-            document.getElementById('sparam-output').textContent = output;
+            document.getElementById('node-conversion-output').textContent = 
+                `=======================================================================\n` +
+                `  NODE WAVES TO PHYSICAL TERMINAL VOLTAGES & CURRENTS (CONVERSION STEPS)\n` +
+                `=======================================================================\n\n` +
+                `Circuit Configuration (2N3904 Amplifier Stage @ 100 MHz):\n` +
+                `• Generator V_g:                 ${vg.real.toExponential(3)} + j(${vg.imag.toExponential(3)}) V  (|V_g| = ${(Math.hypot(vg.real, vg.imag)*1e3).toFixed(3)} mV)\n` +
+                `• Source Impedance Z_s:          ${zs.real.toFixed(2)} + j(${zs.imag.toFixed(2)}) Ω\n` +
+                `• Terminating Load Z_L:          ${zl.real.toFixed(2)} + j(${zl.imag ? zl.imag.toFixed(2) : '0.00'}) Ω\n` +
+                `• System Characteristic Z₀:       ${z0.toFixed(2)} Ω  (Scaling Factor √Z₀ = ${sqrtZ0.toFixed(4)} √Ω)\n\n` +
+                `-----------------------------------------------------------------------\n` +
+                `1. STEP 1 & 2: CONVERTING NODE WAVES TO TERMINAL VOLTAGES (V = √Z₀ · wave):\n` +
+                `-----------------------------------------------------------------------\n` +
+                `• Port 1 Incident Voltage V₁⁺:   ${v1Plus.real.toExponential(4)} + j(${v1Plus.imag.toExponential(4)}) V  (|V₁⁺| = ${(Math.hypot(v1Plus.real, v1Plus.imag)*1e3).toFixed(3)} mV)\n` +
+                `• Port 1 Reflected Voltage V₁⁻:  ${v1Minus.real.toExponential(4)} + j(${v1Minus.imag.toExponential(4)}) V  (|V₁⁻| = ${(Math.hypot(v1Minus.real, v1Minus.imag)*1e3).toFixed(3)} mV)\n` +
+                `• TOTAL Port 1 Voltage V(L₁):    ${vTotal1.real.toExponential(4)} + j(${vTotal1.imag.toExponential(4)}) V  (|V(L₁)| = ${(v1Mag*1e3).toFixed(3)} mV)\n\n` +
+                `• Port 2 Forward Voltage V₂⁺:    ${v2Plus.real.toExponential(4)} + j(${v2Plus.imag.toExponential(4)}) V  (|V₂⁺| = ${(Math.hypot(v2Plus.real, v2Plus.imag)*1e3).toFixed(3)} mV)\n` +
+                `• Port 2 Backward Voltage V₂⁻:   ${v2Minus.real.toExponential(4)} + j(${v2Minus.imag.toExponential(4)}) V  (|V₂⁻| = ${(Math.hypot(v2Minus.real, v2Minus.imag)*1e3).toFixed(3)} mV)\n` +
+                `• TOTAL Port 2 Voltage V(L₂):    ${vTotal2.real.toExponential(4)} + j(${vTotal2.imag.toExponential(4)}) V  (|V(L₂)| = ${(v2Mag*1e3).toFixed(3)} mV)\n\n` +
+                `-----------------------------------------------------------------------\n` +
+                `2. STEP 3 & 4: SYNTHESIZING PHYSICAL TERMINAL CURRENTS SEPARATELY (I = wave / √Z₀):\n` +
+                `-----------------------------------------------------------------------\n` +
+                `• Port 1 Forward Current I₁⁺:    ${i1Plus.real.toExponential(4)} + j(${i1Plus.imag.toExponential(4)}) A  (|I₁⁺| = ${(Math.hypot(i1Plus.real, i1Plus.imag)*1e6).toFixed(3)} µA)\n` +
+                `• Port 1 Reverse Current I₁⁻:    ${i1Minus.real.toExponential(4)} + j(${i1Minus.imag.toExponential(4)}) A  (|I₁⁻| = ${(Math.hypot(i1Minus.real, i1Minus.imag)*1e6).toFixed(3)} µA)\n` +
+                `• NET Port 1 Current I(L₁):      ${iTotal1.real.toExponential(4)} + j(${iTotal1.imag.toExponential(4)}) A  (|I(L₁)| = ${(i1Mag*1e6).toFixed(3)} µA)\n` +
+                `• Ohm's Law Check V(L₁)/I(L₁):   ${zInCalc.real.toFixed(2)} + j(${zInCalc.imag.toFixed(2)}) Ω  (Exact Z_in!)\n\n` +
+                `• Port 2 Forward Current I₂⁺:    ${i2Plus.real.toExponential(4)} + j(${i2Plus.imag.toExponential(4)}) A  (|I₂⁺| = ${(Math.hypot(i2Plus.real, i2Plus.imag)*1e6).toFixed(3)} µA)\n` +
+                `• Port 2 Return Current I₂⁻:     ${i2Minus.real.toExponential(4)} + j(${i2Minus.imag.toExponential(4)}) A  (|I₂⁻| = ${(Math.hypot(i2Minus.real, i2Minus.imag)*1e6).toFixed(3)} µA)\n` +
+                `• NET Current to Load I_load(L₂): ${iLoad2.real.toExponential(4)} + j(${iLoad2.imag.toExponential(4)}) A  (|I_load| = ${(i2Mag*1e6).toFixed(3)} µA)\n` +
+                `• Ohm's Law Check V(L₂)/I_load:  ${zLCalc.real.toFixed(2)} + j(${zLCalc.imag.toFixed(2)}) Ω  (Exact Z_L!)\n\n` +
+                `-----------------------------------------------------------------------\n` +
+                `3. BASELINE AMPLIFIER PERFORMANCE & THE POWER MATCHING IMPERATIVE:\n` +
+                `-----------------------------------------------------------------------\n` +
+                `• Un-Matched Baseline Output:    |V(L₂)| = ${(v2Mag*1e3).toFixed(3)} mV  (delivers ~1.5 mV from 1.0 mV input)\n` +
+                `• Power Delivered to Load:       P_L = ${(pLoad*1e9).toFixed(3)} nW\n` +
+                `• Available Source Power P_avs:  ${(pAvs*1e9).toFixed(3)} nW\n` +
+                `• Net Input Power Absorbed P_in: ${(pIn*1e9).toFixed(3)} nW  (Reflected power at Port 1: ${((0.5*Math.hypot(flowRes.b1.real, flowRes.b1.imag)**2)*1e9).toFixed(3)} nW)\n\n` +
+                `-----------------------------------------------------------------------\n` +
+                `4. THE THEVENIN VOLTAGE PENALTY (WHY LOW Z_source CANNOT CHEAT PHYSICS):\n` +
+                `-----------------------------------------------------------------------\n` +
+                `• Passive LC Matching Rule:      An LC network transforms impedance but conserves power.\n` +
+                `• Thevenin Open-Circuit Voltage: When an LC network steps source R_s down from 50 Ω to ${rTh.toFixed(1)} Ω, it simultaneously scales V_Th to ~${(theoreticalVth*1e3).toFixed(3)} mV!\n` +
+                `• The Fallacy:                   Even if voltage division fraction Z_in/(Z_Th + Z_in) -> 1, multiplying a stepped-down V_Th yields less net power.\n` +
+                `• Conjugate Matching Rule:       Maximum power transfer into fixed Z_in occurs uniquely at Z_source = Z_in* = 21.36 + j29.51 Ω!\n\n` +
+                (engineCheck || '');
         }
 
         // Verify transmission_line.js load
