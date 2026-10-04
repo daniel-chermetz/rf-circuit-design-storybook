@@ -127,8 +127,6 @@ globalThis.getTLRefelectionCoefficient = (load_impedance_zl_real, load_impedance
 		reflection_denominator_real,
 		reflection_denominator_imag
 	);
-	// console.log('reflection_length: ', reflection.magnitude);
-	// console.log('reflection_theta: ', reflection.theta * 180 / Math.PI);
 
 	return {
 		normalized_load_impedance,
@@ -162,9 +160,6 @@ globalThis.getImpedanceAtDistanceFromLoad_lossless_TL = (distance, reflection, z
 		real: impedance_to_z0_ratio_at_distance.real * z0_magnitude,
 		imag: impedance_to_z0_ratio_at_distance.imag * z0_magnitude
 	}
-
-	// console.log('distance: ', distance);
-	// console.log('impedance_at_distance', impedance_at_distance);
 
 	return impedance_at_distance;
 }
@@ -211,7 +206,6 @@ globalThis.get_generator_related_values_lossless_TL = (
 		v0plus_ratio.v_to_v0plus_ratio_real,
 		v0plus_ratio.v_to_v0plus_ratio_imag
 	);
-	// console.log('v0_plus: ', v0_plus);
 
 	return v0_plus;
 }
@@ -299,7 +293,6 @@ globalThis.get_swr_circle_lossless_TL = (reflection, v0_plus, standing_wave_rati
 		console.log('confirmed!');
 	}
 	
-	// console.log(constant_swr_circle);
 	return constant_swr_circle;
 }
 
@@ -366,9 +359,6 @@ globalThis.match_impedance_by_quarter_wave_length_plus_reactance_cancelling_segm
 }
 
 globalThis.match_impedance_by_series_reactive_element_lossless_TL = (reflection, z0_magnitude, beta, frequency) => {
-	// 1 - 2 * reflection.magnitude * cos(reflection.theta) + reflection.magnitude^2 = 1 - reflection.magnitude^2
-	// cos(reflection.theta) = reflection.magnitude
-
 	const reflection_theta_real_z0 = Math.acos(reflection.magnitude);
 	const reflection_theta_2_real_z0 = -reflection_theta_real_z0;
 
@@ -409,15 +399,11 @@ globalThis.match_impedance_by_series_reactive_element_lossless_TL = (reflection,
 		}
 	});
 
-	// console.log(impedance_matching_series_options);
 	return impedance_matching_series_options;
 }
 
 globalThis.match_impedance_by_shunt_reactive_element_lossless_TL = (reflection, z0_magnitude, beta, frequency) => {
 	const wave_length = 2 * Math.PI / beta;
-
-	// 1 - 2 * reflection.magnitude * cos(reflection.theta) + reflection.magnitude^2 = 1 - reflection.magnitude^2
-	// cos(reflection.theta) = reflection.magnitude
 
 	const reflection_theta_real_z0 = Math.acos(reflection.magnitude);
 	const reflection_theta_2_real_z0 = -reflection_theta_real_z0;
@@ -477,7 +463,6 @@ globalThis.match_impedance_by_shunt_reactive_element_lossless_TL = (reflection, 
 		}
 	});
 
-	// console.log(impedance_matching_shunt_options);
 	return impedance_matching_shunt_options;
 }
 
@@ -515,35 +500,45 @@ globalThis.find_thevenin_equivalent_circuit = (generator, reflection, z0_magnitu
 
 	// open circuited voltage
 
-	const openCircuitedReflection = {
-		magnitude: 1,
-		theta: 0,
-		real: 1,
-		imag: 0
+	let tl1_and_generator_equivalent;
+	if (tl1_length === 0) {
+		tl1_and_generator_equivalent = {
+			z_real: generator.generator_impedance_real,
+			z_imag: generator.generator_impedance_imag,
+			voltage_real: generator.generator_voltage_real,
+			voltage_imag: generator.generator_voltage_imag
+		};
+	} else {
+		const openCircuitedReflection = {
+			magnitude: 1,
+			theta: 0,
+			real: 1,
+			imag: 0
+		};
+
+		const v0_plus = get_generator_related_values_lossless_TL(
+			tl1_length, 
+			generator.generator_voltage_real, 
+			generator.generator_voltage_imag, 
+			generator.generator_impedance_real, 
+			generator.generator_impedance_imag,
+			openCircuitedReflection,
+			z0_magnitude,
+			beta
+		);
+		// console.log('v0_plus:', v0_plus);
+
+		// distance is zero as the distance is defined from load towards generator, and zero is the load
+		const ratio = get_voltage_as_v0plus_ratio_at_distance_from_load_lossless_TL(0, openCircuitedReflection, beta);
+		// console.log('v_v0plus_ratio_at_load_end_of_tl1: ', ratio);
+		
+		tl1_and_generator_equivalent = {
+			z_real: z_looking_into_tl1_towards_generator.real,
+			z_imag: z_looking_into_tl1_towards_generator.imag,
+			voltage_real: (v0_plus.real * ratio.v_to_v0plus_ratio_real - v0_plus.imag * ratio.v_to_v0plus_ratio_imag),
+			voltage_imag: (v0_plus.real * ratio.v_to_v0plus_ratio_imag + v0_plus.imag * ratio.v_to_v0plus_ratio_real)
+		};
 	}
-
-	const v0_plus = get_generator_related_values_lossless_TL(
-		tl1_length, 
-		generator.generator_voltage_real, 
-		generator.generator_voltage_imag, 
-		generator.generator_impedance_real, 
-		generator.generator_impedance_imag,
-		openCircuitedReflection,
-		z0_magnitude,
-		beta
-	);
-	// console.log('v0_plus:', v0_plus);
-
-	// distance is zero as the distance is defined from load towards generator, and zero is the load
-	const ratio = get_voltage_as_v0plus_ratio_at_distance_from_load_lossless_TL(0, openCircuitedReflection, beta);
-	// console.log('v_v0plus_ratio_at_load_end_of_tl1: ', ratio);
-	
-	const tl1_and_generator_equivalent = {
-		z_real: z_looking_into_tl1_towards_generator.real,
-		z_imag: z_looking_into_tl1_towards_generator.imag,
-		voltage_real: (v0_plus.real * ratio.v_to_v0plus_ratio_real - v0_plus.imag * ratio.v_to_v0plus_ratio_imag),
-		voltage_imag: (v0_plus.real * ratio.v_to_v0plus_ratio_imag + v0_plus.imag * ratio.v_to_v0plus_ratio_real)
-	};
 	// console.log('tl1_and_generator_equivalent:', tl1_and_generator_equivalent);
 
 	return {
@@ -809,12 +804,12 @@ globalThis.findSignalFlowNodeValues = (generator, load, S11, S21, S12, S22, z0_m
 	const tl1_length = generator.generator_tl1_length;
 	const tl2_length = generator.generator_tl2_length;
 
-	// gamma_in = b1 / a1 (load matched with TL2)
+	// gamma_in = b1 / a1 (only when load matched with TL2)
 	
-	// b2 = S21 * a1 + S22 * a2
 	// b2 * gamma_l = a2
 	// b2 = a2 / gamma_l
 	
+	// b2 = S21 * a1 + S22 * a2	
 	// a2 / gamma_l = S21 * a1 + S22 * a2
 	// a2 * (1/gamma_l - S22) = S21 * a1
 	// a2 = S21 * a1 / (1/gamma_l - S22)
@@ -851,7 +846,7 @@ globalThis.findSignalFlowNodeValues = (generator, load, S11, S21, S12, S22, z0_m
 	);
 	console.log('gamma_in_b1_to_a1_ratio', gamma_in_b1_to_a1_ratio);
 
-	// gamma_out = b2 / a2 (source zeroed, but Zs in place)
+	// gamma_out = b2 / a2 (only when matched Zs in place)
 	
 	// b1 = S12 * a2 + S11 * a1
 	// b1 * gamma_s = a1
@@ -891,17 +886,16 @@ globalThis.findSignalFlowNodeValues = (generator, load, S11, S21, S12, S22, z0_m
 	);
 	console.log('gamma_out_b2_to_a2_ratio', gamma_out_b2_to_a2_ratio);
 
-	// what the source sends in - without consideration as to what comes back (which is considered by the other terms)
+	// what voltage a Thevenin source sends into a Z0 impedance in series with Zth
+	const thevenin_res = find_thevenin_equivalent_circuit(generator, 1, z0_magnitude, beta);
+	const tl1_and_generator_equivalent = thevenin_res.tl1_and_generator_equivalent;
 	const bs = divideComplexNums(
-		source_voltage.real * Math.sqrt(z0_magnitude),
-		source_voltage.imag * Math.sqrt(z0_magnitude),
-		source_impedance.real + z0_magnitude,
-		source_impedance.imag
+		tl1_and_generator_equivalent.voltage_real * Math.sqrt(z0_magnitude),
+		tl1_and_generator_equivalent.voltage_imag * Math.sqrt(z0_magnitude),
+		tl1_and_generator_equivalent.z_real + z0_magnitude,
+		tl1_and_generator_equivalent.z_imag
 	);
-	const bs_at_tl1_length = convert_complex_num_from_polar_to_cartesian(
-		bs.magnitude,
-		bs.theta - tl1_length * beta
-	);
+	const bs_at_tl1_length = bs;
 
 	// a1 = bs + gamma_s * b1
 	// b1 / a1 = gamma_in
@@ -1241,7 +1235,6 @@ globalThis.find_LC_components_to_obtain_target_impedance = (target_impedance, fi
 	// G * R^2 + G * x1^2 = R
 	// x1^2 = (R - G * R^2) / G
 	let sqrtArg = (fixed_resistor - G * R_squared) / G;
-	console.log('sqrtArg', sqrtArg);
 
 	if (sqrtArg < 0) {
 		x1 = 0;
@@ -1259,7 +1252,8 @@ globalThis.find_LC_components_to_obtain_target_impedance = (target_impedance, fi
 		matching_reactive_comp_1,
 		reactance_2: x2,
 		matching_reactive_comp_2,
-		note: 'x1 in series with generator / load impedance and x2 in parallel after (generator case) or before (load case)'
+		note: 'x1 in series with generator / load impedance and x2 in parallel after (generator case) or before (load case)',
+		...(sqrtArg < 0 ? {note_2: 'approximate solution as not real solution available'} : {})		
 	});
 
 	if (sqrtArg > 0) {
@@ -1281,14 +1275,229 @@ globalThis.find_LC_components_to_obtain_target_impedance = (target_impedance, fi
 	return matching_components;
 }
 
-globalThis.find_bilateral_match_numerically = (generator, load, S11, S21, S12, S22, frequency, z0_magnitude, beta) => {
+globalThis.find_series_parallel_LC_components_to_obtain_target_impedance_V2 = (target_impedance, fixed_impedance, frequency) => {
+	// L network with first (right after the fixed Zsource) the series component and then the parallel one
+
+	/* 
+		series impedance: Rs + j * Xs
+	 	parallel impedance: j * Xp
+		both are in parallel looking from the port towards the generator
+		Admittance of parallel branches is a sum: Y = 1 / (Rs + j * Xs) + 1 / (j * Xp)
+		It can be shown that (can be verified numerically for one thing):
+		1 / (Rs + j * Xs) = (Rs - j * Xs) / (Rs^2 + Xs^2)
+		and
+		1 / (j * Xp) = -j / Xp (because 1 / j = -j)
+		Thus Yt:
+		Yt = Rs / (Rs^2 + Xs^2) - j * (Xs / (Rs^2 + Xs^2) + 1 / Xp)
+		
+		// The only unknowns are Xs and Xp
+		G = Rs / (Rs^2 + Xs^2)
+		
+		// Solving for Xs:
+		G * (Rs^2 + Xs^2) = Rs
+		G * Xs^2 = Rs - G * Rs^2
+		
+		Xs^2 = (Rs - G * Rs^2) / G,
+		Xs = +/- sqrt((Rs - G * Rs^2) / G)
+		Xs = fixed_impedance.imag + seriesImpedance.imag
+		seriesImpedance.imag = Xs - fixed_impedance.imag
+
+		Now G is the real part of the target admittance ((1 / target_impedance).real),
+		And once more it can be shown that 1 / (Rtarget + j * Xtarget) = (Rtarget - j * Xtarget) / (Rtarget^2 + Xtarget^2),
+		Leaving the real part as: Rtarget / (Rtarget^2 + Xtarget^2)
+
+		// Solving for Xp:
+		-(Xs / (Rs^2 + Xs^2) + 1 / Xp) = B (the imag part of the target admittance) = -Xtarget / (Rtarget^2 + Xtarget^2)
+		-1/Xp = -Xtarget / (Rtarget^2 + Xtarget^2) + Xs / (Rs^2 + Xs^2)
+		Xp = -1 * (1 / (-Xtarget / (Rtarget^2 + Xtarget^2) + Xs / (Rs^2 + Xs^2)))
+	*/
+
+	const R_squared = fixed_impedance.real * fixed_impedance.real;
+	const denominator = (target_impedance.real * target_impedance.real + target_impedance.imag * target_impedance.imag);
+	const G = target_impedance.real / denominator;
+	const B = -target_impedance.imag / denominator;
+
+	const matching_components = [];
+
+	let x1 = 0;
+	let x2 = 0;
+
+	let sqrtArg = (fixed_impedance.real - G * R_squared) / G;
+	console.log('sqrtArg', sqrtArg);
+
+	if (sqrtArg < 0) {
+		x1 = 0;
+		x2 = -1 / B;
+	} else {
+		x1 = Math.sqrt(sqrtArg);
+		x2 = 1 / (-B - x1 / (R_squared + x1 * x1));
+	}
+
+	let matching_reactive_comp_1 = getRLCValsForImpedance({real: 0, imag: (x1 - fixed_impedance.imag)}, frequency);
+	let matching_reactive_comp_2 = getRLCValsForImpedance({real: 0, imag: x2}, frequency);
+
+	matching_components.push({
+		reactance_1: x1 - fixed_impedance.imag,
+		matching_reactive_comp_1,
+		reactance_2: x2,
+		matching_reactive_comp_2,
+		note: 'x1 in series with generator / load impedance and x2 in parallel after (generator case) or before (load case)',
+		...(sqrtArg < 0 ? {note_2: 'approximate solution as not real solution available'} : {})
+	});
+
+	if (sqrtArg > 0) {
+		x1 = -x1;
+		x2 = 1 / (-B - x1 / (R_squared + x1 * x1));
+
+		matching_reactive_comp_1 = getRLCValsForImpedance({real: 0, imag: (x1 - fixed_impedance.imag)}, frequency);
+		matching_reactive_comp_2 = getRLCValsForImpedance({real: 0, imag: x2}, frequency);
+
+		matching_components.push({
+			reactance_1: x1 - fixed_impedance.imag,
+			matching_reactive_comp_1,
+			reactance_2: x2,
+			matching_reactive_comp_2,
+			note: 'x1 in series with generator / load impedance and x2 in parallel after (generator case) or before (load case)'
+		});
+	}
+
+	return matching_components;
+}
+
+globalThis.find_parallel_series_LC_components_to_obtain_target_impedance = (target_impedance, fixed_impedance, frequency) => {
+	// L network with first (right after the fixed Zsource) the parallel component and then the series one
+	// This is also a T network if we add a chosen impedance in series with the fixed impedance
+
+	/* 
+		fixed series impedance: Rfixed + j * Xfixed
+	 	parallel impedance: j * Xp
+		series impedance: j * Xs
+
+		Yfixed_and_parallel = 1 / (Rfixed + j * Xfixed) + 1 / (j * Xp)
+		Yfixed_and_parallel = Rfixed / (Rfixed^2 + Xfixed^2) - j * (Xfixed / (Rfixed^2 + Xfixed^2) + 1 / Xp)
+		
+		Rfixed / (Rfixed^2 + Xfixed^2) = Gtarget = Rtarget / (Rtarget^2 + Xtarget^2)
+
+		But then I'm not allowed to have any variable to control G at this point
+
+		We conclude:
+		In general: Gfixed_parallel != Gtarget
+		and Xp cannot change Gfixed_parallel, because its admittance is purely imaginary.
+
+		That's OK: because Yfixed_and_parallel || -j/Xs would let us control real part of G.
+		Should we then (Yfixed_and_parallel * (-j/Xs)) / (Yfixed_and_parallel -j/Xs)
+		
+		This seems like a lot of work, so let's try a different path
+
+		Instead we can continue by converting Yfixed_and_parallel to impedance:
+		Zfixed_and_parallel = 1 / Yfixed_and_parallel
+
+		It can be shown (and can be verified numerically):
+		Z = G / (G^2 + B^2) - j * B / (G^2 + B^2)
+
+		Zfixed_and_parallel.real = (Rfixed / (Rfixed^2 + Xfixed^2)) / ((Rfixed / (Rfixed^2 + Xfixed^2))^2 + (Xfixed / (Rfixed^2 + Xfixed^2) + 1 / Xp)^2)
+
+		G = Rfixed / (Rfixed^2 + Xfixed^2)
+		Define partB as: Xfixed / (Rfixed^2 + Xfixed^2)
+
+		G / (G^2 + partB^2 + 2 * partB / Xp + 1 / Xp^2) = target_impedance.real
+		G = (G^2 + partB^2 + 2 * partB / Xp + 1 / Xp^2) * target_impedance.real
+		G - target_impedance.real * G^2 - partB^2 * target_impedance.real = 2 * partB * target_impedance.real / Xp + target_impedance.real / Xp^2
+		(G - target_impedance.real * G^2 - partB^2 * target_impedance.real) * Xp^2 - 2 * partB * target_impedance.real * Xp - target_impedance.real = 0
+
+		This is a quadric equation of the form:
+		a * Xp^2 + b * Xp + c = 0
+		with a, b, c known real numbers
+
+		Xp = (-b +/- sqrt(b^2 - 4ac))/2a
+		
+		Then with Xp known is the reactance: -B / (G^2 + B^2)
+		-B / (G^2 + B^2) + Xs = target_impedance.imag
+	*/
+
+	const R_squared = fixed_impedance.real * fixed_impedance.real;
+	const X_squared = fixed_impedance.imag * fixed_impedance.imag;
+
+	const G = fixed_impedance.real / (R_squared + X_squared);
+	const part_of_B = fixed_impedance.imag / (R_squared + X_squared);
+
+	const a = G - target_impedance.real * G * G - part_of_B * part_of_B * target_impedance.real;
+	const b = -2 * part_of_B * target_impedance.real;
+	const c = -target_impedance.real;
+
+	if ((b * b - 4 * a * c) < 0) {
+		return [{
+			note: 'no solution with negative discriminant',
+			error: true
+		}];
+	}
+
+	const Xp_1 = (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a);
+	const B_1 = -(fixed_impedance.imag / (R_squared + X_squared) + 1 / Xp_1);
+	const Xs_1 = target_impedance.imag + B_1 / (G * G + B_1 * B_1);
+
+	const Xp_2 = (-b - Math.sqrt(b * b - 4 * a * c)) / (2 * a);
+	const B_2 = -(fixed_impedance.imag / (R_squared + X_squared) + 1 / Xp_2);
+	const Xs_2 = target_impedance.imag + B_2 / (G * G + B_2 * B_2);	
+
+	const matching_components = [];
+
+	let matching_reactive_comp_1 = getRLCValsForImpedance({real: 0, imag: Xp_1}, frequency);
+	let matching_reactive_comp_2 = getRLCValsForImpedance({real: 0, imag: Xs_1}, frequency);
+
+	matching_components.push({
+		reactance_1: Xp_1,
+		matching_reactive_comp_1,
+		reactance_2: Xs_1,
+		matching_reactive_comp_2,
+		note: 'x1 in parallel with generator / load impedance and x2 in series after (generator case) or before (load case)'
+	});
+
+	matching_reactive_comp_1 = getRLCValsForImpedance({real: 0, imag: Xp_2}, frequency);
+	matching_reactive_comp_2 = getRLCValsForImpedance({real: 0, imag: Xs_2}, frequency);
+
+	matching_components.push({
+		reactance_1: Xp_2,
+		matching_reactive_comp_1,
+		reactance_2: Xs_2,
+		matching_reactive_comp_2,
+		note: 'x1 in parallel with generator / load impedance and x2 in series after (generator case) or before (load case)'
+	});
+
+	return matching_components;
+}
+
+globalThis.getInductorReactanceByFrequency = (inductance, frequency) => {
+	return (2 * Math.PI * frequency * inductance);
+}
+
+globalThis.getCapacitorReactanceByFrequency = (capacitor, frequency) => {
+	return 1 / (2 * Math.PI * frequency * capacitor);
+}
+
+globalThis.get_impedance_for_RLC_value = (RLC, frequency) => {
+	let reactance = 0;
+	if (RLC.inductor) {
+		reactance += getInductorReactanceByFrequency(RLC.inductor, frequency);
+	}
+	if (RLC.capacitor) {
+		reactance -= getCapacitorReactanceByFrequency(RLC.capacitor, frequency);		
+	}
+
+	return {
+		real: RLC.resistor ? RLC.resistor : 0,
+		imag: reactance
+	}
+}
+
+globalThis.find_bilateral_match_numerically = (generator, load, S11, S21, S12, S22, return_port_LC_components, frequency, z0_magnitude, beta) => {
 	const generator_with_evolving_impedance = Object.assign({}, generator);
 	const load_with_evolving_impedance = Object.assign({}, load);
 
 	let matching_impedance_generator_side; 
 	let matching_impedance_load_side;
 
-	for (let i = 0; i < 100; i++) {
+	for (let i = 0; i < 1000; i++) {
 		const signalFlowVals = findSignalFlowNodeValues(
 			generator_with_evolving_impedance,
 			load_with_evolving_impedance,
@@ -1304,25 +1513,259 @@ globalThis.find_bilateral_match_numerically = (generator, load, S11, S21, S12, S
 		matching_impedance_load_side = match_gammaOut_at_load(signalFlowVals, generator, frequency, z0_magnitude, beta);
 
 		const new_generator_z = matching_impedance_generator_side.conjugate_impedance_at_generator;
-		generator_with_evolving_impedance.generator_impedance_real = new_generator_z.real;
-		generator_with_evolving_impedance.generator_impedance_imag = new_generator_z.imag;
-
 		const new_load_z = matching_impedance_load_side.conjugate_impedance_at_load;
-		load_with_evolving_impedance.real = new_load_z.real;
-		load_with_evolving_impedance.imag = new_load_z.imag;
+
+		generator_with_evolving_impedance.generator_impedance_real += 0.01 * (new_generator_z.real - generator_with_evolving_impedance.generator_impedance_real);
+		generator_with_evolving_impedance.generator_impedance_imag += 0.01 * (new_generator_z.imag - generator_with_evolving_impedance.generator_impedance_imag);
+
+		load_with_evolving_impedance.real += 0.01 * (new_load_z.real - load_with_evolving_impedance.real);
+		load_with_evolving_impedance.imag += 0.01 * (new_load_z.imag - load_with_evolving_impedance.imag);
 	}
 
-	console.log('generator_with_evolving_impedance', generator_with_evolving_impedance);
-	console.log('load_with_evolving_impedance', load_with_evolving_impedance);
-
+	const matching_LC_components_generator_side = find_LC_components_to_obtain_target_impedance(
+		return_port_LC_components ? matching_impedance_generator_side.conjugate_impedance_at_tl1_length : matching_impedance_generator_side.conjugate_impedance_at_generator, 
+		generator.generator_impedance_real, 
+		frequency
+	);
+	const matching_LC_components_generator_side_v2 = find_series_parallel_LC_components_to_obtain_target_impedance_V2(
+		return_port_LC_components ? matching_impedance_generator_side.conjugate_impedance_at_tl1_length : matching_impedance_generator_side.conjugate_impedance_at_generator, 
+		{real: generator.generator_impedance_real, imag: generator.generator_impedance_imag},
+		frequency
+	);
+	const matching_T_config_LC_components_generator_side = find_parallel_series_LC_components_to_obtain_target_impedance(
+		return_port_LC_components ? matching_impedance_generator_side.conjugate_impedance_at_tl1_length : matching_impedance_generator_side.conjugate_impedance_at_generator,
+		{real: generator.generator_impedance_real, imag: generator.generator_impedance_imag},
+		frequency
+	);
 	console.log('matching_impedance_generator_side', matching_impedance_generator_side);
-	console.log('generator.generator_impedance_real', generator.generator_impedance_real);
-	console.log('frequency', frequency);
-	const matching_LC_components_generator_side = find_LC_components_to_obtain_target_impedance(matching_impedance_generator_side.conjugate_impedance_at_tl1_length, generator.generator_impedance_real, frequency);
-	console.log('matching_impedance_generator_side.conjugate_impedance_at_tl1_length', matching_impedance_generator_side.conjugate_impedance_at_tl1_length);
 	console.log('matching_LC_components_generator_side', matching_LC_components_generator_side);
-	const matching_LC_components_load_side = find_LC_components_to_obtain_target_impedance(matching_impedance_load_side.conjugate_impedance_at_tl2_length, load.real, frequency);
-	console.log('matching_LC_components_load_side', matching_LC_components_load_side);		
+	console.log('matching_LC_components_generator_side_v2', matching_LC_components_generator_side_v2);
+	console.log('matching_T_config_LC_components_generator_side', matching_T_config_LC_components_generator_side);
+
+	const matching_LC_components_load_side = find_LC_components_to_obtain_target_impedance(
+		return_port_LC_components ? matching_impedance_load_side.conjugate_impedance_at_tl2_length : matching_impedance_load_side.conjugate_impedance_at_load, 
+		load.real, 
+		frequency
+	);
+	const matching_LC_components_load_side_v2 = find_series_parallel_LC_components_to_obtain_target_impedance_V2(
+		return_port_LC_components ? matching_impedance_load_side.conjugate_impedance_at_tl2_length : matching_impedance_load_side.conjugate_impedance_at_load, 
+		{real: load.real, imag: load.imag},
+		frequency
+	);
+	const matching_T_config_LC_components_load_side = find_parallel_series_LC_components_to_obtain_target_impedance(
+		return_port_LC_components ? matching_impedance_load_side.conjugate_impedance_at_tl2_length : matching_impedance_load_side.conjugate_impedance_at_load,
+		{real: load.real, imag: load.imag},
+		frequency
+	);
+	console.log('matching_impedance_load_side', matching_impedance_load_side);
+	console.log('matching_LC_components_load_side', matching_LC_components_load_side);
+	console.log('matching_LC_components_load_side_v2', matching_LC_components_load_side_v2);
+	console.log('matching_T_config_LC_components_load_side', matching_T_config_LC_components_load_side);
+
+	return {
+		matching_impedance_generator_side,
+		matching_impedance_load_side,
+		matching_LC_components_generator_side,
+		matching_LC_components_generator_side_v2,
+		matching_T_config_LC_components_generator_side,
+		matching_LC_components_load_side,
+		matching_LC_components_load_side_v2,
+		matching_T_config_LC_components_load_side
+	}
+}
+
+globalThis.find_thevenin_equivalent_circuit_with_T_matching_network = function(
+	LRC_1_series, 
+	LC_shunt, 
+	LRC_2_series, 
+	tl_length_from_port_to_z, 
+	z1_comes_before_z2_looking_from_port_direction, 
+	generator, 
+	z1_comes_before_z2_looking_from_generator_direction,
+	frequency,
+	z0_magnitude, 
+	baseline_beta,
+	baseline_beta_frequency
+) {
+	console.log(Array.from(arguments));
+	// console.table(Array.from(arguments));
+
+	const beta = baseline_beta * (frequency / baseline_beta_frequency);
+
+	const z1_series = get_impedance_for_RLC_value(LRC_1_series, frequency);
+	const z_shunt = LC_shunt ? get_impedance_for_RLC_value(LC_shunt, frequency) : {real: 1e8, imag: 0};
+	const z2_series = get_impedance_for_RLC_value(LRC_2_series, frequency);
+
+	let z_equivalent;
+	if (z1_comes_before_z2_looking_from_port_direction) {
+		const numerator = multiplyComplexNums_v2(z_shunt, z2_series);
+		const denominator = addComplexNums(z_shunt, z2_series);
+		const z_parallel_equivalent = divideComplexNums_v2(numerator, denominator);
+		z_equivalent = addComplexNums(z_parallel_equivalent, z1_series);
+	} else {
+		const numerator = multiplyComplexNums_v2(z_shunt, z1_series);
+		const denominator = addComplexNums(z_shunt, z1_series);
+		const z_parallel_equivalent = divideComplexNums_v2(numerator, denominator);
+		z_equivalent = addComplexNums(z_parallel_equivalent, z2_series);		
+	}
+	console.log('z_equivalent', z_equivalent);
+
+	const reflection = divideComplexNums(
+		z_equivalent.real - z0_magnitude,
+		z_equivalent.imag,
+		z_equivalent.real + z0_magnitude,
+		z_equivalent.imag,
+	);
+
+	const z_thevenin_looking_from_port = getImpedanceAtDistanceFromLoad_lossless_TL(tl_length_from_port_to_z, reflection, z0_magnitude, beta);
+	console.log('z_thevenin_looking_from_port', z_thevenin_looking_from_port);
+
+	if (!generator) {
+		return { z_thevenin_looking_from_port }
+	}
+
+	let generator_open_circuit_thevenin_voltage;
+	
+	if (tl_length_from_port_to_z === 0) {
+		// open circuit z consists of one series and one parallel impedance (the other series impedance is an open circuited stub)
+		let open_circuit_z_seen_by_generator = addComplexNums(z1_series, z_shunt)
+		if (!z1_comes_before_z2_looking_from_generator_direction) {
+			open_circuit_z_seen_by_generator = addComplexNums(z2_series, z_shunt)
+		}
+
+		const open_circuited_current = divideComplexNums(
+			generator.generator_voltage_real,
+			generator.generator_voltage_imag,
+			open_circuit_z_seen_by_generator.real,
+			open_circuit_z_seen_by_generator.imag
+		);
+
+		generator_open_circuit_thevenin_voltage = multiplyComplexNums_v2(z_shunt, open_circuited_current);
+	} else {
+		const openCircuitedReflection = {
+			magnitude: 1,
+			theta: 0,
+			real: 1,
+			imag: 0
+		};
+		const z_tl = getImpedanceAtDistanceFromLoad_lossless_TL(tl_length_from_port_to_z, openCircuitedReflection, z0_magnitude, beta);
+
+		let z_post_shunt_in_series_with_tl = addComplexNums(z2_series, z_tl);
+		if (!z1_comes_before_z2_looking_from_generator_direction) {
+			z_post_shunt_in_series_with_tl = addComplexNums(z1_series, z_tl);				
+		}
+
+		const numerator = multiplyComplexNums_v2(z_shunt, z_post_shunt_in_series_with_tl);
+		const denominator = addComplexNums(z_shunt, z_post_shunt_in_series_with_tl);
+		const z_parallel_equivalent = divideComplexNums_v2(numerator, denominator);
+		
+		let open_circuit_z_seen_by_generator = addComplexNums(z1_series, z_parallel_equivalent);
+		if (!z1_comes_before_z2_looking_from_generator_direction) {
+			open_circuit_z_seen_by_generator = addComplexNums(z2_series, z_parallel_equivalent);				
+		}
+
+		const open_circuited_current = divideComplexNums(
+			generator.generator_voltage_real,
+			generator.generator_voltage_imag,
+			open_circuit_z_seen_by_generator.real,
+			open_circuit_z_seen_by_generator.imag
+		);
+
+		let voltage_across_z_series = multiplyComplexNums_v2(open_circuited_current, z1_series); 
+		if (!z1_comes_before_z2_looking_from_generator_direction) {
+			voltage_across_z_series = multiplyComplexNums_v2(open_circuited_current, z2_series);
+		}
+		const shunt_voltage = subtractComplexNums(
+			{
+				real: generator.generator_voltage_real,
+				imag: generator.generator_voltage_imag
+			},
+			voltage_across_z_series
+		);
+		const shunt_current = divideComplexNums_v2(shunt_voltage, z_shunt);
+		const next_z_series_current = subtractComplexNums(open_circuited_current, shunt_current);
+		let voltage_across_next_z_series = multiplyComplexNums_v2(next_z_series_current, z2_series);
+		if (!z1_comes_before_z2_looking_from_generator_direction) {
+			voltage_across_next_z_series = multiplyComplexNums_v2(next_z_series_current, z1_series);
+		}
+		
+		const voltage_at_tl_entry_generator_side = subtractComplexNums(shunt_voltage, voltage_across_next_z_series);
+		console.log('voltage_at_tl_entry_generator_side', voltage_at_tl_entry_generator_side);
+
+		const reflection_at_tl_entry = divideComplexNums(
+			z_tl.real - z0_magnitude,
+			z_tl.imag,
+			z_tl.real + z0_magnitude,
+			z_tl.imag
+		);
+
+		// a + reflection_at_tl_entry * a = v / sqrt(z0)
+		// (1 + reflection_at_tl_entry) * a = v / sqrt(z0)
+		// a = v / sqrt(z0) / (1 + reflection_at_tl_entry)
+		// b = reflection_at_tl_entry * a
+
+		const a_not_normalized_at_tl_entry = divideComplexNums_v2(
+			voltage_at_tl_entry_generator_side,
+			{
+				real: reflection_at_tl_entry.real + 1,
+				imag: reflection_at_tl_entry.imag
+			}
+		);
+		// const b_not_normalized_at_tl_entry = multiplyComplexNums_v2(reflection_at_tl_entry, a_not_normalized);
+		
+		const a_not_normalized_at_port = multiplyComplexNums_v2(
+			a_not_normalized_at_tl_entry, 
+			{
+				real: Math.cos(-beta * tl_length_from_port_to_z),
+				imag: Math.sin(-beta * tl_length_from_port_to_z)
+			}
+		);
+
+		generator_open_circuit_thevenin_voltage = {
+			real: 2 * a_not_normalized_at_port.real,
+			imag: 2 * a_not_normalized_at_port.imag,
+			...convert_complex_num_from_cartesian_to_polar(
+				2 * a_not_normalized_at_port.real, 
+				2 * a_not_normalized_at_port.imag
+			)
+		};
+		console.log('generator_open_circuit_thevenin_voltage', generator_open_circuit_thevenin_voltage);
+
+		// but this may not be stable when reflection_at_tl_entry is -1 and we're then dividing by zero to find a_not_normalized_at_tl_entry
+		// instead:
+		// Z0 * I = Z0 * I+ + Z0 * I- = V+ - V-
+		// and then: V = V+ + V-
+		// adding together: V + Z0 * I = 2V+
+
+		const v_plus_times_two_at_tl_entry = addComplexNums(
+			voltage_at_tl_entry_generator_side,
+			{
+				real: z0_magnitude * next_z_series_current.real,
+				imag: z0_magnitude * next_z_series_current.imag
+			}
+		);
+		// console.log(v_plus_times_two_at_tl_entry);
+
+		generator_open_circuit_thevenin_voltage = multiplyComplexNums_v2(
+			v_plus_times_two_at_tl_entry, 
+			{
+				real: Math.cos(-beta * tl_length_from_port_to_z),
+				imag: Math.sin(-beta * tl_length_from_port_to_z)
+			}
+		);
+		const generator_open_circuit_thevenin_voltage_polar = convert_complex_num_from_cartesian_to_polar(
+			generator_open_circuit_thevenin_voltage.real, 
+			generator_open_circuit_thevenin_voltage.imag
+		)
+		generator_open_circuit_thevenin_voltage.magnitude = generator_open_circuit_thevenin_voltage_polar.magnitude;
+		generator_open_circuit_thevenin_voltage.theta = generator_open_circuit_thevenin_voltage_polar.theta;
+		console.log('generator_open_circuit_thevenin_voltage (stable)', generator_open_circuit_thevenin_voltage);
+	}
+	
+	return {
+		generator_open_circuit_thevenin_voltage,
+		z_thevenin_looking_from_port 
+	}
 }
 
 globalThis.frequency = Math.pow(10, 8);
@@ -1501,11 +1944,103 @@ const circuit_voltages = convert_signal_flow_node_vals_to_voltage_current_vals(s
 
 const matching_impedance_generator_side = match_gammaIn_at_generator(signalFlowVals, generator, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
 const matching_LC_components_generator_side = find_LC_components_to_obtain_target_impedance(matching_impedance_generator_side.conjugate_impedance_at_tl1_length, generator.generator_impedance_real, frequency);
-console.log('matching_impedance_generator_side.conjugate_impedance_at_tl1_length', matching_impedance_generator_side.conjugate_impedance_at_tl1_length);
+const matching_LC_components_generator_side_v2 = find_series_parallel_LC_components_to_obtain_target_impedance_V2(
+	matching_impedance_generator_side.conjugate_impedance_at_tl1_length, 
+	{real: generator.generator_impedance_real, imag: generator.generator_impedance_imag},
+	frequency
+);
+const matching_T_config_LC_components_generator_side = find_parallel_series_LC_components_to_obtain_target_impedance(
+	matching_impedance_generator_side.conjugate_impedance_at_tl1_length, 
+	{real: generator.generator_impedance_real, imag: generator.generator_impedance_imag},
+	frequency
+);
+// console.log('matching_impedance_generator_side.conjugate_impedance_at_tl1_length', matching_impedance_generator_side.conjugate_impedance_at_tl1_length);
 // console.log('matching_LC_components_generator_side', matching_LC_components_generator_side);
-
+// console.log('matching_LC_components_generator_side_v2', matching_LC_components_generator_side_v2);
+// console.log('matching_T_config_LC_components_generator_side', matching_T_config_LC_components_generator_side);
 const matching_impedance_load_side = match_gammaOut_at_load(signalFlowVals, generator, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
-const matching_LC_components_load_side = find_LC_components_to_obtain_target_impedance(matching_impedance_load_side.conjugate_impedance_at_tl2_length, generator.generator_impedance_real, frequency);
+const matching_LC_components_load_side = find_LC_components_to_obtain_target_impedance(matching_impedance_load_side.conjugate_impedance_at_tl2_length, load_impedance.real, frequency);
+const matching_LC_components_load_side_v2 = find_series_parallel_LC_components_to_obtain_target_impedance_V2(
+	matching_impedance_load_side.conjugate_impedance_at_tl2_length, 
+	{real: load_impedance.real, imag: load_impedance.imag},
+	frequency
+);
+const matching_T_config_LC_components_load_side = find_parallel_series_LC_components_to_obtain_target_impedance(
+	matching_impedance_load_side.conjugate_impedance_at_tl2_length, 
+	{real: load_impedance.real, imag: load_impedance.imag},
+	frequency
+);
+// console.log('matching_impedance_load_side', matching_impedance_load_side);
 // console.log('matching_LC_components_load_side', matching_LC_components_load_side);
+// console.log('matching_LC_components_load_side_v2', matching_LC_components_load_side_v2);
+// console.log('matching_T_config_LC_components_load_side', matching_T_config_LC_components_load_side);
 
-find_bilateral_match_numerically(generator, load_impedance, S11, S21, S12, S22, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
+const bilateral_matching = find_bilateral_match_numerically(generator, load_impedance, S11, S21, S12, S22, false, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
+
+globalThis.get_thevenin_equivalents_of_matching_configs = (bilateral_matching) => {
+	/*
+		matching_impedance_generator_side,
+		matching_impedance_load_side,
+		matching_LC_components_generator_side,
+		matching_LC_components_generator_side_v2,
+		matching_T_config_LC_components_generator_side,
+		matching_LC_components_load_side,
+		matching_LC_components_load_side_v2,
+		matching_T_config_LC_components_load_side
+	*/
+
+	for (let i = 0; i < bilateral_matching.matching_LC_components_generator_side_v2.length; i++) {
+		const gen_side_match = bilateral_matching.matching_LC_components_generator_side_v2[i];
+		if (!gen_side_match.note_2) {
+			globalThis.find_thevenin_equivalent_circuit_with_T_matching_network(
+				getRLCValsForImpedance({
+					real: generator.generator_impedance_real, 
+					imag: generator.generator_impedance_imag + matching_LC_comp_configs.matching_LC_components_generator_side[0].reactance_1
+				}, frequency),
+				matching_LC_comp_configs.matching_LC_components_generator_side[0].matching_reactive_comp_2,
+				getRLCValsForImpedance({real: 0, imag: 0}, frequency),	
+				0.5, // generator.generator_tl1_length, // tl_length_from_port_to_z, 
+				false, // z1_comes_before_z2_looking_port_direction, 
+				generator, 
+				true, // z1_comes_before_z2_looking_from_generator_direction,
+				frequency,
+				tlWaveParams.z0_magnitude, 
+				tlWaveParams.beta,
+				frequency // beta_frequency
+			);
+		}
+	}
+
+	globalThis.find_thevenin_equivalent_circuit_with_T_matching_network(
+		getRLCValsForImpedance({
+			real: generator.generator_impedance_real, 
+			imag: generator.generator_impedance_imag + matching_LC_comp_configs.matching_LC_components_generator_side[0].reactance_1
+		}, frequency),
+		matching_LC_comp_configs.matching_LC_components_generator_side[0].matching_reactive_comp_2,
+		getRLCValsForImpedance({real: 0, imag: 0}, frequency),	
+		0.5, // generator.generator_tl1_length, // tl_length_from_port_to_z, 
+		false, // z1_comes_before_z2_looking_port_direction, 
+		generator, 
+		true, // z1_comes_before_z2_looking_from_generator_direction,
+		frequency,
+		tlWaveParams.z0_magnitude, 
+		tlWaveParams.beta,
+		frequency // beta_frequency
+	);
+
+	const matching_LC_vals = matching_LC_comp_configs.matching_T_config_LC_components_load_side[0];
+	console.log('matching_LC_vals', matching_LC_vals);
+	globalThis.find_thevenin_equivalent_circuit_with_T_matching_network(
+		getRLCValsForImpedance({real: load_impedance.real, imag: 0}, frequency),
+		matching_LC_vals.matching_reactive_comp_1, // shunt	
+		matching_LC_vals.matching_reactive_comp_2,
+		0.5, // generator.generator_tl1_length, // tl_length_from_port_to_z, 
+		false, // z1_comes_before_z2_looking_port_direction, 
+		null, // generator 
+		null, // z1_comes_before_z2_looking_from_generator_direction,
+		frequency,
+		tlWaveParams.z0_magnitude, 
+		tlWaveParams.beta,
+		frequency // beta_frequency
+	);
+}
