@@ -1578,37 +1578,58 @@ globalThis.find_thevenin_equivalent_circuit_with_T_matching_network = function(
 	LRC_1_series, 
 	LC_shunt, 
 	LRC_2_series, 
-	tl_length_from_port_to_z, 
-	z1_comes_before_z2_looking_from_port_direction, 
+	tl_length_from_port_to_z, // is_z_at_port
 	generator, 
-	z1_comes_before_z2_looking_from_generator_direction,
 	frequency,
 	z0_magnitude, 
 	baseline_beta,
 	baseline_beta_frequency
 ) {
-	// console.log(Array.from(arguments));
-	// console.table(Array.from(arguments));
-
 	const beta = baseline_beta * (frequency / baseline_beta_frequency);
 
 	const z1_series = get_impedance_for_RLC_value(LRC_1_series, frequency);
+	let z1_series_z_th_final = Object.assign({}, z1_series);
+	if (generator) {	
+		if (tl_length_from_port_to_z > 0 || (tl_length_from_port_to_z === 0 && generator.generator_tl1_length === 0)) {
+			z1_series.real += generator.generator_impedance_real;
+			z1_series.imag += generator.generator_impedance_imag;
+			z1_series_z_th_final = z1_series;		
+		} else {
+			const z_source_reflection_at_generator = divideComplexNums(
+				generator.generator_impedance_real - z0_magnitude,
+				generator.generator_impedance_imag,
+				generator.generator_impedance_real + z0_magnitude,
+				generator.generator_impedance_imag,
+			);
+
+			const z_source_reflection_at_port = multiplyComplexNums_v2(
+				z_source_reflection_at_generator,
+				{
+					real: Math.cos(-2 * beta * generator.generator_tl1_length),
+					imag: Math.sin(-2 * beta * generator.generator_tl1_length)
+				}
+			);
+
+			const z_source_at_port = divideComplexNums(
+				z_source_reflection_at_port.real * z0_magnitude + z0_magnitude,
+				z_source_reflection_at_port.imag * z0_magnitude,
+				1 - z_source_reflection_at_port.real,
+				-z_source_reflection_at_port.imag
+			);
+
+			z1_series_z_th_final.real += z_source_at_port.real;
+			z1_series_z_th_final.imag += z_source_at_port.imag;		
+		}
+	}
 	const z_shunt = LC_shunt ? get_impedance_for_RLC_value(LC_shunt, frequency) : {real: 1e8, imag: 0};
 	const z2_series = get_impedance_for_RLC_value(LRC_2_series, frequency);
 
 	let z_equivalent;
-	if (z1_comes_before_z2_looking_from_port_direction) {
-		const numerator = multiplyComplexNums_v2(z_shunt, z2_series);
-		const denominator = addComplexNums(z_shunt, z2_series);
-		const z_parallel_equivalent = divideComplexNums_v2(numerator, denominator);
-		z_equivalent = addComplexNums(z_parallel_equivalent, z1_series);
-	} else {
-		const numerator = multiplyComplexNums_v2(z_shunt, z1_series);
-		const denominator = addComplexNums(z_shunt, z1_series);
-		const z_parallel_equivalent = divideComplexNums_v2(numerator, denominator);
-		z_equivalent = addComplexNums(z_parallel_equivalent, z2_series);		
-	}
-	//vxwconsole.log('z_equivalent', z_equivalent);
+	const numerator = multiplyComplexNums_v2(z_shunt, z1_series_z_th_final);
+	const denominator = addComplexNums(z_shunt, z1_series_z_th_final);
+	const z_parallel_equivalent = divideComplexNums_v2(numerator, denominator);
+	z_equivalent = addComplexNums(z_parallel_equivalent, z2_series);		
+	//console.log('z_equivalent', z_equivalent);
 
 	const reflection = divideComplexNums(
 		z_equivalent.real - z0_magnitude,
@@ -1629,9 +1650,6 @@ globalThis.find_thevenin_equivalent_circuit_with_T_matching_network = function(
 	if (generator.generator_tl1_length === 0) {
 		// open circuit z consists of one series and one parallel impedance (the other series impedance is an open circuited stub)
 		let open_circuit_z_seen_by_generator = addComplexNums(z1_series, z_shunt)
-		if (!z1_comes_before_z2_looking_from_generator_direction) {
-			open_circuit_z_seen_by_generator = addComplexNums(z2_series, z_shunt)
-		}
 
 		const open_circuited_current = divideComplexNums(
 			generator.generator_voltage_real,
@@ -1641,7 +1659,7 @@ globalThis.find_thevenin_equivalent_circuit_with_T_matching_network = function(
 		);
 
 		generator_open_circuit_thevenin_voltage = multiplyComplexNums_v2(z_shunt, open_circuited_current);
-	} else {
+	} else if (generator.generator_tl1_length > 0 && tl_length_from_port_to_z > 0) {
 		const openCircuitedReflection = {
 			magnitude: 1,
 			theta: 0,
@@ -1651,18 +1669,12 @@ globalThis.find_thevenin_equivalent_circuit_with_T_matching_network = function(
 		const z_tl = getImpedanceAtDistanceFromLoad_lossless_TL(generator.generator_tl1_length, openCircuitedReflection, z0_magnitude, beta);
 
 		let z_post_shunt_in_series_with_tl = addComplexNums(z2_series, z_tl);
-		if (!z1_comes_before_z2_looking_from_generator_direction) {
-			z_post_shunt_in_series_with_tl = addComplexNums(z1_series, z_tl);				
-		}
 
 		const numerator = multiplyComplexNums_v2(z_shunt, z_post_shunt_in_series_with_tl);
 		const denominator = addComplexNums(z_shunt, z_post_shunt_in_series_with_tl);
 		const z_parallel_equivalent = divideComplexNums_v2(numerator, denominator);
 		
 		let open_circuit_z_seen_by_generator = addComplexNums(z1_series, z_parallel_equivalent);
-		if (!z1_comes_before_z2_looking_from_generator_direction) {
-			open_circuit_z_seen_by_generator = addComplexNums(z2_series, z_parallel_equivalent);				
-		}
 
 		const open_circuited_current = divideComplexNums(
 			generator.generator_voltage_real,
@@ -1672,9 +1684,7 @@ globalThis.find_thevenin_equivalent_circuit_with_T_matching_network = function(
 		);
 
 		let voltage_across_z_series = multiplyComplexNums_v2(open_circuited_current, z1_series); 
-		if (!z1_comes_before_z2_looking_from_generator_direction) {
-			voltage_across_z_series = multiplyComplexNums_v2(open_circuited_current, z2_series);
-		}
+
 		const shunt_voltage = subtractComplexNums(
 			{
 				real: generator.generator_voltage_real,
@@ -1685,9 +1695,6 @@ globalThis.find_thevenin_equivalent_circuit_with_T_matching_network = function(
 		const shunt_current = divideComplexNums_v2(shunt_voltage, z_shunt);
 		const next_z_series_current = subtractComplexNums(open_circuited_current, shunt_current);
 		let voltage_across_next_z_series = multiplyComplexNums_v2(next_z_series_current, z2_series);
-		if (!z1_comes_before_z2_looking_from_generator_direction) {
-			voltage_across_next_z_series = multiplyComplexNums_v2(next_z_series_current, z1_series);
-		}
 		
 		const voltage_at_tl_entry_generator_side = subtractComplexNums(shunt_voltage, voltage_across_next_z_series);
 		console.log('voltage_at_tl_entry_generator_side', voltage_at_tl_entry_generator_side);
@@ -1760,11 +1767,217 @@ globalThis.find_thevenin_equivalent_circuit_with_T_matching_network = function(
 		generator_open_circuit_thevenin_voltage.magnitude = generator_open_circuit_thevenin_voltage_polar.magnitude;
 		generator_open_circuit_thevenin_voltage.theta = generator_open_circuit_thevenin_voltage_polar.theta;
 		console.log('generator_open_circuit_thevenin_voltage (stable)', generator_open_circuit_thevenin_voltage);
+	} else if (generator.generator_tl1_length > 0 && tl_length_from_port_to_z === 0) {
+		// shunt element after the TL
+		const reflection_port = divideComplexNums(
+			z1_series.real + z_shunt.real - z0_magnitude,
+			z1_series.imag + z_shunt.imag,
+			z1_series.real + z_shunt.real + z0_magnitude,
+			z1_series.imag + z_shunt.imag,
+		);
+
+		const reflection_at_generator = multiplyComplexNums_v2(
+			reflection_port,
+			{
+				real: Math.cos(-2 * beta * generator.generator_tl1_length),
+				imag: Math.sin(-2 * beta * generator.generator_tl1_length)
+			}
+		);
+
+		/*reflection_generator = (z_gen - z0) / (z_gen + z0)
+		(z_gen + z0) * reflection_generator = (z_gen - z0)
+		(1 - reflection_generator) * z_gen = reflection_generator * z0 + z0
+		z_gen = (reflection_generator * z0 + z0) / (1 - reflection_generator)
+		current_gen = v_gen / (z_source + z_gen)
+		//  V + Z0 * I = 2V+
+		v_gen + Z0 * current_gen = 2V+
+		V+ = (v_gen + Z0 * current_gen) / 2*/
+
+		const z_in_tl_at_generator = divideComplexNums(
+			reflection_at_generator.real * z0_magnitude + z0_magnitude,
+			reflection_at_generator.imag * z0_magnitude,
+			1 - reflection_at_generator.real,
+			-reflection_at_generator.imag
+		);
+
+		const current_in_tl_at_generator = divideComplexNums(
+			generator.generator_voltage_real,
+			generator.generator_voltage_imag,
+			generator.generator_impedance_real + z_in_tl_at_generator.real,
+			generator.generator_impedance_imag + z_in_tl_at_generator.imag
+		);
+
+		const v0_plus = addComplexNums(
+			multiplyComplexNums_v2(z_in_tl_at_generator, current_in_tl_at_generator),
+			{
+				real: current_in_tl_at_generator.real * z0_magnitude,
+				imag: current_in_tl_at_generator.imag * z0_magnitude
+			}
+		);
+		v0_plus.real /= 2;
+		v0_plus.imag /= 2;
+
+		let voltage_port = multiplyComplexNums_v2(
+			v0_plus,
+			{
+				real: Math.cos(-beta * generator.generator_tl1_length),
+				imag: Math.sin(-beta * generator.generator_tl1_length)
+			}
+		)
+
+		voltage_port = addComplexNums(
+			voltage_port,
+			multiplyComplexNums_v2(
+				voltage_port,
+				reflection_port
+			)
+		);
+
+		const current_port = divideComplexNums_v2(
+			voltage_port,
+			{
+				real: z1_series.real + z_shunt.real,
+				imag: z1_series.imag + z_shunt.imag				
+			}
+		)
+
+		generator_open_circuit_thevenin_voltage = multiplyComplexNums_v2(
+			current_port,
+			z_shunt
+		);
+		generator_open_circuit_thevenin_voltage_polar = convert_complex_num_from_cartesian_to_polar(generator_open_circuit_thevenin_voltage.real, generator_open_circuit_thevenin_voltage.imag);
+		generator_open_circuit_thevenin_voltage.magnitude = generator_open_circuit_thevenin_voltage_polar.magnitude;
+		generator_open_circuit_thevenin_voltage.theta = generator_open_circuit_thevenin_voltage_polar.theta;
 	}
 	
 	return {
 		generator_open_circuit_thevenin_voltage,
 		z_thevenin_looking_from_port 
+	}
+}
+
+
+globalThis.get_thevenin_equivalents_of_matching_configs = (bilateral_matching, bileteral_match_at_port, generator, frequency, baseline_beta_frequency, z0_magnitude, beta) => {
+	/*
+		matching_impedance_generator_side,
+		matching_impedance_load_side,
+		matching_LC_components_generator_side,
+		matching_LC_components_generator_side_v2,
+		matching_T_config_LC_components_generator_side,
+		matching_LC_components_load_side,
+		matching_LC_components_load_side_v2,
+		matching_T_config_LC_components_load_side
+	*/
+	const matching_impedance_generator_side = bilateral_matching.matching_impedance_generator_side;
+	const matching_impedance_load_side = bilateral_matching.matching_impedance_load_side;
+
+	const gen_side_matches_thevenin_equivalents = [];
+	const load_side_matches_thevenin_equivalents = [];	
+
+	for (let i = 0; i < bilateral_matching.matching_LC_components_generator_side_v2.length; i++) {
+		const gen_side_match = bilateral_matching.matching_LC_components_generator_side_v2[i];
+		if (!gen_side_match.error) {
+			const theveninEquivalentGenSide = globalThis.find_thevenin_equivalent_circuit_with_T_matching_network(
+				getRLCValsForImpedance({
+					real: 0, 
+					imag: gen_side_match.reactance_1
+				}, frequency),				
+				gen_side_match.matching_reactive_comp_2, // shunt
+				getRLCValsForImpedance({real: 0, imag: 0}, frequency),	
+				bileteral_match_at_port ? 0 : generator.generator_tl1_length,
+				generator, 
+				frequency,
+				z0_magnitude, 
+				beta,
+				baseline_beta_frequency // baseline_beta_frequency
+			);
+
+			const matchingTarget = matching_impedance_generator_side.conjugate_impedance_at_tl1_length
+			const z_thevenin_looking_from_port = theveninEquivalentGenSide.z_thevenin_looking_from_port
+			if (frequency === baseline_beta_frequency) {
+				if (Math.abs(z_thevenin_looking_from_port.real - matchingTarget.real) < 1e-5 && Math.abs(z_thevenin_looking_from_port.imag - matchingTarget.imag) < 1e-5) {
+					console.log('match confirmed!');
+					gen_side_matches_thevenin_equivalents.push(theveninEquivalentGenSide);
+				} else {
+					console.log('match failed!!!')
+				}
+			} else {
+				console.log('new frequency so can\'t confirm match');
+				gen_side_matches_thevenin_equivalents.push(theveninEquivalentGenSide);				
+			}
+		} else {
+			console.log('error in L-network gen side');
+		}
+	}
+
+	for (let i = 0; i < bilateral_matching.matching_T_config_LC_components_generator_side.length; i++) {
+		const gen_side_match = bilateral_matching.matching_T_config_LC_components_generator_side[i];
+		if (!gen_side_match.error) {
+			const theveninEquivalentGenSide = globalThis.find_thevenin_equivalent_circuit_with_T_matching_network(
+				getRLCValsForImpedance({
+					real: 0, 
+					imag: 0
+				}, frequency),
+				gen_side_match.matching_reactive_comp_1, // shunt
+				gen_side_match.matching_reactive_comp_2,	
+				bileteral_match_at_port ? 0 : generator.generator_tl1_length,
+				generator, 
+				frequency,
+				z0_magnitude, 
+				beta,
+				baseline_beta_frequency // baseline_beta_frequency
+			);
+
+			const matchingTarget = matching_impedance_generator_side.conjugate_impedance_at_tl1_length
+			const z_thevenin_looking_from_port = theveninEquivalentGenSide.z_thevenin_looking_from_port
+			if (frequency === baseline_beta_frequency) {
+				if (Math.abs(z_thevenin_looking_from_port.real - matchingTarget.real) < 1e-5 && Math.abs(z_thevenin_looking_from_port.imag - matchingTarget.imag) < 1e-5) {
+					console.log('match confirmed!');
+					console.log(theveninEquivalentGenSide);
+					gen_side_matches_thevenin_equivalents.push(theveninEquivalentGenSide);
+				} else {
+					console.log('match failed!!!')
+				}
+			} else {
+				console.log('new frequency so can\'t confirm match');
+				gen_side_matches_thevenin_equivalents.push(theveninEquivalentGenSide);				
+			}
+		} else {
+			console.log('error in T-network gen side');
+		}
+	}
+
+	for (let i = 0; i < bilateral_matching.matching_T_config_LC_components_load_side.length; i++) {
+		const load_side_match = bilateral_matching.matching_T_config_LC_components_load_side[i];
+		if (!load_side_match.error) {
+			const theveninEquivalentLoadSide = globalThis.find_thevenin_equivalent_circuit_with_T_matching_network(
+				getRLCValsForImpedance({real: load_impedance.real, imag: 0}, frequency),
+				load_side_match.matching_reactive_comp_1, // shunt	
+				load_side_match.matching_reactive_comp_2,
+				bileteral_match_at_port ? 0 : generator.generator_tl2_length, // tl_length_from_port_to_z, 
+				null, // generator 
+				frequency,
+				z0_magnitude, 
+				beta,
+				baseline_beta_frequency // baseline_beta_frequency
+			);
+
+			const matchingTarget = matching_impedance_load_side.conjugate_impedance_at_tl2_length
+			const z_thevenin_looking_from_port = theveninEquivalentLoadSide.z_thevenin_looking_from_port
+			if (frequency === baseline_beta_frequency) {
+				if (Math.abs(z_thevenin_looking_from_port.real - matchingTarget.real) < 1e-5 && Math.abs(z_thevenin_looking_from_port.imag - matchingTarget.imag) < 1e-5) {
+					console.log('match confirmed!');
+					load_side_matches_thevenin_equivalents.push(theveninEquivalentLoadSide);
+				} else {
+					console.log('match failed!!!')
+				}
+			} else {
+				console.log('new frequency so can\'t confirm match');
+				load_side_matches_thevenin_equivalents.push(theveninEquivalentLoadSide);				
+			}			
+		} else {
+			console.log('error in T-network load side');
+		}
 	}
 }
 
@@ -1976,141 +2189,9 @@ const matching_T_config_LC_components_load_side = find_parallel_series_LC_compon
 // console.log('matching_T_config_LC_components_load_side', matching_T_config_LC_components_load_side);
 
 let bileteral_match_at_port = false;
-// bilateral_matching = find_bilateral_match_numerically(generator, load_impedance, S11, S21, S12, S22, bileteral_match_at_port, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
+let bilateral_matching = find_bilateral_match_numerically(generator, load_impedance, S11, S21, S12, S22, bileteral_match_at_port, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
+globalThis.get_thevenin_equivalents_of_matching_configs(bilateral_matching, bileteral_match_at_port, generator, frequency, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
 
-globalThis.get_thevenin_equivalents_of_matching_configs = (bilateral_matching, bileteral_match_at_port, generator, frequency, baseline_beta_frequency, z0_magnitude, beta) => {
-	/*
-		matching_impedance_generator_side,
-		matching_impedance_load_side,
-		matching_LC_components_generator_side,
-		matching_LC_components_generator_side_v2,
-		matching_T_config_LC_components_generator_side,
-		matching_LC_components_load_side,
-		matching_LC_components_load_side_v2,
-		matching_T_config_LC_components_load_side
-	*/
-	const matching_impedance_generator_side = bilateral_matching.matching_impedance_generator_side;
-	const matching_impedance_load_side = bilateral_matching.matching_impedance_load_side;
-
-	const gen_side_matches_thevenin_equivalents = [];
-	const load_side_matches_thevenin_equivalents = [];	
-
-	for (let i = 0; i < bilateral_matching.matching_LC_components_generator_side_v2.length; i++) {
-		const gen_side_match = bilateral_matching.matching_LC_components_generator_side_v2[i];
-		if (!gen_side_match.error) {
-			const theveninEquivalentGenSide = globalThis.find_thevenin_equivalent_circuit_with_T_matching_network(
-				getRLCValsForImpedance({
-					real: generator.generator_impedance_real, 
-					imag: generator.generator_impedance_imag + gen_side_match.reactance_1
-				}, frequency),
-				gen_side_match.matching_reactive_comp_2, // shunt
-				getRLCValsForImpedance({real: 0, imag: 0}, frequency),	
-				bileteral_match_at_port ? 0 : generator.generator_tl1_length,
-				false, // z1_comes_before_z2_looking_port_direction, 
-				generator, 
-				true, // z1_comes_before_z2_looking_from_generator_direction,
-				frequency,
-				z0_magnitude, 
-				beta,
-				baseline_beta_frequency // baseline_beta_frequency
-			);
-
-			const matchingTarget = matching_impedance_generator_side.conjugate_impedance_at_tl1_length
-			const z_thevenin_looking_from_port = theveninEquivalentGenSide.z_thevenin_looking_from_port
-			if (frequency === baseline_beta_frequency) {
-				if (Math.abs(z_thevenin_looking_from_port.real - matchingTarget.real) < 1e-5 && Math.abs(z_thevenin_looking_from_port.imag - matchingTarget.imag) < 1e-5) {
-					console.log('match confirmed!');
-					gen_side_matches_thevenin_equivalents.push(theveninEquivalentGenSide);
-				} else {
-					console.log('match failed!!!')
-				}
-			} else {
-				console.log('new frequency so can\'t confirm match');
-				gen_side_matches_thevenin_equivalents.push(theveninEquivalentGenSide);				
-			}
-		} else {
-			console.log('error in L-network gen side');
-		}
-	}
-
-	// console.log('matching_T_config_LC_components_generator_side', matching_T_config_LC_components_generator_side);
-	for (let i = 0; i < bilateral_matching.matching_T_config_LC_components_generator_side.length; i++) {
-		const gen_side_match = bilateral_matching.matching_T_config_LC_components_generator_side[i];
-		if (!gen_side_match.error) {
-			const theveninEquivalentGenSide = globalThis.find_thevenin_equivalent_circuit_with_T_matching_network(
-				getRLCValsForImpedance({
-					real: generator.generator_impedance_real, 
-					imag: generator.generator_impedance_imag
-				}, frequency),
-				gen_side_match.matching_reactive_comp_1, // shunt
-				gen_side_match.matching_reactive_comp_2,	
-				bileteral_match_at_port ? 0 : generator.generator_tl1_length,
-				false, // z1_comes_before_z2_looking_port_direction, 
-				generator, 
-				true, // z1_comes_before_z2_looking_from_generator_direction,
-				frequency,
-				z0_magnitude, 
-				beta,
-				baseline_beta_frequency // baseline_beta_frequency
-			);
-
-			const matchingTarget = matching_impedance_generator_side.conjugate_impedance_at_tl1_length
-			const z_thevenin_looking_from_port = theveninEquivalentGenSide.z_thevenin_looking_from_port
-			if (frequency === baseline_beta_frequency) {
-				if (Math.abs(z_thevenin_looking_from_port.real - matchingTarget.real) < 1e-5 && Math.abs(z_thevenin_looking_from_port.imag - matchingTarget.imag) < 1e-5) {
-					console.log('match confirmed!');
-					console.log(theveninEquivalentGenSide);
-					gen_side_matches_thevenin_equivalents.push(theveninEquivalentGenSide);
-				} else {
-					console.log('match failed!!!')
-				}
-			} else {
-				console.log('new frequency so can\'t confirm match');
-				gen_side_matches_thevenin_equivalents.push(theveninEquivalentGenSide);				
-			}
-		} else {
-			console.log('error in T-network gen side');
-		}
-	}
-
-	for (let i = 0; i < bilateral_matching.matching_T_config_LC_components_load_side.length; i++) {
-		const load_side_match = bilateral_matching.matching_T_config_LC_components_load_side[i];
-		if (!load_side_match.error) {
-			const theveninEquivalentLoadSide = globalThis.find_thevenin_equivalent_circuit_with_T_matching_network(
-				getRLCValsForImpedance({real: load_impedance.real, imag: 0}, frequency),
-				load_side_match.matching_reactive_comp_1, // shunt	
-				load_side_match.matching_reactive_comp_2,
-				bileteral_match_at_port ? 0 : generator.generator_tl2_length, // tl_length_from_port_to_z, 
-				false, // z1_comes_before_z2_looking_port_direction, 
-				null, // generator 
-				null, // z1_comes_before_z2_looking_from_generator_direction,
-				frequency,
-				z0_magnitude, 
-				beta,
-				baseline_beta_frequency // baseline_beta_frequency
-			);
-
-			const matchingTarget = matching_impedance_load_side.conjugate_impedance_at_tl2_length
-			const z_thevenin_looking_from_port = theveninEquivalentLoadSide.z_thevenin_looking_from_port
-			if (frequency === baseline_beta_frequency) {
-				if (Math.abs(z_thevenin_looking_from_port.real - matchingTarget.real) < 1e-5 && Math.abs(z_thevenin_looking_from_port.imag - matchingTarget.imag) < 1e-5) {
-					console.log('match confirmed!');
-					load_side_matches_thevenin_equivalents.push(theveninEquivalentLoadSide);
-				} else {
-					console.log('match failed!!!')
-				}
-			} else {
-				console.log('new frequency so can\'t confirm match');
-				load_side_matches_thevenin_equivalents.push(theveninEquivalentLoadSide);				
-			}			
-		} else {
-			console.log('error in T-network load side');
-		}
-	}
-}
-
-// globalThis.get_thevenin_equivalents_of_matching_configs(bilateral_matching, bileteral_match_at_port, generator, frequency, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
-
-bileteral_match_at_port = false;
+bileteral_match_at_port = true;
 bilateral_matching = find_bilateral_match_numerically(generator, load_impedance, S11, S21, S12, S22, bileteral_match_at_port, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
 globalThis.get_thevenin_equivalents_of_matching_configs(bilateral_matching, bileteral_match_at_port, generator, frequency, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
