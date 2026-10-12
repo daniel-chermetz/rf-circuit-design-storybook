@@ -10,11 +10,12 @@ require('./scripts/get_TL_params_from_RLC_constants.js');
 require('./scripts/get_s_params_from_simulated_circuit.js');
 require('./scripts/impedance_matching_for_source_TL_load_setup.js');
 require('./scripts/impedance_matching_general_s_param_based_two_port_device.js');
+require('./scripts/impedance_matching_sim_verification.js');
 
 globalThis.frequency = Math.pow(10, 8);
 globalThis.load_impedance = {
-	real: 75,
-	imag: -25
+	real: 50,
+	imag: 0
 }
 globalThis.generator = {
 	generator_distance: 1,
@@ -234,3 +235,9 @@ const voltages_load_side_port = get_load_voltage_for_impedance_matched_configs(t
 
 const voltages_across_actual_load = globalThis.extract_voltage_across_load(voltages_load_side_port, thevenin_equivalents_of_matched_configs, load_impedance, generator.generator_tl2_length, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
 console.log(voltages_across_actual_load);
+
+const matched_configs_data = get_port_source_and_load_components_to_use_in_sim(thevenin_equivalents_of_matched_configs, generator, load_impedance, frequency, tlWaveParams.z0_magnitude, tlWaveParams.beta);
+console.dir(matched_configs_data, {
+	depth: 4
+});
+

@@ -145,7 +145,6 @@ globalThis.find_bilateral_match_numerically = (generator, load, S11, S21, S12, S
 	}
 	const z_load_port = get_impedance_across_TL_distance_from_port(z_load, generator.generator_tl2_length, z0_magnitude, beta);
 
-
 	let matching_impedance_generator_side; 
 	let matching_impedance_load_side;
 
@@ -396,6 +395,12 @@ globalThis.find_thevenin_equivalent_circuit_with_T_matching_network = function(
 		);
 
 		generator_open_circuit_thevenin_voltage = multiplyComplexNums_v2(z_shunt, open_circuited_current);
+		const generator_open_circuit_thevenin_voltage_polar = convert_complex_num_from_cartesian_to_polar(
+			generator_open_circuit_thevenin_voltage.real, 
+			generator_open_circuit_thevenin_voltage.imag
+		);
+		generator_open_circuit_thevenin_voltage.magnitude = generator_open_circuit_thevenin_voltage_polar.magnitude;
+		generator_open_circuit_thevenin_voltage.theta = generator_open_circuit_thevenin_voltage_polar.theta;		
 	} else if (!is_z_at_port) {
 		const openCircuitedReflection = {
 			magnitude: 1,
