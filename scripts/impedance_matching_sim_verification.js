@@ -21,6 +21,27 @@ globalThis.get_port_source_and_load_components_to_use_in_sim = (thevenin_equival
 		if (gen_side_match.bileteral_match_at_port) {
 			gen_side_match.fixed_z_source_at_port = z_gen_port;
 			gen_side_match.fixed_z_load_at_port_comp = getRLCValsForImpedance(z_gen_port, frequency);			
+		} else {
+			const reactance1_at_port = get_impedance_across_TL_distance_from_port(
+				{ real: 0, imag: gen_side_match.components.reactance_1 }, 
+				generator.generator_tl1_length, 
+				z0_magnitude, 
+				beta
+			);
+			gen_side_match.components.matching_reactive_comp_1_at_port = getRLCValsForImpedance(
+				reactance1_at_port,
+				frequency
+			);
+			const reactance2_at_port = get_impedance_across_TL_distance_from_port(
+				{ real: 0, imag: gen_side_match.components.reactance_2 }, 
+				generator.generator_tl1_length, 
+				z0_magnitude, 
+				beta
+			);			
+			gen_side_match.components.matching_reactive_comp_2_at_port = getRLCValsForImpedance(
+				reactance2_at_port,
+				frequency
+			);
 		}
 	}
 
@@ -34,6 +55,27 @@ globalThis.get_port_source_and_load_components_to_use_in_sim = (thevenin_equival
 		if (load_side_match.bileteral_match_at_port) {
 			load_side_match.fixed_z_load_at_port = z_load_port;
 			load_side_match.fixed_z_load_at_port_comp = getRLCValsForImpedance(z_load_port, frequency);
+		} else {
+			const reactance1_at_port = get_impedance_across_TL_distance_from_port(
+				{ real: 0, imag: load_side_match.components.reactance_1 }, 
+				generator.generator_tl2_length, 
+				z0_magnitude, 
+				beta
+			);
+			load_side_match.components.matching_reactive_comp_1_at_port = getRLCValsForImpedance(
+				reactance1_at_port,
+				frequency
+			);
+			const reactance2_at_port = get_impedance_across_TL_distance_from_port(
+				{ real: 0, imag: load_side_match.components.reactance_2 }, 
+				generator.generator_tl2_length, 
+				z0_magnitude, 
+				beta
+			);			
+			load_side_match.components.matching_reactive_comp_2_at_port = getRLCValsForImpedance(
+				reactance2_at_port,
+				frequency
+			);	
 		}
 	}
 

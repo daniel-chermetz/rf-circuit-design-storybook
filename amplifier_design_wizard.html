@@ -1520,17 +1520,17 @@
 
             <div class="form-actions">
                 <button type="button" class="secondary-btn" data-goto="matchingResults">← Back to Matching Networks</button>
-                <button type="button" class="primary-btn calculate-action" id="proceed-sim-verification-btn">Simulation Verification Parameters →</button>
+                <button type="button" class="primary-btn calculate-action" id="proceed-sim-verification-btn">💻 Simulation Verification Parameters →</button>
                 <button type="button" class="secondary-btn" data-action="restart">↺ Start Over</button>
             </div>
         </section>
 
         <section class="wizard-step form-step hidden" id="step-sim-verification">
-            <h2>Simulation Verification Parameters</h2>
+            <h2>💻 Simulation Verification Parameters</h2>
 
             <div class="results-conclusion-card" id="sim-verification-conclusion">
                 <div class="conclusion-header">
-                    <span class="conclusion-badge">⚡ SPICE / Simulation Verification</span>
+                    <span class="conclusion-badge">💻 SPICE / Simulation Verification</span>
                     <span class="conclusion-gain-pill" id="sim-gain-pill">--</span>
                 </div>
                 <p class="conclusion-text" id="sim-conclusion-statement">--</p>
@@ -2688,6 +2688,17 @@
                 return;
             }
 
+            const z0 = wizardState.z0Ohms || tlWaveParams.z0_magnitude;
+            const distGen = wizardState.transmissionLines ? wizardState.transmissionLines.generatorToPortM : generator.generator_tl1_length;
+            const distLoad = wizardState.transmissionLines ? wizardState.transmissionLines.portToLoadM : generator.generator_tl2_length;
+            const zs = wizardState.source ? { real: wizardState.source.resistanceOhms, imag: wizardState.source.reactanceOhms } : { real: generator.generator_impedance_real, imag: generator.generator_impedance_imag };
+            const zl = wizardState.load ? { real: wizardState.load.resistanceOhms, imag: wizardState.load.reactanceOhms } : { real: load_impedance.real, imag: load_impedance.imag };
+
+            const isGenZ0 = Math.abs(zs.real - z0) < 1e-6 && Math.abs(zs.imag) < 1e-6;
+            const isLoadZ0 = Math.abs(zl.real - z0) < 1e-6 && Math.abs(zl.imag) < 1e-6;
+            const isGenDist0 = Math.abs(distGen) < 1e-9;
+            const isLoadDist0 = Math.abs(distLoad) < 1e-9;
+
             if (pairsCountBadge) {
                 pairsCountBadge.textContent = `${pairs.length} Simulation Model${pairs.length === 1 ? '' : 's'}`;
             }
@@ -2727,11 +2738,35 @@
                         : '';
 
                     let genSideSimHtml = '';
-                    if (p.genMatch.bileteral_match_at_port) {
-                        const gComp1 = formatReactiveComponent(p.genMatch.components.matching_reactive_comp_1);
-                        const gComp2 = formatReactiveComponent(p.genMatch.components.matching_reactive_comp_2);
-                        const gx1 = formatReactance(p.genMatch.components.reactance_1);
-                        const gx2 = formatReactance(p.genMatch.components.reactance_2);
+                    const gComp1 = p.genMatch.components ? formatReactiveComponent(p.genMatch.components.matching_reactive_comp_1) : null;
+                    const gComp2 = p.genMatch.components ? formatReactiveComponent(p.genMatch.components.matching_reactive_comp_2) : null;
+                    const gx1 = p.genMatch.components ? formatReactance(p.genMatch.components.reactance_1) : '';
+                    const gx2 = p.genMatch.components ? formatReactance(p.genMatch.components.reactance_2) : '';
+
+                    if (isGenDist0) {
+                        genSideSimHtml = `
+                            <div style="margin-top: 10px;">
+                                <span class="col-head">Fixed Source Component at Port</span>
+                                <div style="font-family: var(--font-mono); font-weight: 600; font-size: 0.95em; color: var(--text-color); margin-top: 2px;">
+                                    ${formatRLCComponent(getRLCValsForImpedance(zs, frequency))}
+                                </div>
+                                <div style="font-size: 0.82em; color: var(--text-muted); margin-top: 1px;">
+                                    Source impedance: ${formatComplexOhms(zs)}
+                                </div>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <span class="col-head">Matching Network Components (Port 1)</span>
+                                <div style="font-size: 0.88em; line-height: 1.5; margin-top: 2px;">
+                                    <strong>${p.genMatch.match_type}:</strong><br>
+                                    &bull; Element X1: <strong>${gComp1.type}: ${gComp1.text}</strong> (${gx1})<br>
+                                    &bull; Element X2: <strong>${gComp2.type}: ${gComp2.text}</strong> (${gx2})
+                                </div>
+                                <div class="lc-topology-note" style="margin-top: 6px;">
+                                    ${describeMatchingNetwork(p.genMatch, 'generator')}
+                                </div>
+                            </div>
+                        `;
+                    } else if (p.genMatch.bileteral_match_at_port) {
                         genSideSimHtml = `
                             <div style="margin-top: 10px;">
                                 <span class="col-head">Fixed Source Component at Port</span>
@@ -2754,13 +2789,35 @@
                                 </div>
                             </div>
                         `;
+                    } else if (isGenZ0 && p.genMatch.components && p.genMatch.components.matching_reactive_comp_1_at_port && p.genMatch.components.matching_reactive_comp_2_at_port) {
+                        const pComp1 = formatReactiveComponent(p.genMatch.components.matching_reactive_comp_1_at_port);
+                        const pComp2 = formatReactiveComponent(p.genMatch.components.matching_reactive_comp_2_at_port);
+                        const px1 = formatReactance(get_impedance_for_RLC_value(p.genMatch.components.matching_reactive_comp_1_at_port, frequency).imag);
+                        const px2 = formatReactance(get_impedance_for_RLC_value(p.genMatch.components.matching_reactive_comp_2_at_port, frequency).imag);
+                        genSideSimHtml = `
+                            <div style="margin-top: 10px;">
+                                <span class="col-head">Fixed Source Component at Port</span>
+                                <div style="font-family: var(--font-mono); font-weight: 600; font-size: 0.95em; color: var(--text-color); margin-top: 2px;">
+                                    ${formatRLCComponent(getRLCValsForImpedance(zs, frequency))}
+                                </div>
+                                <div style="font-size: 0.82em; color: var(--text-muted); margin-top: 1px;">
+                                    Preserved source impedance: ${formatComplexOhms(zs)}
+                                </div>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <span class="col-head">Matching Network Transformed to Port 1</span>
+                                <div style="font-size: 0.88em; line-height: 1.5; margin-top: 2px;">
+                                    &bull; Element X1 (at port): <strong>${pComp1.type}: ${pComp1.text}</strong> (${px1})<br>
+                                    &bull; Element X2 (at port): <strong>${pComp2.type}: ${pComp2.text}</strong> (${px2})
+                                </div>
+                                <div class="lc-topology-note" style="margin-top: 6px;">
+                                    Transformed across TL1 (${formatDisplayNumber(distGen)} m): matching components brought over to Port 1 while preserving the ${formatDisplayNumber(z0)} Ω source impedance.
+                                </div>
+                            </div>
+                        `;
                     } else {
                         const zThComps = p.genMatch.theveninEquivalentGenSide ? p.genMatch.theveninEquivalentGenSide.z_thevenin_comps_looking_from_port : null;
                         const zThPort = p.genMatch.theveninEquivalentGenSide ? p.genMatch.theveninEquivalentGenSide.z_thevenin_looking_from_port : null;
-                        const gComp1 = p.genMatch.components ? formatReactiveComponent(p.genMatch.components.matching_reactive_comp_1) : null;
-                        const gComp2 = p.genMatch.components ? formatReactiveComponent(p.genMatch.components.matching_reactive_comp_2) : null;
-                        const gx1 = p.genMatch.components ? formatReactance(p.genMatch.components.reactance_1) : '';
-                        const gx2 = p.genMatch.components ? formatReactance(p.genMatch.components.reactance_2) : '';
 
                         genSideSimHtml = `
                             <div style="margin-top: 10px;">
@@ -2772,27 +2829,42 @@
                                     Equivalent port impedance: ${formatComplexOhms(zThPort)}
                                 </div>` : ''}
                             </div>
-                            ${p.genMatch.components ? `
-                            <div style="margin-top: 10px;">
-                                <span class="col-head">Matching Network Components (Generator Plane)</span>
-                                <div style="font-size: 0.88em; line-height: 1.5; margin-top: 2px;">
-                                    <strong>${p.genMatch.match_type}:</strong><br>
-                                    &bull; Element X1: <strong>${gComp1.type}: ${gComp1.text}</strong> (${gx1})<br>
-                                    &bull; Element X2: <strong>${gComp2.type}: ${gComp2.text}</strong> (${gx2})
-                                </div>
-                                <div class="lc-topology-note" style="margin-top: 6px;">
-                                    ${describeMatchingNetwork(p.genMatch, 'generator')}
-                                </div>
-                            </div>` : ''}
+                            <div class="lc-topology-note" style="margin-top: 6px;">
+                                Matched across TL1 (${formatDisplayNumber(distGen)} m). Since source Zs ≠ Z0, the input network is represented via its Thevenin equivalent impedance looking into Port 1.
+                            </div>
                         `;
                     }
 
                     let loadSideSimHtml = '';
-                    if (p.loadMatch.bileteral_match_at_port) {
-                        const lComp1 = formatReactiveComponent(p.loadMatch.components.matching_reactive_comp_1);
-                        const lComp2 = formatReactiveComponent(p.loadMatch.components.matching_reactive_comp_2);
-                        const lx1 = formatReactance(p.loadMatch.components.reactance_1);
-                        const lx2 = formatReactance(p.loadMatch.components.reactance_2);
+                    const lComp1 = p.loadMatch.components ? formatReactiveComponent(p.loadMatch.components.matching_reactive_comp_1) : null;
+                    const lComp2 = p.loadMatch.components ? formatReactiveComponent(p.loadMatch.components.matching_reactive_comp_2) : null;
+                    const lx1 = p.loadMatch.components ? formatReactance(p.loadMatch.components.reactance_1) : '';
+                    const lx2 = p.loadMatch.components ? formatReactance(p.loadMatch.components.reactance_2) : '';
+
+                    if (isLoadDist0) {
+                        loadSideSimHtml = `
+                            <div style="margin-top: 10px;">
+                                <span class="col-head">Fixed Load Component at Port</span>
+                                <div style="font-family: var(--font-mono); font-weight: 600; font-size: 0.95em; color: var(--text-color); margin-top: 2px;">
+                                    ${formatRLCComponent(getRLCValsForImpedance(zl, frequency))}
+                                </div>
+                                <div style="font-size: 0.82em; color: var(--text-muted); margin-top: 1px;">
+                                    Load impedance: ${formatComplexOhms(zl)}
+                                </div>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <span class="col-head">Matching Network Components (Port 2)</span>
+                                <div style="font-size: 0.88em; line-height: 1.5; margin-top: 2px;">
+                                    <strong>${p.loadMatch.match_type}:</strong><br>
+                                    &bull; Element X1: <strong>${lComp1.type}: ${lComp1.text}</strong> (${lx1})<br>
+                                    &bull; Element X2: <strong>${lComp2.type}: ${lComp2.text}</strong> (${lx2})
+                                </div>
+                                <div class="lc-topology-note" style="margin-top: 6px;">
+                                    ${describeMatchingNetwork(p.loadMatch, 'load')}
+                                </div>
+                            </div>
+                        `;
+                    } else if (p.loadMatch.bileteral_match_at_port) {
                         loadSideSimHtml = `
                             <div style="margin-top: 10px;">
                                 <span class="col-head">Fixed Load Component at Port</span>
@@ -2815,13 +2887,35 @@
                                 </div>
                             </div>
                         `;
+                    } else if (isLoadZ0 && p.loadMatch.components && p.loadMatch.components.matching_reactive_comp_1_at_port && p.loadMatch.components.matching_reactive_comp_2_at_port) {
+                        const pComp1 = formatReactiveComponent(p.loadMatch.components.matching_reactive_comp_1_at_port);
+                        const pComp2 = formatReactiveComponent(p.loadMatch.components.matching_reactive_comp_2_at_port);
+                        const px1 = formatReactance(get_impedance_for_RLC_value(p.loadMatch.components.matching_reactive_comp_1_at_port, frequency).imag);
+                        const px2 = formatReactance(get_impedance_for_RLC_value(p.loadMatch.components.matching_reactive_comp_2_at_port, frequency).imag);
+                        loadSideSimHtml = `
+                            <div style="margin-top: 10px;">
+                                <span class="col-head">Fixed Load Component at Port</span>
+                                <div style="font-family: var(--font-mono); font-weight: 600; font-size: 0.95em; color: var(--text-color); margin-top: 2px;">
+                                    ${formatRLCComponent(getRLCValsForImpedance(zl, frequency))}
+                                </div>
+                                <div style="font-size: 0.82em; color: var(--text-muted); margin-top: 1px;">
+                                    Preserved load impedance: ${formatComplexOhms(zl)}
+                                </div>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <span class="col-head">Matching Network Transformed to Port 2</span>
+                                <div style="font-size: 0.88em; line-height: 1.5; margin-top: 2px;">
+                                    &bull; Element X1 (at port): <strong>${pComp1.type}: ${pComp1.text}</strong> (${px1})<br>
+                                    &bull; Element X2 (at port): <strong>${pComp2.type}: ${pComp2.text}</strong> (${px2})
+                                </div>
+                                <div class="lc-topology-note" style="margin-top: 6px;">
+                                    Transformed across TL2 (${formatDisplayNumber(distLoad)} m): matching components brought over to Port 2 while preserving the ${formatDisplayNumber(z0)} Ω load impedance.
+                                </div>
+                            </div>
+                        `;
                     } else {
                         const zThComps = p.loadMatch.theveninEquivalentLoadSide ? p.loadMatch.theveninEquivalentLoadSide.z_thevenin_comps_looking_from_port : null;
                         const zThPort = p.loadMatch.theveninEquivalentLoadSide ? p.loadMatch.theveninEquivalentLoadSide.z_thevenin_looking_from_port : null;
-                        const lComp1 = p.loadMatch.components ? formatReactiveComponent(p.loadMatch.components.matching_reactive_comp_1) : null;
-                        const lComp2 = p.loadMatch.components ? formatReactiveComponent(p.loadMatch.components.matching_reactive_comp_2) : null;
-                        const lx1 = p.loadMatch.components ? formatReactance(p.loadMatch.components.reactance_1) : '';
-                        const lx2 = p.loadMatch.components ? formatReactance(p.loadMatch.components.reactance_2) : '';
 
                         loadSideSimHtml = `
                             <div style="margin-top: 10px;">
@@ -2833,20 +2927,23 @@
                                     Equivalent port impedance: ${formatComplexOhms(zThPort)}
                                 </div>` : ''}
                             </div>
-                            ${p.loadMatch.components ? `
-                            <div style="margin-top: 10px;">
-                                <span class="col-head">Matching Network Components (Load Plane)</span>
-                                <div style="font-size: 0.88em; line-height: 1.5; margin-top: 2px;">
-                                    <strong>${p.loadMatch.match_type}:</strong><br>
-                                    &bull; Element X1: <strong>${lComp1.type}: ${lComp1.text}</strong> (${lx1})<br>
-                                    &bull; Element X2: <strong>${lComp2.type}: ${lComp2.text}</strong> (${lx2})
-                                </div>
-                                <div class="lc-topology-note" style="margin-top: 6px;">
-                                    ${describeMatchingNetwork(p.loadMatch, 'load')}
-                                </div>
-                            </div>` : ''}
+                            <div class="lc-topology-note" style="margin-top: 6px;">
+                                Matched across TL2 (${formatDisplayNumber(distLoad)} m). Since load ZL ≠ Z0, the output network is represented via its Thevenin equivalent impedance looking into Port 2.
+                            </div>
                         `;
                     }
+
+                    const genBadge = isGenDist0
+                        ? 'Port Plane (d = 0)'
+                        : (p.genMatch.bileteral_match_at_port
+                            ? 'Port Plane'
+                            : (isGenZ0 ? 'Transformed to Port (Zs = Z0)' : 'Thevenin Equivalent (Port 1)'));
+
+                    const loadBadge = isLoadDist0
+                        ? 'Port Plane (d = 0)'
+                        : (p.loadMatch.bileteral_match_at_port
+                            ? 'Port Plane'
+                            : (isLoadZ0 ? 'Transformed to Port (ZL = Z0)' : 'Thevenin Equivalent (Port 2)'));
 
                     return `
                         <div class="lc-option-card">
@@ -2890,7 +2987,7 @@
                                 <div class="sub-option-box">
                                     <div class="sub-option-header">
                                         <span class="sub-option-title">Generator / Input Model (Port 1)</span>
-                                        <span class="nav-badge">${p.genMatch.bileteral_match_at_port ? 'Port Plane' : 'Generator Plane'}</span>
+                                        <span class="nav-badge">${genBadge}</span>
                                     </div>
                                     <div>
                                         <span class="col-head">Thevenin Generator Voltage (Vth)</span>
@@ -2907,7 +3004,7 @@
                                 <div class="sub-option-box">
                                     <div class="sub-option-header">
                                         <span class="sub-option-title">Load / Output Model (Port 2)</span>
-                                        <span class="nav-badge">${p.loadMatch.bileteral_match_at_port ? 'Port Plane' : 'Load Plane'}</span>
+                                        <span class="nav-badge">${loadBadge}</span>
                                     </div>
                                     ${loadSideSimHtml}
                                 </div>
