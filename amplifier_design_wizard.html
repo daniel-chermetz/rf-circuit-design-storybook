@@ -2755,10 +2755,35 @@
                             </div>
                         `;
                     } else {
+                        const zThComps = p.genMatch.theveninEquivalentGenSide ? p.genMatch.theveninEquivalentGenSide.z_thevenin_comps_looking_from_port : null;
+                        const zThPort = p.genMatch.theveninEquivalentGenSide ? p.genMatch.theveninEquivalentGenSide.z_thevenin_looking_from_port : null;
+                        const gComp1 = p.genMatch.components ? formatReactiveComponent(p.genMatch.components.matching_reactive_comp_1) : null;
+                        const gComp2 = p.genMatch.components ? formatReactiveComponent(p.genMatch.components.matching_reactive_comp_2) : null;
+                        const gx1 = p.genMatch.components ? formatReactance(p.genMatch.components.reactance_1) : '';
+                        const gx2 = p.genMatch.components ? formatReactance(p.genMatch.components.reactance_2) : '';
+
                         genSideSimHtml = `
-                            <div class="no-configs-message" style="text-align: left; padding: 10px 12px; background: #f8fafc; border-radius: 6px; margin-top: 10px;">
-                                Matching network placed at generator plane (including TL1). Direct port-level simulation component description is pending.
+                            <div style="margin-top: 10px;">
+                                <span class="col-head">Thevenin Equivalent Impedance at Port 1</span>
+                                <div style="font-family: var(--font-mono); font-weight: 600; font-size: 0.95em; color: var(--text-color); margin-top: 2px;">
+                                    ${zThComps ? formatRLCComponent(zThComps) : 'Pending component calculation'}
+                                </div>
+                                ${zThPort ? `<div style="font-size: 0.82em; color: var(--text-muted); margin-top: 1px;">
+                                    Equivalent port impedance: ${formatComplexOhms(zThPort)}
+                                </div>` : ''}
                             </div>
+                            ${p.genMatch.components ? `
+                            <div style="margin-top: 10px;">
+                                <span class="col-head">Matching Network Components (Generator Plane)</span>
+                                <div style="font-size: 0.88em; line-height: 1.5; margin-top: 2px;">
+                                    <strong>${p.genMatch.match_type}:</strong><br>
+                                    &bull; Element X1: <strong>${gComp1.type}: ${gComp1.text}</strong> (${gx1})<br>
+                                    &bull; Element X2: <strong>${gComp2.type}: ${gComp2.text}</strong> (${gx2})
+                                </div>
+                                <div class="lc-topology-note" style="margin-top: 6px;">
+                                    ${describeMatchingNetwork(p.genMatch, 'generator')}
+                                </div>
+                            </div>` : ''}
                         `;
                     }
 
@@ -2791,10 +2816,35 @@
                             </div>
                         `;
                     } else {
+                        const zThComps = p.loadMatch.theveninEquivalentLoadSide ? p.loadMatch.theveninEquivalentLoadSide.z_thevenin_comps_looking_from_port : null;
+                        const zThPort = p.loadMatch.theveninEquivalentLoadSide ? p.loadMatch.theveninEquivalentLoadSide.z_thevenin_looking_from_port : null;
+                        const lComp1 = p.loadMatch.components ? formatReactiveComponent(p.loadMatch.components.matching_reactive_comp_1) : null;
+                        const lComp2 = p.loadMatch.components ? formatReactiveComponent(p.loadMatch.components.matching_reactive_comp_2) : null;
+                        const lx1 = p.loadMatch.components ? formatReactance(p.loadMatch.components.reactance_1) : '';
+                        const lx2 = p.loadMatch.components ? formatReactance(p.loadMatch.components.reactance_2) : '';
+
                         loadSideSimHtml = `
-                            <div class="no-configs-message" style="text-align: left; padding: 10px 12px; background: #f8fafc; border-radius: 6px; margin-top: 10px;">
-                                Matching network placed at load plane (including TL2). Direct port-level simulation component description is pending.
+                            <div style="margin-top: 10px;">
+                                <span class="col-head">Thevenin Equivalent Impedance at Port 2</span>
+                                <div style="font-family: var(--font-mono); font-weight: 600; font-size: 0.95em; color: var(--text-color); margin-top: 2px;">
+                                    ${zThComps ? formatRLCComponent(zThComps) : 'Pending component calculation'}
+                                </div>
+                                ${zThPort ? `<div style="font-size: 0.82em; color: var(--text-muted); margin-top: 1px;">
+                                    Equivalent port impedance: ${formatComplexOhms(zThPort)}
+                                </div>` : ''}
                             </div>
+                            ${p.loadMatch.components ? `
+                            <div style="margin-top: 10px;">
+                                <span class="col-head">Matching Network Components (Load Plane)</span>
+                                <div style="font-size: 0.88em; line-height: 1.5; margin-top: 2px;">
+                                    <strong>${p.loadMatch.match_type}:</strong><br>
+                                    &bull; Element X1: <strong>${lComp1.type}: ${lComp1.text}</strong> (${lx1})<br>
+                                    &bull; Element X2: <strong>${lComp2.type}: ${lComp2.text}</strong> (${lx2})
+                                </div>
+                                <div class="lc-topology-note" style="margin-top: 6px;">
+                                    ${describeMatchingNetwork(p.loadMatch, 'load')}
+                                </div>
+                            </div>` : ''}
                         `;
                     }
 
